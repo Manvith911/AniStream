@@ -70,9 +70,9 @@ const WatchPage = () => {
       <Helmet>
         <title>
           Watch {id.split("-").slice(0, 2).join(" ")} Online, Free Anime
-          Streaming Online on Watanuki Anime Website
+          Streaming Online on AnimeRealm Anime Website
         </title>
-        <meta property="og:title" content="watch - watanuki" />
+        <meta property="og:title" content="watch - AnimeRealm" />
       </Helmet>
       <div className="flex flex-col gap-2">
         <div className="path flex mb-2 mx-2 items-center gap-2 text-base ">
