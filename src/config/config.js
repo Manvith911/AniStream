@@ -1,6 +1,6 @@
 const config = {
-  serverUrl: import.meta.env.VITE_APP_SERVERURL || "https://animerealm1.vercel.app/api",
-  localUrl: import.meta.env.VITE_APP_LOCALURL || "http://localhost:3030/api/v1",
+  serverUrl: import.meta.env.VITE_APP_SERVERURL || "https://animerealm.vercel.app/api",
+  localUrl: import.meta.env.VITE_APP_LOCALURL,
   proxyUrl: import.meta.env.VITE_APP_PROXYURL,
 };
 
