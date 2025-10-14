@@ -4,14 +4,17 @@
   z-index: 1;
   position: relative;
   display: block;
-  width: 100%;
+  width: 100%; /* Full width */
+  max-width: 100%; /* Ensure no max width constraint */
 }
 
 #slider .swiper-slide {
   position: relative;
   overflow: hidden;
   background: var(--background);
+  width: 100%; /* Ensure full width */
 }
+
 .deslide-item {
   width: 100%;
   height: 100%;
@@ -20,7 +23,9 @@
   left: 0;
   right: 0;
   bottom: 0;
+  max-width: 100%; /* Full width */
 }
+
 #slider .deslide-cover {
   position: absolute;
   top: 0;
@@ -43,18 +48,22 @@
     transparent
   );
 }
+
 #slider .swiper-slide .deslide-cover-img img {
   position: absolute;
   object-fit: cover;
   width: 100%;
   height: 100%;
   filter: blur(1px);
+  max-width: 100%; /* Ensure full width */
 }
-#slider .deslide-item-content {
-  max-width: 800px;
+
+.deslide-item-content {
+  max-width: 1000px; /* Increase content width */
   position: absolute;
   bottom: 40px;
 }
+
 .deslide-item .desi-sub-text {
   font-size: 18px;
   line-height: 1.3em;
@@ -62,6 +71,7 @@
   margin-bottom: 20px;
   color: #ffbade;
 }
+
 .deslide-item .desi-head-title {
   font-size: 3em;
   line-height: 1.3em;
@@ -72,11 +82,13 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 #slider .sc-detail {
   font-size: 1em;
   font-weight: 300;
   margin-bottom: 0.75rem;
 }
+
 .deslide-item .desi-description {
   font-size: 0.95em;
   line-height: 1.6;
@@ -103,9 +115,9 @@
       var(--background) 70%,
       transparent
     );
-  mask-composite: intersect; /* Combines the masks (for non-WebKit browsers) */
-  mask-size: 100% 100%, 100% 100%; /* Set size for both masks */
-  mask-repeat: no-repeat, no-repeat; /* Avoid repeating */
+  mask-composite: intersect;
+  mask-size: 100% 100%, 100% 100%;
+  mask-repeat: no-repeat, no-repeat;
   -webkit-mask-image: linear-gradient(
       to right,
       transparent 0,
@@ -123,6 +135,7 @@
   -webkit-mask-size: 100% 100%, 100% 100%;
   -webkit-mask-repeat: no-repeat, no-repeat;
 }
+
 .synopsis {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -134,46 +147,56 @@
 .swiper-pagination {
   gap: 7px;
 }
+
 .swiper-pagination-bullet {
   opacity: 1;
   background-color: #ccc;
-  height: 10px;
-  width: 10px;
+  height: 12px; /* Increased bullet size */
+  width: 12px; /* Increased bullet size */
 }
+
 .swiper-pagination-bullet-active {
   opacity: 1;
   background: #ffc107;
   margin: 0;
 }
+
 .item {
   display: flex;
   align-items: center;
   gap: 3px;
 }
+
 .title {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  -webkit-line-clamp: 2; /* Number of lines to display */
+  -webkit-line-clamp: 2;
   line-clamp: 2;
   text-overflow: ellipsis;
 }
+
 .swiper-button-prev,
 .swiper-button-next {
   color: #ccc;
 }
 
 @media screen and (max-width: 1299px) {
-  .synopsis {
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+  #slider {
+    width: 100%;
+    max-width: 100%;
+  }
+  .deslide-item-content {
+    max-width: 90%;
   }
 }
+
 @media screen and (max-width: 768px) {
   .synopsis {
     display: none;
   }
 }
+
 @media screen and (max-width: 650px) {
   .swiper-pagination {
     display: none;
