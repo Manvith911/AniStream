@@ -16,8 +16,8 @@ const TrendingLayout = ({ data }) => {
         navigation
         spaceBetween={12}
         breakpoints={{
-          0: { slidesPerView: 3 },
-          600: { slidesPerView: 4 },
+          0: { slidesPerView: 2.4 },       // Smaller screens show fewer
+          600: { slidesPerView: 3.5 },
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
@@ -28,7 +28,7 @@ const TrendingLayout = ({ data }) => {
               <div className="item flex flex-col items-center overflow-hidden px-1">
                 <Link
                   to={`/anime/${item.id}`}
-                  className="poster w-full max-w-[140px] h-0 pb-[150%] bg-lightbg relative overflow-hidden rounded-md shadow transition-all duration-200 hover:scale-105 hover:brightness-110"
+                  className="poster w-full h-0 pb-[115%] bg-lightbg relative overflow-hidden rounded-md shadow"
                 >
                   <img
                     className="absolute inset-0 w-full h-full object-cover"
