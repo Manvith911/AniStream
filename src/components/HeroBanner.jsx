@@ -45,13 +45,13 @@ const HeroBanner = ({ slides }) => {
                   src={item.poster}
                 />
               </div>
-              <div className=" z-10 ml-2 md:ml-12 min-w-32  md:max-w-2xl absolute bottom-0 sm:bottom-[30px]">
+              <div className="z-10 ml-2 md:ml-12 min-w-32 md:max-w-2xl absolute bottom-10 sm:bottom-[60px]">
                 <div className="text-primary text-base font-semibold mb-2">
                   #{item.rank} Spotlight
                 </div>
                 <div
                   title={item.title}
-                  className=" title text-lg md:text-2xl xl:text-5xl font-bold mb-6 line-clamp-2"
+                  className="title text-lg md:text-2xl xl:text-5xl font-bold mb-6 line-clamp-2"
                 >
                   {item.title}
                 </div>
@@ -75,18 +75,20 @@ const HeroBanner = ({ slides }) => {
                     <SoundsInfo episodes={item.episodes} />
                   </div>
                 </div>
-                <div className="synopsis">{item.synopsis}</div>
-                <div className="desi-buttons z-50 text-sm md:text-base mt-5 flex gap-2">
+                <div className="synopsis text-white text-sm md:text-base line-clamp-3">
+                  {item.synopsis}
+                </div>
+                <div className="desi-buttons z-50 text-base md:text-lg mt-6 flex gap-3">
                   <Link
                     to={`/watch/${item.id}`}
-                    className="bg-primary rounded-3xl px-4 py-1 text-black flex justify-center items-center gap-2"
+                    className="bg-primary rounded-3xl px-6 py-2 text-black flex justify-center items-center gap-2 font-semibold transition-all duration-200 hover:brightness-90"
                   >
                     <FaCirclePlay />
                     <span>Watch Now</span>
                   </Link>
                   <Link
                     to={`/anime/${item.id}`}
-                    className="bg-btnbg rounded-3xl  px-4 py-1 flex justify-center items-center gap-2"
+                    className="bg-btnbg rounded-3xl px-6 py-2 flex justify-center items-center gap-2 font-semibold transition-all duration-200 hover:brightness-90"
                   >
                     <span>Detail</span>
                     <FaAngleRight />
