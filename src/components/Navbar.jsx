@@ -12,10 +12,13 @@ const Navbar = () => {
     { name: "Most Popular", id: "/animes/most-popular" },
     { name: "Top Airing", id: "/animes/top-airing" },
   ];
+
   return (
     <nav>
-      <div className="nav hidden md:flex justify-center items-center">
-        <ul className="flex gap-10">
+      {/* Desktop Navbar */}
+      <div className="nav hidden md:flex justify-center items-center pt-12 pb-10">
+        {/* Increased padding-top (pt-12) and padding-bottom (pb-10) */}
+        <ul className="flex gap-16"> {/* Increased gap between items */}
           {navLinks.map((item) => (
             <li className="hover:text-primary font-bold" key={item.id}>
               <a className="" href={item.id}>
@@ -25,9 +28,11 @@ const Navbar = () => {
           ))}
         </ul>
       </div>
+
+      {/* Mobile Navbar */}
       <div className="block md:hidden relative w-full">
         <button onClick={() => setShow(!show)}>
-          <h1 className="flex pt-5 pl-5 justify-center items-center gap-1">
+          <h1 className="flex pt-8 pl-5 justify-center items-center gap-1"> {/* Increased padding-top (pt-8) */}
             <FaAlignJustify />
             Menu
           </h1>
@@ -35,7 +40,7 @@ const Navbar = () => {
         <ul
           className={`${
             show ? "flex" : "hidden"
-          } w-11/12 mx-3 absolute flex-col justify-center items-center z-10 bg-background  rounded-md py-5 gap-3 md:gap-10`}
+          } w-11/12 mx-3 absolute flex-col justify-center items-center z-10 bg-background rounded-md py-5 gap-3 md:gap-10`}
         >
           {navLinks.map((item) => (
             <li
