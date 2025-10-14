@@ -15,8 +15,8 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
 
   const ep = searchParams.get("ep");
-
   const { data, isError } = useApi(`/episodes/${id}`);
+  const animeDetails = useApi(`/info/${id}`); // 🆕 fetch anime info
   const episodes = data?.data;
 
   const updateParams = (newParam) => {
@@ -54,8 +54,10 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
+  const animeInfo = animeDetails?.data?.data;
+
   return (
-    <div className="bg-backGround pt-14 max-w-screen-xl mx-auto py-2 md:px-2">
+    <div className="bg-backGround pt-14 max-w-screen-2xl mx-auto py-4 md:px-4">
       <Helmet>
         <title>
           Watch {id.split("-").slice(0, 2).join(" ")} Online, Free Anime
@@ -64,7 +66,8 @@ const WatchPage = () => {
         <meta property="og:title" content="watch - AnimeRealm" />
       </Helmet>
 
-      <div className="path flex mb-2 mx-2 items-center gap-2 text-base">
+      {/* 🧭 Breadcrumbs */}
+      <div className="path flex mb-3 mx-2 items-center gap-2 text-base">
         <Link to="/home" className="hover:text-primary">home</Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <Link to={`/anime/${id}`} className="hover:text-primary">
@@ -74,10 +77,11 @@ const WatchPage = () => {
         <h4 className="gray">{`episode ${currentEp.episodeNumber}`}</h4>
       </div>
 
-      {/* 🧩 Main Flex Layout */}
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* LEFT: Episode List */}
-        <div className="md:w-1/3 lg:w-1/4 bg-lightbg rounded-md p-2 overflow-y-auto max-h-[85vh]">
+      {/* ⚡ Main Layout */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start justify-between">
+        {/* LEFT — Episode List */}
+        <div className="w-full lg:w-1/5 bg-lightbg rounded-md p-2 overflow-y-auto"
+             style={{ maxHeight: "65vh" }}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-white text-sm font-semibold">Episodes</h3>
             <div className="btns bg-btnbg flex rounded-child">
@@ -100,7 +104,7 @@ const WatchPage = () => {
             className={`grid gap-1 ${
               layout === "row"
                 ? "grid-cols-1"
-                : "grid-cols-3 sm:grid-cols-4 md:grid-cols-2"
+                : "grid-cols-2 sm:grid-cols-3"
             }`}
           >
             {episodes?.map((episode) => (
@@ -114,8 +118,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* RIGHT: Player */}
-        <div className="flex-1">
+        {/* MIDDLE — Player */}
+        <div className="flex-1 w-full lg:w-3/5 bg-background rounded-md">
           {ep && id && (
             <Player
               id={id}
@@ -127,6 +131,23 @@ const WatchPage = () => {
             />
           )}
         </div>
+
+        {/* RIGHT — Anime Info */}
+        {animeInfo && (
+          <div className="hidden lg:flex flex-col w-1/5 bg-lightbg rounded-md p-3 gap-3">
+            <img
+              src={animeInfo.image}
+              alt={animeInfo.title}
+              className="rounded-md w-full h-auto object-cover"
+            />
+            <h2 className="text-white font-semibold text-lg line-clamp-2">
+              {animeInfo.title}
+            </h2>
+            <p className="text-gray-400 text-sm line-clamp-6">
+              {animeInfo.description?.replace(/<[^>]+>/g, "")}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
