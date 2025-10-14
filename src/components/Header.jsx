@@ -6,12 +6,6 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -20,17 +14,17 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState("signin"); // "signin" or "signup"
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [authMessage, setAuthMessage] = useState("");
-
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(newValue);
+    }, 500);
   };
 
   const { data, isLoading } = useApi(
@@ -53,33 +47,16 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  };
-
-  // --- Supabase Auth Handlers ---
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    setAuthMessage("");
-
-    try {
-      if (authMode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        setAuthMessage("✅ Signed in successfully!");
-        setTimeout(() => setIsAuthModalOpen(false), 1200);
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        setAuthMessage("✅ Account created! Please verify your email.");
-      }
-    } catch (err) {
-      setAuthMessage(`❌ ${err.message}`);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
   };
 
@@ -88,7 +65,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -98,7 +75,7 @@ const Header = () => {
             </div>
 
             {/* Search Bar */}
-            <div className="relative w-full sm:max-w-[400px] flex-1">
+            <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
                 className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
@@ -111,7 +88,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -173,90 +154,9 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            {/* Right: Login Button */}
-            <div className="flex items-center justify-end">
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="bg-primary text-black font-semibold px-4 py-1.5 rounded-md hover:opacity-90 transition"
-              >
-                Login
-              </button>
-            </div>
           </div>
         </div>
       </div>
-
-      {/* --- Auth Modal --- */}
-      {isAuthModalOpen && (
-        <div className="fixed inset-0 bg-black/70 z-[200] flex justify-center items-center">
-          <div className="bg-[#1a1a1f] p-6 rounded-lg w-[90%] max-w-md shadow-xl relative">
-            <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-white"
-              onClick={() => setIsAuthModalOpen(false)}
-            >
-              <FaXmark size={20} />
-            </button>
-
-            <h2 className="text-white text-lg font-bold mb-4 text-center">
-              {authMode === "signin" ? "Sign In" : "Create Account"}
-            </h2>
-
-            <form onSubmit={handleAuth} className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="p-2 rounded bg-[#2a2a2f] text-white focus:outline-primary"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="p-2 rounded bg-[#2a2a2f] text-white focus:outline-primary"
-              />
-              <button
-                type="submit"
-                className="bg-primary text-black py-2 rounded-md font-semibold"
-              >
-                {authMode === "signin" ? "Sign In" : "Sign Up"}
-              </button>
-            </form>
-
-            {authMessage && (
-              <p className="text-sm text-center mt-3 text-gray-300">{authMessage}</p>
-            )}
-
-            <p className="text-sm text-gray-400 text-center mt-3">
-              {authMode === "signin" ? (
-                <>
-                  Don’t have an account?{" "}
-                  <button
-                    onClick={() => setAuthMode("signup")}
-                    className="text-primary font-semibold"
-                  >
-                    Sign Up
-                  </button>
-                </>
-              ) : (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => setAuthMode("signin")}
-                    className="text-primary font-semibold"
-                  >
-                    Sign In
-                  </button>
-                </>
-              )}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
