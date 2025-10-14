@@ -14,10 +14,10 @@ const TrendingLayout = ({ data }) => {
       <Swiper
         modules={[Navigation]}
         navigation
-        spaceBetween={10}
+        spaceBetween={12}
         breakpoints={{
-          0: { slidesPerView: 3.2 },      // Slight overflow for a carousel effect
-          600: { slidesPerView: 4 },
+          0: { slidesPerView: 2.4 },       // Smaller screens show fewer
+          600: { slidesPerView: 3.5 },
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
@@ -25,10 +25,10 @@ const TrendingLayout = ({ data }) => {
         {data &&
           data.map((item) => (
             <SwiperSlide key={item.id}>
-              <div className="item flex flex-col items-center overflow-hidden px-1 md:px-1.5">
+              <div className="item flex flex-col items-center overflow-hidden px-1">
                 <Link
                   to={`/anime/${item.id}`}
-                  className="poster w-full max-w-[130px] h-0 pb-[140%] bg-lightbg relative overflow-hidden rounded-md shadow-sm"
+                  className="poster w-full h-0 pb-[115%] bg-lightbg relative overflow-hidden rounded-md shadow"
                 >
                   <img
                     className="absolute inset-0 w-full h-full object-cover"
@@ -42,7 +42,7 @@ const TrendingLayout = ({ data }) => {
                 </Link>
                 <h2
                   title={item.title}
-                  className="title cursor-default text-xs sm:text-sm font-medium text-center truncate w-full mt-1"
+                  className="title cursor-default text-sm font-semibold text-center truncate w-full mt-2"
                 >
                   {item.title}
                 </h2>
