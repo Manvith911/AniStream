@@ -15,12 +15,10 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const ep = searchParams.get("ep");
 
-  // fetch episodes
   const { data, isError } = useApi(`/episodes/${id}`);
-  const { data: infoData } = useApi(`/info/${id}`);
-
+  const animeDetails = useApi(`/info/${id}`);
   const episodes = data?.data;
-  const animeInfo = infoData?.data;
+  const animeInfo = animeDetails?.data?.data;
 
   const updateParams = (newParam) => {
     setSearchParams((prev) => {
@@ -35,7 +33,7 @@ const WatchPage = () => {
       const firstEp = episodes[0].id.split("ep=").pop();
       updateParams(firstEp);
     }
-  }, [ep, episodes]);
+  }, [ep, episodes, setSearchParams]);
 
   if (isError) return <PageNotFound />;
   if (!episodes) return <Loader className="h-screen" />;
@@ -74,11 +72,11 @@ const WatchPage = () => {
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* ✅ Main Layout */}
+      {/* Main layout */}
       <div className="flex flex-col lg:flex-row gap-4">
-        {/* LEFT: Episodes */}
+        {/* Left - Episode list */}
         <div
-          className="bg-[#1a1a1f] rounded-md p-3 overflow-y-auto lg:w-[22%] min-h-[60vh]"
+          className="bg-[#1a1a1f] rounded-md p-3 overflow-y-auto lg:w-[20%]"
           style={{ maxHeight: "70vh" }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -115,8 +113,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* MIDDLE: Player */}
-        <div className="flex-1 bg-[#111] rounded-md overflow-hidden lg:w-[58%] min-h-[60vh]">
+        {/* Middle - Player */}
+        <div className="flex-1 bg-[#111] rounded-md overflow-hidden lg:w-[60%]">
           {ep && id && (
             <Player
               id={id}
@@ -129,49 +127,42 @@ const WatchPage = () => {
           )}
         </div>
 
-        {/* RIGHT: Anime Info */}
-        <div className="bg-[#1a1a1f] rounded-md p-3 lg:w-[20%] min-h-[60vh] flex flex-col">
-          {animeInfo ? (
-            <>
-              <img
-                src={animeInfo.image}
-                alt={animeInfo.title}
-                className="rounded-md w-full h-auto object-cover mb-3"
-              />
-              <h2 className="text-white font-semibold text-lg mb-2 line-clamp-2">
-                {animeInfo.title}
-              </h2>
+        {/* Right - Anime info */}
+        {animeInfo && (
+          <div className="hidden lg:flex flex-col bg-[#1a1a1f] rounded-md p-3 lg:w-[20%]">
+            <img
+              src={animeInfo.image}
+              alt={animeInfo.title}
+              className="rounded-md w-full h-auto object-cover mb-3"
+            />
+            <h2 className="text-white font-semibold text-lg mb-2 line-clamp-2">
+              {animeInfo.title}
+            </h2>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {animeInfo.type && (
-                  <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
-                    {animeInfo.type}
-                  </span>
-                )}
-                {animeInfo.rating && (
-                  <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
-                    {animeInfo.rating}
-                  </span>
-                )}
-                {animeInfo.duration && (
-                  <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
-                    {animeInfo.duration}
-                  </span>
-                )}
-              </div>
-
-              <p className="text-gray-400 text-sm leading-relaxed overflow-y-auto max-h-[30vh] pr-1">
-                {animeInfo.description?.replace(/<[^>]+>/g, "") ||
-                  "No description available."}
-              </p>
-            </>
-          ) : (
-            <div className="flex justify-center items-center flex-1 text-gray-400 text-sm">
-              Loading anime info...
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {animeInfo.type && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.type}
+                </span>
+              )}
+              {animeInfo.rating && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.rating}
+                </span>
+              )}
+              {animeInfo.duration && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.duration}
+                </span>
+              )}
             </div>
-          )}
-        </div>
+
+            <p className="text-gray-400 text-sm leading-relaxed line-clamp-6">
+              {animeInfo.description?.replace(/<[^>]+>/g, "")}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
