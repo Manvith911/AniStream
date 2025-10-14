@@ -5,19 +5,20 @@ import Player from "../components/Player";
 import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
+import { Helmet } from "react-helmet";
 import { MdTableRows } from "react-icons/md";
 import { HiMiniViewColumns } from "react-icons/hi2";
-import { Helmet } from "react-helmet";
 
 const WatchPage = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [layout, setLayout] = useState("row");
-
   const ep = searchParams.get("ep");
+
   const { data, isError } = useApi(`/episodes/${id}`);
-  const animeDetails = useApi(`/info/${id}`); // 🆕 fetch anime info
+  const animeDetails = useApi(`/info/${id}`);
   const episodes = data?.data;
+  const animeInfo = animeDetails?.data?.data;
 
   const updateParams = (newParam) => {
     setSearchParams((prev) => {
@@ -38,9 +39,7 @@ const WatchPage = () => {
   if (!episodes) return <Loader className="h-screen" />;
 
   const currentEp =
-    episodes &&
-    ep !== null &&
-    episodes.find((e) => e.id.split("ep=").pop() === ep);
+    episodes && ep !== null && episodes.find((e) => e.id.split("ep=").pop() === ep);
 
   const changeEpisode = (action) => {
     const index = currentEp.episodeNumber - 1;
@@ -54,45 +53,43 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
-  const animeInfo = animeDetails?.data?.data;
-
   return (
-    <div className="bg-backGround pt-14 max-w-screen-2xl mx-auto py-4 md:px-4">
+    <div className="bg-backGround pt-16 max-w-screen-2xl mx-auto px-3 md:px-6 pb-6">
       <Helmet>
         <title>
-          Watch {id.split("-").slice(0, 2).join(" ")} Online, Free Anime
-          Streaming Online on AnimeRealm
+          Watch {id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
         </title>
-        <meta property="og:title" content="watch - AnimeRealm" />
       </Helmet>
 
-      {/* 🧭 Breadcrumbs */}
-      <div className="path flex mb-3 mx-2 items-center gap-2 text-base">
-        <Link to="/home" className="hover:text-primary">home</Link>
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-2 mb-3 text-sm">
+        <Link to="/home" className="hover:text-primary">Home</Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link to={`/anime/${id}`} className="hover:text-primary">
+        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
           {id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <h4 className="gray">{`episode ${currentEp.episodeNumber}`}</h4>
+        <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* ⚡ Main Layout */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start justify-between">
-        {/* LEFT — Episode List */}
-        <div className="w-full lg:w-1/5 bg-lightbg rounded-md p-2 overflow-y-auto"
-             style={{ maxHeight: "65vh" }}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-white text-sm font-semibold">Episodes</h3>
-            <div className="btns bg-btnbg flex rounded-child">
+      {/* Main layout */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Left - Episode list */}
+        <div
+          className="bg-[#1a1a1f] rounded-md p-3 overflow-y-auto lg:w-[20%]"
+          style={{ maxHeight: "70vh" }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-white text-sm font-semibold">List of Episodes</h3>
+            <div className="flex bg-[#2a2a2f] rounded-md">
               <button
-                className={`p-2 ${layout === "row" ? "bg-primary text-black" : ""}`}
+                className={`p-2 ${layout === "row" ? "bg-primary text-black" : "text-white"}`}
                 onClick={() => setLayout("row")}
               >
                 <MdTableRows size={18} />
               </button>
               <button
-                className={`p-2 ${layout === "column" ? "bg-primary text-black" : ""}`}
+                className={`p-2 ${layout === "column" ? "bg-primary text-black" : "text-white"}`}
                 onClick={() => setLayout("column")}
               >
                 <HiMiniViewColumns size={18} />
@@ -102,12 +99,10 @@ const WatchPage = () => {
 
           <ul
             className={`grid gap-1 ${
-              layout === "row"
-                ? "grid-cols-1"
-                : "grid-cols-2 sm:grid-cols-3"
+              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
             }`}
           >
-            {episodes?.map((episode) => (
+            {episodes.map((episode) => (
               <Episodes
                 key={episode.id}
                 episode={episode}
@@ -118,8 +113,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* MIDDLE — Player */}
-        <div className="flex-1 w-full lg:w-3/5 bg-background rounded-md">
+        {/* Middle - Player */}
+        <div className="flex-1 bg-[#111] rounded-md overflow-hidden lg:w-[60%]">
           {ep && id && (
             <Player
               id={id}
@@ -132,18 +127,38 @@ const WatchPage = () => {
           )}
         </div>
 
-        {/* RIGHT — Anime Info */}
+        {/* Right - Anime info */}
         {animeInfo && (
-          <div className="hidden lg:flex flex-col w-1/5 bg-lightbg rounded-md p-3 gap-3">
+          <div className="hidden lg:flex flex-col bg-[#1a1a1f] rounded-md p-3 lg:w-[20%]">
             <img
               src={animeInfo.image}
               alt={animeInfo.title}
-              className="rounded-md w-full h-auto object-cover"
+              className="rounded-md w-full h-auto object-cover mb-3"
             />
-            <h2 className="text-white font-semibold text-lg line-clamp-2">
+            <h2 className="text-white font-semibold text-lg mb-2 line-clamp-2">
               {animeInfo.title}
             </h2>
-            <p className="text-gray-400 text-sm line-clamp-6">
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {animeInfo.type && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.type}
+                </span>
+              )}
+              {animeInfo.rating && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.rating}
+                </span>
+              )}
+              {animeInfo.duration && (
+                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-xs">
+                  {animeInfo.duration}
+                </span>
+              )}
+            </div>
+
+            <p className="text-gray-400 text-sm leading-relaxed line-clamp-6">
               {animeInfo.description?.replace(/<[^>]+>/g, "")}
             </p>
           </div>
