@@ -63,19 +63,19 @@ const Header = () => {
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
-        <div className="flex flex-col px-5 md:px-10">
-          {/* Header row */}
-          <div className="flex items-center justify-start gap-x-4 flex-wrap">
-            {/* Sidebar Icon */}
-            <div className="cursor-pointer" onClick={sidebarHandler}>
-              <FaBars size={25} />
+        <div className="flex flex-col px-4 sm:px-6 md:px-10">
+          {/* Header container */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+            {/* Left: Sidebar Icon + Logo */}
+            <div className="flex items-center gap-3">
+              <div className="cursor-pointer" onClick={sidebarHandler}>
+                <FaBars size={25} />
+              </div>
+              <Logo />
             </div>
 
-            {/* Logo */}
-            <Logo />
-
-            {/* Search Bar Container */}
-            <div className="relative ml-6 w-full max-w-[400px]">
+            {/* Search Bar */}
+            <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
                 className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
@@ -101,9 +101,9 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Search Suggestions Dropdown */}
+              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
+                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
