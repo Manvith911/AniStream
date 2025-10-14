@@ -43,7 +43,7 @@ const Home = () => {
         </title>
         <meta
           name="description"
-          content=" AnimeRealm to is a free no ads anime site to watch free anime. Online anime streaming at AnimeRealm with DUB, SUB in HD AnimeRealm.shop."
+          content=" AnimeRealm to is a free no ads anime site to watch free anime. Online anime streaming at AnimeRealm with DUB, SUB in HD animerealm.vercel.app."
         />
         <meta property="og:title" content="home - AnimeRealm" />
       </Helmet>
