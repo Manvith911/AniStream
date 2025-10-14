@@ -14,19 +14,21 @@ const TrendingLayout = ({ data }) => {
       <Swiper
         modules={[Navigation]}
         navigation
+        spaceBetween={10}
         breakpoints={{
-          0: { slidesPerView: 3 },
-          800: { slidesPerView: 4 },
+          0: { slidesPerView: 3.2 },      // Slight overflow for a carousel effect
+          600: { slidesPerView: 4 },
+          1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
       >
         {data &&
           data.map((item) => (
             <SwiperSlide key={item.id}>
-              <div className="item flex flex-col items-center overflow-hidden px-1 md:px-2">
+              <div className="item flex flex-col items-center overflow-hidden px-1 md:px-1.5">
                 <Link
                   to={`/anime/${item.id}`}
-                  className="poster w-full h-0 pb-[150%] bg-lightbg relative overflow-hidden"
+                  className="poster w-full max-w-[130px] h-0 pb-[140%] bg-lightbg relative overflow-hidden rounded-md shadow-sm"
                 >
                   <img
                     className="absolute inset-0 w-full h-full object-cover"
@@ -34,13 +36,13 @@ const TrendingLayout = ({ data }) => {
                     src={item.poster}
                     alt={item.title}
                   />
-                  <div className="rank p-1 text-sm md:text-base md:p-2 font-extrabold absolute top-0 bg-white text-center text-black">
+                  <div className="rank p-1 text-xs md:text-sm font-bold absolute top-0 left-0 bg-white text-black">
                     0{item.rank}
                   </div>
                 </Link>
                 <h2
                   title={item.title}
-                  className="title cursor-default text-sm font-semibold text-center  truncate w-full"
+                  className="title cursor-default text-xs sm:text-sm font-medium text-center truncate w-full mt-1"
                 >
                   {item.title}
                 </h2>
