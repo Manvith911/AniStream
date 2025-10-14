@@ -15,11 +15,23 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const ep = searchParams.get("ep");
 
-  const { data, isError } = useApi(`/episodes/${id}`);
-  const animeDetails = useApi(`/info/${id}`);
-  const episodes = data?.data;
-  const animeInfo = animeDetails?.data?.data;
+  // Fetch episodes and anime details
+  const {
+    data: episodeResponse,
+    isError: episodesError,
+    isLoading: episodesLoading,
+  } = useApi(`/episodes/${id}`);
 
+  const {
+    data: infoResponse,
+    isError: infoError,
+    isLoading: infoLoading,
+  } = useApi(`/info/${id}`);
+
+  const episodes = episodeResponse?.data || [];
+  const animeInfo = infoResponse?.data || null;
+
+  // Function to update URL params when switching episodes
   const updateParams = (newParam) => {
     setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
@@ -28,6 +40,7 @@ const WatchPage = () => {
     });
   };
 
+  // Set the first episode if none is selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -35,14 +48,20 @@ const WatchPage = () => {
     }
   }, [ep, episodes, setSearchParams]);
 
-  if (isError) return <PageNotFound />;
-  if (!episodes) return <Loader className="h-screen" />;
+  // Scroll to top when switching anime
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  // Handle loading or error states
+  if (episodesError || infoError) return <PageNotFound />;
+  if (episodesLoading || infoLoading) return <Loader className="h-screen" />;
 
   const currentEp =
     episodes && ep !== null && episodes.find((e) => e.id.split("ep=").pop() === ep);
 
   const changeEpisode = (action) => {
-    const index = currentEp.episodeNumber - 1;
+    const index = currentEp?.episodeNumber - 1;
     if (action === "next" && episodes[index + 1]) {
       updateParams(episodes[index + 1].id.split("ep=").pop());
     } else if (action === "prev" && episodes[index - 1]) {
@@ -50,8 +69,8 @@ const WatchPage = () => {
     }
   };
 
-  const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
-  const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
+  const hasNextEp = Boolean(episodes[currentEp?.episodeNumber]);
+  const hasPrevEp = Boolean(episodes[currentEp?.episodeNumber - 2]);
 
   return (
     <div className="bg-backGround pt-16 max-w-screen-2xl mx-auto px-3 md:px-6 pb-6">
@@ -63,7 +82,9 @@ const WatchPage = () => {
 
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 mb-3 text-sm">
-        <Link to="/home" className="hover:text-primary">Home</Link>
+        <Link to="/home" className="hover:text-primary">
+          Home
+        </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
           {id.split("-").slice(0, 2).join(" ")}
@@ -80,16 +101,22 @@ const WatchPage = () => {
           style={{ maxHeight: "70vh" }}
         >
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white text-sm font-semibold">List of Episodes</h3>
+            <h3 className="text-white text-sm font-semibold">
+              List of Episodes
+            </h3>
             <div className="flex bg-[#2a2a2f] rounded-md">
               <button
-                className={`p-2 ${layout === "row" ? "bg-primary text-black" : "text-white"}`}
+                className={`p-2 ${
+                  layout === "row" ? "bg-primary text-black" : "text-white"
+                }`}
                 onClick={() => setLayout("row")}
               >
                 <MdTableRows size={18} />
               </button>
               <button
-                className={`p-2 ${layout === "column" ? "bg-primary text-black" : "text-white"}`}
+                className={`p-2 ${
+                  layout === "column" ? "bg-primary text-black" : "text-white"
+                }`}
                 onClick={() => setLayout("column")}
               >
                 <HiMiniViewColumns size={18} />
@@ -115,7 +142,7 @@ const WatchPage = () => {
 
         {/* Middle - Player */}
         <div className="flex-1 bg-[#111] rounded-md overflow-hidden lg:w-[60%]">
-          {ep && id && (
+          {ep && id && currentEp && (
             <Player
               id={id}
               episodeId={`${id}?ep=${ep}`}
