@@ -62,47 +62,50 @@ const Header = () => {
 
   return (
     <div className="relative z-[100]">
-      <div className="fixed bg-card w-full py-2">
-        <div className="flex flex-col gap-2 px-5 md:px-10">
-          {/* Top row: Sidebar, Logo, Search */}
-          <div className="flex justify-between items-center w-full gap-4">
-            <div className="flex items-center gap-4 flex-shrink-0">
+      <div className="fixed bg-card w-full py-2 shadow-md">
+        <div className="flex flex-col px-5 md:px-10">
+          {/* Top row: Sidebar, Logo, Search Bar */}
+          <div className="flex items-center justify-between gap-4 w-full flex-wrap">
+            {/* Left side: menu + logo + search bar */}
+            <div className="flex items-center gap-4 flex-wrap w-full md:w-auto">
               <div className="menu cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
               </div>
-              <Logo />
-            </div>
 
-            {/* Search bar always visible */}
-            <form
-              onSubmit={handleSubmit}
-              className="flex items-center gap-2 w-full max-w-md bg-[#FBF8EF] px-3 py-1 rounded-md"
-            >
-              <input
-                value={value}
-                onChange={changeInput}
-                placeholder="Search anime"
-                type="text"
-                className="bg-transparent flex-1 text-black text-sm focus:outline-none"
-              />
-              {value.length > 1 && (
-                <button
-                  onClick={emptyInput}
-                  type="reset"
-                  className="text-black"
-                >
-                  <FaXmark />
+              {/* Logo */}
+              <Logo />
+
+              {/* Search Bar (inline with logo) */}
+              <form
+                onSubmit={handleSubmit}
+                className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full md:w-[300px] lg:w-[400px]"
+              >
+                <input
+                  value={value}
+                  onChange={changeInput}
+                  placeholder="Search anime"
+                  type="text"
+                  className="bg-transparent flex-1 text-black text-sm focus:outline-none"
+                />
+                {value.length > 1 && (
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
+                    <FaXmark />
+                  </button>
+                )}
+                <button type="submit" className="text-black">
+                  <FaSearch />
                 </button>
-              )}
-              <button type="submit" className="text-black">
-                <FaSearch />
-              </button>
-            </form>
+              </form>
+            </div>
           </div>
 
           {/* Search Suggestions */}
           {debouncedValue.length > 2 && (
-            <div className="flex flex-col bg-card z-50 w-full max-w-md rounded-md overflow-hidden shadow-lg">
+            <div className="mt-2 flex flex-col bg-card z-50 w-full max-w-[400px] rounded-md overflow-hidden shadow-lg">
               {isLoading ? (
                 <Loader />
               ) : data && data?.data.length ? (
