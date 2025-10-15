@@ -9,7 +9,7 @@ const LatestEpisodesLayout = ({
   data,
 }) => {
   return (
-    <div className="latest-episodes mt-12 px-3 md:px-6">
+    <div className="latest-episodes mt-12 px-4 md:px-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <Heading className="text-3xl font-extrabold tracking-wide text-white drop-shadow-md">
@@ -28,36 +28,36 @@ const LatestEpisodesLayout = ({
       </div>
 
       {/* Anime Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {data &&
           data.map((item) => (
             <Link
               to={`/anime/${item.id}`}
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden bg-[#161616] hover:bg-[#1e1e1e] transition-all duration-300 shadow-lg hover:shadow-2xl"
+              className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
             >
-              {/* Image */}
-              <div className="relative w-full h-0 pb-[150%] overflow-hidden">
+              {/* Image Wrapper */}
+              <div className="relative w-full h-0 pb-[60%] overflow-hidden">
                 <img
                   src={item.poster}
                   alt={item.title}
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
 
                 {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-95 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                 {/* Episode Tag */}
                 {item.episode && (
                   <div className="absolute top-2 right-2 bg-sky-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    Ep {item.episode}
+                    Episode {item.episode}
                   </div>
                 )}
               </div>
 
               {/* Info Section */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 to-transparent">
                 <h3
                   title={item.title}
                   className="text-base sm:text-lg font-semibold text-gray-100 truncate group-hover:text-sky-400 transition-colors duration-300"
