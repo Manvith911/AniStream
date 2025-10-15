@@ -45,7 +45,7 @@ const TrendingLayout = ({ data }) => {
                 </Link>
                 <h2
                   title={item.title}
-                  className="title mt-3 text-center text-gray-800 font-semibold text-base truncate w-full select-none"
+                  className="title mt-3 text-center text-gray-400 font-semibold text-base truncate w-full select-none"
                 >
                   {item.title}
                 </h2>
