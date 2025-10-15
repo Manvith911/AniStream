@@ -59,8 +59,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
             title: item.title || item.name || "Unknown Title",
             poster: item.poster || item.image || "",
             genres: item.genres || item.tags || [],
-            description: item.description || item.synopsis || "",
-          };
+            description: item.synopsis || "",
+         };
 
           return (
             <SwiperSlide key={anime.id}>
