@@ -32,9 +32,10 @@ const InfoLayout = ({ data, showBigPoster }) => {
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 max-w-[1300px] mx-auto px-5 md:px-10 py-16 md:py-24 flex flex-col md:flex-row gap-10 items-start">
+      <div className="relative z-10 max-w-[1150px] mx-auto px-4 md:px-8 pt-6 md:pt-10 pb-12 md:pb-16 flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
+        
         {/* Left: Poster */}
-        <div className="flex justify-center md:w-[35%]">
+        <div className="flex justify-center md:w-[30%]">
           <div
             onClick={() => showBigPoster(data.poster)}
             className="rounded-2xl overflow-hidden shadow-2xl cursor-pointer transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)]"
@@ -51,14 +52,9 @@ const InfoLayout = ({ data, showBigPoster }) => {
         <div className="flex-1 flex flex-col gap-5 md:gap-6">
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-            <Link to="/home" className="hover:text-primary">
-              Home
-            </Link>
+            <Link to="/home" className="hover:text-primary">Home</Link>
             <span>•</span>
-            <Link
-              to={`/animes/${data.type.toLowerCase()}`}
-              className="hover:text-primary capitalize"
-            >
+            <Link to={`/animes/${data.type.toLowerCase()}`} className="hover:text-primary capitalize">
               {data.type}
             </Link>
             <span>•</span>
@@ -89,7 +85,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
             <span>{data.duration}</span>
           </div>
 
-          {/* Circle Rating (smaller now) */}
+          {/* Circle Rating (smaller size) */}
           <div className="mt-2 w-[70px] h-[70px] flex items-center justify-center overflow-hidden">
             <CircleRatting rating={data.MAL_score} size={70} />
           </div>
