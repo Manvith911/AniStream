@@ -6,14 +6,27 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
+import { FaAngleRight } from "react-icons/fa";
 
-const TopUpcomingLayout = ({ data }) => {
+const TopUpcomingLayout = ({ data, endpoint = "top-upcoming" }) => {
   return (
     <div className="top-upcoming mt-10 px-2 md:px-4">
-      {/* Section Heading */}
-      <Heading className="mb-6 text-3xl font-extrabold tracking-wide text-white">
-        Top Upcoming
-      </Heading>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <Heading className="text-3xl font-extrabold tracking-wide text-white">
+          Top Upcoming
+        </Heading>
+
+        <Link
+          to={`/animes/${endpoint}`}
+          className="group flex items-center gap-1 text-sm text-neutral-400 hover:text-sky-400 transition-all"
+        >
+          <span className="group-hover:underline underline-offset-2">
+            View more
+          </span>
+          <FaAngleRight className="group-hover:translate-x-1 transition-transform duration-200" />
+        </Link>
+      </div>
 
       {/* Swiper Carousel */}
       <Swiper
@@ -45,12 +58,12 @@ const TopUpcomingLayout = ({ data }) => {
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
 
-                  {/* Label */}
+                  {/* Badge */}
                   <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                     Upcoming
                   </div>
 
-                  {/* Release Date (optional) */}
+                  {/* Release Date */}
                   {item.releaseDate && (
                     <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-md">
                       {item.releaseDate}
