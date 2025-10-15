@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import { FaAngleRight } from "react-icons/fa";
 import Heading from "../components/Heading";
 
-const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-updated", data }) => {
+const LatestEpisodesLayout = ({
+  title = "Latest Episodes",
+  endpoint = "recently-updated",
+  data = [],
+}) => {
   return (
     <div className="latest-episodes mt-10 px-2 md:px-4">
       {/* Header */}
@@ -25,8 +29,13 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
 
       {/* Grid Cards */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {data &&
-          data.map((item) => (
+        {data.map((item) => {
+          // Determine the latest aired episode for each anime
+          // Supports data like item.latestEpisode or item.latest_ep or similar
+          const latestEp =
+            item.latestEpisode || item.latest_ep || item.episodes?.[item.episodes?.length - 1]?.number || item.episode;
+
+          return (
             <Link
               to={`/anime/${item.id}`}
               key={item.id}
@@ -42,10 +51,10 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-xl"></div>
 
-                {/* Episode Tag */}
-                {item.episode && (
-                  <div className="absolute top-2 right-2 bg-green-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    Episode {item.episode}
+                {/* ✅ Latest Episode Badge (top-right) */}
+                {latestEp && (
+                  <div className="absolute top-2 right-2 bg-sky-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                    Latest Ep {latestEp}
                   </div>
                 )}
               </div>
@@ -65,7 +74,8 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
                 )}
               </div>
             </Link>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
