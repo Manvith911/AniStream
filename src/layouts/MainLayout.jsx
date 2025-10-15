@@ -54,7 +54,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         }}
       >
         {data.map((item) => {
-          // Map API fields to consistent names
           const anime = {
             id: item.id,
             title: item.title || item.name || "Unknown Title",
@@ -79,9 +78,9 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
 
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3 rounded-xl translate-y-4 group-hover:translate-y-0">
-                    <h2 className="text-white font-semibold text-sm md:text-base mb-1 truncate">
+                  {/* Always-visible info box */}
+                  <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/80 via-black/50 to-transparent text-white p-3 transition-all duration-300 group-hover:from-black/90 group-hover:via-black/70">
+                    <h2 className="font-semibold text-sm md:text-base mb-1 truncate">
                       {anime.title}
                     </h2>
 
@@ -92,13 +91,13 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     )}
 
                     {anime.description && (
-                      <p className="text-xs text-gray-400 line-clamp-2">
+                      <p className="text-xs text-gray-400 line-clamp-2 group-hover:line-clamp-3 transition-all duration-300">
                         {anime.description}
                       </p>
                     )}
                   </div>
 
-                  {/* Optional label */}
+                  {/* Optional Label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -106,7 +105,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </Link>
 
-                {/* Title below card */}
+                {/* Title below card (optional duplicate for mobile clarity) */}
                 <h2
                   title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
