@@ -55,22 +55,22 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           data.map((item) => (
             <SwiperSlide key={item.id}>
               <div className="relative group flex flex-col items-center px-1 cursor-pointer">
-                {/* Card */}
+                {/* Anime Card */}
                 <Link
                   to={`/anime/${item.id}`}
-                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.04]"
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
                 >
                   <img
-                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
-                    loading="lazy"
                     src={item.poster}
                     alt={item.title}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
 
-                  {/* Overlay */}
+                  {/* Dark overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
 
-                  {/* Label */}
+                  {/* Label (optional) */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -79,11 +79,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 </Link>
 
                 {/* Hover Info Box */}
-                <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-56 bg-[#1a1a1a] border border-neutral-800 rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out shadow-2xl z-50">
-                  <h2
-                    title={item.title}
-                    className="text-white font-semibold text-sm mb-1"
-                  >
+                <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-56 bg-[#1a1a1a] border border-neutral-800 rounded-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 ease-out shadow-2xl z-50 pointer-events-none">
+                  <h2 className="text-white font-semibold text-sm mb-1">
                     {item.title}
                   </h2>
                   {item.genres && (
@@ -103,11 +100,11 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     View Details →
                   </Link>
 
-                  {/* Tooltip Arrow */}
+                  {/* Tooltip arrow */}
                   <div className="absolute left-1/2 -bottom-2 w-3 h-3 bg-[#1a1a1a] border-b border-r border-neutral-800 rotate-45 -translate-x-1/2"></div>
                 </div>
 
-                {/* Title Below Card */}
+                {/* Title below card */}
                 <h2
                   title={item.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
