@@ -15,7 +15,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           {title}
         </Heading>
 
-        {endpoint && (
+        {/* Show "View More" only if endpoint is provided AND title is not Trending Now */}
+        {endpoint && title !== "Trending Now" && (
           <Link
             to={`/animes/${endpoint}`}
             className="text-sm text-sky-400 hover:underline font-semibold flex items-center gap-1"
