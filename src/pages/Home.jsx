@@ -44,14 +44,14 @@ const Home = () => {
       {/* SEO Meta */}
       <Helmet>
         <title>
-          Watch Anime Online, Free Anime Streaming Online on watanuki Anime
+          Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime
           Website
         </title>
         <meta
           name="description"
-          content="watanuki is a free no-ads anime site to watch free anime. Online anime streaming at watanuki with DUB, SUB in HD."
+          content="AnimeRealm is a free no-ads anime site to watch free anime. Online anime streaming at AnimeRealm with DUB, SUB in HD."
         />
-        <meta property="og:title" content="Home - watanuki" />
+        <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
       {isLoading ? (
@@ -68,7 +68,6 @@ const Home = () => {
               data={homeData?.trending}
               endpoint="trending"
               label="Trending"
-              viewMore="/trending"
             />
 
             {/* Dynamic Grids Section */}
@@ -112,14 +111,12 @@ const Home = () => {
                   data={homeData?.newAdded}
                   endpoint="recently-added"
                   label="New"
-                  viewMore="/newly-added"
                 />
                 <MainLayout
                   title="Top Upcoming"
                   data={homeData?.topUpcoming}
                   endpoint="top-upcoming"
                   label="Upcoming"
-                  viewMore="/upcoming"
                 />
               </div>
 
