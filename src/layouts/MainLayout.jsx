@@ -6,13 +6,24 @@ import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 
-const MainLayout = ({ title, data, label }) => {
+const MainLayout = ({ title, data, label, viewMore }) => {
   return (
     <div className="main-layout mt-10 px-2 md:px-4">
       {/* Section Heading */}
-      <Heading className="mb-6 text-3xl font-extrabold tracking-wide text-white">
-        {title}
-      </Heading>
+      <div className="flex justify-between items-center mb-6">
+        <Heading className="text-3xl font-extrabold tracking-wide text-white">
+          {title}
+        </Heading>
+
+        {viewMore && (
+          <Link
+            to={viewMore}
+            className="text-sm text-sky-400 hover:underline font-semibold"
+          >
+            View More
+          </Link>
+        )}
+      </div>
 
       {/* Swiper Carousel */}
       <Swiper
