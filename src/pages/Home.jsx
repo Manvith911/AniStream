@@ -16,15 +16,20 @@ import { genres } from "../utils/genres";
 
 const Home = () => {
   const { data, isLoading, error, isError } = useApi("/home");
+
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
+  // Set static genres on mount
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
 
+  // Update Top 10 list when data loads
   useEffect(() => {
-    if (data?.data) setTopTen(data.data.top10);
+    if (data?.data) {
+      setTopTen(data.data.top10);
+    }
   }, [data, setTopTen]);
 
   if (isError) {
@@ -39,13 +44,14 @@ const Home = () => {
       {/* SEO Meta */}
       <Helmet>
         <title>
-          Watch Anime Online, Free Anime Streaming Online on AnimeRealm
+          Watch Anime Online, Free Anime Streaming Online on watanuki Anime
+          Website
         </title>
         <meta
           name="description"
-          content="AnimeRealm.to is a free, no-ads anime streaming site. Watch subbed and dubbed anime online in HD — latest episodes, trending shows, and more!"
+          content="watanuki is a free no-ads anime site to watch free anime. Online anime streaming at watanuki with DUB, SUB in HD."
         />
-        <meta property="og:title" content="Home - AnimeRealm" />
+        <meta property="og:title" content="Home - watanuki" />
       </Helmet>
 
       {isLoading ? (
@@ -56,11 +62,13 @@ const Home = () => {
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
-            {/* Trending Section using MainLayout */}
+            {/* Trending Section */}
             <MainLayout
               title="Trending Now"
               data={homeData?.trending}
+              endpoint="trending"
               label="Trending"
+              viewMore="/trending"
             />
 
             {/* Dynamic Grids Section */}
@@ -91,23 +99,27 @@ const Home = () => {
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
               {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10">
-                {/* Keep LatestEpisodesLayout separate */}
+                {/* Latest Episodes stays separate */}
                 <LatestEpisodesLayout
                   title="Latest Episodes"
                   endpoint="recently-updated"
                   data={homeData?.latestEpisode}
                 />
 
-                {/* Reusable MainLayout for other sections */}
+                {/* Other sections using MainLayout */}
                 <MainLayout
                   title="Newly Added"
                   data={homeData?.newAdded}
+                  endpoint="recently-added"
                   label="New"
+                  viewMore="/newly-added"
                 />
                 <MainLayout
                   title="Top Upcoming"
                   data={homeData?.topUpcoming}
+                  endpoint="top-upcoming"
                   label="Upcoming"
+                  viewMore="/upcoming"
                 />
               </div>
 
@@ -118,7 +130,6 @@ const Home = () => {
               </aside>
             </div>
 
-            {/* Footer */}
             <Footer />
           </div>
         </>
