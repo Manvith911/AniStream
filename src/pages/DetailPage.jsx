@@ -65,40 +65,29 @@ const DetailPage = () => {
         <>
           {/* Cinematic Background */}
           <div
-            className="absolute top-0 left-0 w-full h-[40vh] bg-cover bg-center brightness-[0.6] blur-[1px] scale-110"
+            className="absolute top-0 left-0 w-full h-[40vh] bg-cover bg-center brightness-[0.4] blur-sm"
             style={{ backgroundImage: `url(${data.coverImage || data.image || ""})` }}
           ></div>
 
           <div className={`relative z-10 pt-32 pb-10 px-4 md:px-8 xl:px-20`}>
-            {/* Anime Info */}
             <InfoLayout showBigPoster={showBigPoster} data={data} />
-
-            {/* Watch Now Button */}
-            <div className="mt-5 flex justify-start xl:justify-start animate-fadeUp delay-100">
-              <a
-                href={`/watch/${id}`}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 transition-transform"
-              >
-                Watch Now
-              </a>
-            </div>
 
             <div className="grid grid-cols-12 gap-8 mt-10 items-start">
               {/* LEFT CONTENT */}
               <div className="col-span-12 xl:col-span-9 flex flex-col gap-10">
                 {data.moreSeasons?.length > 0 && (
-                  <section className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-pink-500/40 hover:shadow-[0_0_20px_#ec4899]/30 animate-fadeUp delay-200">
+                  <section className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-pink-500/40 hover:shadow-[0_0_20px_#ec4899]/30 animate-fadeUp delay-100">
                     <h2 className="text-2xl font-semibold mb-3 text-purple-400">More Seasons</h2>
                     <MoreSeasons data={data.moreSeasons} />
                   </section>
                 )}
 
-                <div className="animate-fadeUp delay-300">
+                <div className="animate-fadeUp delay-200">
                   <VoiceActorsLayout id={id} />
                 </div>
 
                 {data.recommended && (
-                  <section className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-purple-500/40 hover:shadow-[0_0_20px_#a855f7]/30 animate-fadeUp delay-400">
+                  <section className="bg-white/5 p-5 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-purple-500/40 hover:shadow-[0_0_20px_#a855f7]/30 animate-fadeUp delay-300">
                     <h2 className="text-2xl font-semibold mb-3 text-pink-400">Recommended Anime</h2>
                     <Recommended data={data.recommended} />
                   </section>
@@ -108,14 +97,14 @@ const DetailPage = () => {
               {/* RIGHT CONTENT */}
               <aside className="col-span-12 xl:col-span-3 flex flex-col gap-6">
                 {data.related?.length > 0 && (
-                  <section className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-blue-500/40 hover:shadow-[0_0_20px_#3b82f6]/30 animate-fadeUp delay-500">
+                  <section className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-blue-500/40 hover:shadow-[0_0_20px_#3b82f6]/30 animate-fadeUp delay-400">
                     <h2 className="text-xl font-semibold mb-3 text-blue-400">Related Anime</h2>
                     <Related data={data.related} />
                   </section>
                 )}
 
                 {data.mostPopular && (
-                  <section className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-yellow-400/40 hover:shadow-[0_0_20px_#facc15]/30 animate-fadeUp delay-600">
+                  <section className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm transition hover:border-yellow-400/40 hover:shadow-[0_0_20px_#facc15]/30 animate-fadeUp delay-500">
                     <h2 className="text-xl font-semibold mb-3 text-yellow-400">Most Popular</h2>
                     <MostPopular data={data.mostPopular} />
                   </section>
