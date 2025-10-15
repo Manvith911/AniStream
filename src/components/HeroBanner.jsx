@@ -45,7 +45,8 @@ const HeroBanner = ({ slides }) => {
                   src={item.poster}
                 />
               </div>
-              <div className="z-10 ml-2 md:ml-12 min-w-32 md:max-w-2xl absolute bottom-10 sm:bottom-[60px]">
+              {/* Updated bottom spacing here */}
+              <div className="z-10 ml-2 md:ml-12 min-w-32 md:max-w-2xl absolute bottom-20 sm:bottom-[100px]">
                 <div className="text-primary text-base font-semibold mb-2">
                   #{item.rank} Spotlight
                 </div>
