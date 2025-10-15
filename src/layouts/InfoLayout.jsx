@@ -33,7 +33,6 @@ const InfoLayout = ({ data, showBigPoster }) => {
 
       {/* Content Container */}
       <div className="relative z-10 max-w-[1300px] mx-auto px-5 md:px-10 py-16 md:py-24 flex flex-col md:flex-row gap-10 items-start">
-        
         {/* Left: Poster */}
         <div className="flex justify-center md:w-[35%]">
           <div
@@ -52,9 +51,14 @@ const InfoLayout = ({ data, showBigPoster }) => {
         <div className="flex-1 flex flex-col gap-5 md:gap-6">
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-            <Link to="/home" className="hover:text-primary">Home</Link>
+            <Link to="/home" className="hover:text-primary">
+              Home
+            </Link>
             <span>•</span>
-            <Link to={`/animes/${data.type.toLowerCase()}`} className="hover:text-primary capitalize">
+            <Link
+              to={`/animes/${data.type.toLowerCase()}`}
+              className="hover:text-primary capitalize"
+            >
               {data.type}
             </Link>
             <span>•</span>
@@ -85,8 +89,9 @@ const InfoLayout = ({ data, showBigPoster }) => {
             <span>{data.duration}</span>
           </div>
 
-          <div className="mt-2">
-            <CircleRatting rating={data.MAL_score} />
+          {/* Circle Rating (smaller now) */}
+          <div className="mt-2 w-[70px] h-[70px] flex items-center justify-center overflow-hidden">
+            <CircleRatting rating={data.MAL_score} size={70} />
           </div>
 
           {/* Watch Button */}
