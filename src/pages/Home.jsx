@@ -2,13 +2,11 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Loader from "../components/Loader";
 import HeroBanner from "../components/HeroBanner";
-import TrendingLayout from "../layouts/TrendingLayout";
+import MainLayout from "../layouts/MainLayout"; // Reusable carousel layout
 import DynamicLayout from "../layouts/DynamicLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
-import TopUpcomingLayout from "../layouts/TopUpcomingLayout";
-import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
-import NewlyAddedLayout from "../layouts/NewlyAddedLayout";
+import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout"; // Keep this separate
 import Footer from "../components/Footer";
 import { useApi } from "../services/useApi";
 import useGenresStore from "../store/genresStore";
@@ -21,12 +19,10 @@ const Home = () => {
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
-  // Set static genres on mount
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
 
-  // Update Top 10 list when data loads
   useEffect(() => {
     if (data?.data) setTopTen(data.data.top10);
   }, [data, setTopTen]);
@@ -52,7 +48,6 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
-      {/* Loader */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
@@ -61,8 +56,12 @@ const Home = () => {
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
-            {/* Trending Section */}
-            <TrendingLayout data={homeData?.trending} />
+            {/* Trending Section using MainLayout */}
+            <MainLayout
+              title="Trending Now"
+              data={homeData?.trending}
+              label="Trending"
+            />
 
             {/* Dynamic Grids Section */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
@@ -92,20 +91,23 @@ const Home = () => {
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
               {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10">
+                {/* Keep LatestEpisodesLayout separate */}
                 <LatestEpisodesLayout
                   title="Latest Episodes"
                   endpoint="recently-updated"
                   data={homeData?.latestEpisode}
                 />
-                <NewlyAddedLayout
+
+                {/* Reusable MainLayout for other sections */}
+                <MainLayout
                   title="Newly Added"
-                  endpoint="recently-added"
                   data={homeData?.newAdded}
+                  label="New"
                 />
-                <TopUpcomingLayout
+                <MainLayout
                   title="Top Upcoming"
-                  endpoint="top-upcoming"
                   data={homeData?.topUpcoming}
+                  label="Upcoming"
                 />
               </div>
 
