@@ -4,10 +4,11 @@ import Loader from "../components/Loader";
 import HeroBanner from "../components/HeroBanner";
 import TrendingLayout from "../layouts/TrendingLayout";
 import DynamicLayout from "../layouts/DynamicLayout";
-import MainLayout from "../layouts/MainLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
 import TopUpcomingLayout from "../layouts/TopUpcomingLayout";
+import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
+import NewlyAddedLayout from "../layouts/NewlyAddedLayout";
 import Footer from "../components/Footer";
 import { useApi } from "../services/useApi";
 import useGenresStore from "../store/genresStore";
@@ -23,21 +24,23 @@ const Home = () => {
   // Set static genres on mount
   useEffect(() => {
     setGenres(genres);
-  }, []);
+  }, [setGenres]);
 
   // Update Top 10 list when data loads
   useEffect(() => {
     if (data?.data) setTopTen(data.data.top10);
-  }, [data]);
+  }, [data, setTopTen]);
 
   if (isError) {
     notify("error", error.message);
     return null;
   }
 
+  const homeData = data?.data;
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
-      {/* SEO */}
+      {/* SEO Meta */}
       <Helmet>
         <title>
           Watch Anime Online, Free Anime Streaming Online on AnimeRealm
@@ -49,57 +52,61 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
-      {/* Loading State */}
+      {/* Loader */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
-          {/* Hero Banner */}
-          <HeroBanner slides={data?.data?.spotlight} />
+          {/* Hero Section */}
+          <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
             {/* Trending Section */}
-            <TrendingLayout data={data?.data?.trending} />
+            <TrendingLayout data={homeData?.trending} />
 
-            {/* Dynamic Grids */}
+            {/* Dynamic Grids Section */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
                 endpoint="top-airing"
-                data={data?.data?.topAiring}
+                data={homeData?.topAiring}
               />
               <DynamicLayout
                 title="Most Popular"
                 endpoint="most-popular"
-                data={data?.data?.mostPopular}
+                data={homeData?.mostPopular}
               />
               <DynamicLayout
                 title="Most Favorite"
                 endpoint="most-favorite"
-                data={data?.data?.mostFavorite}
+                data={homeData?.mostFavorite}
               />
               <DynamicLayout
                 title="Latest Completed"
                 endpoint="completed"
-                data={data?.data?.latestCompleted}
+                data={homeData?.latestCompleted}
               />
             </div>
 
-            {/* Main Section */}
+            {/* Main Content Area */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
               {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10">
-                <MainLayout
+                <LatestEpisodesLayout
                   title="Latest Episodes"
                   endpoint="recently-updated"
-                  data={data?.data?.latestEpisode}
+                  data={homeData?.latestEpisode}
                 />
-                <MainLayout
+                <NewlyAddedLayout
                   title="Newly Added"
                   endpoint="recently-added"
-                  data={data?.data?.newAdded}
+                  data={homeData?.newAdded}
                 />
-                <TopUpcomingLayout data={data?.data?.topUpcoming} />
+                <TopUpcomingLayout
+                  title="Top Upcoming"
+                  endpoint="top-upcoming"
+                  data={homeData?.topUpcoming}
+                />
               </div>
 
               {/* Right Sidebar */}
@@ -109,6 +116,7 @@ const Home = () => {
               </aside>
             </div>
 
+            {/* Footer */}
             <Footer />
           </div>
         </>
