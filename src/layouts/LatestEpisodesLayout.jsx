@@ -25,9 +25,8 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
 
       {/* Grid Cards */}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {data?.map((item) => {
-          const latestEp = item.episode; // 👈 directly use the field from your API
-          return (
+        {data &&
+          data.map((item) => (
             <Link
               to={`/anime/${item.id}`}
               key={item.id}
@@ -43,10 +42,10 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-xl"></div>
 
-                {/* 🟢 Latest Episode Badge */}
-                {latestEp && (
-                  <div className="absolute top-2 right-2 bg-sky-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    Episode {latestEp}
+                {/* Episode Tag */}
+                {item.episode && (
+                  <div className="absolute top-2 right-2 bg-green-500/90 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                    Episode {item.episode}
                   </div>
                 )}
               </div>
@@ -66,8 +65,7 @@ const LatestEpisodesLayout = ({ title = "Latest Episodes", endpoint = "recently-
                 )}
               </div>
             </Link>
-          );
-        })}
+          ))}
       </div>
     </div>
   );
