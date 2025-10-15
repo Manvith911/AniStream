@@ -9,14 +9,16 @@ import Heading from "../components/Heading";
 
 const TrendingLayout = ({ data }) => {
   return (
-    <div className="trending mt-5">
-      <Heading className="mb-2">Trending</Heading>
+    <div className="trending mt-8 px-4 max-w-screen-xl mx-auto">
+      <Heading className="mb-6 text-3xl font-extrabold tracking-wide text-gray-900">
+        Trending
+      </Heading>
       <Swiper
         modules={[Navigation]}
         navigation
-        spaceBetween={12}
+        spaceBetween={16}
         breakpoints={{
-          0: { slidesPerView: 2.4 },       // Smaller screens show fewer
+          0: { slidesPerView: 2.2 },
           600: { slidesPerView: 3.5 },
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
@@ -25,10 +27,10 @@ const TrendingLayout = ({ data }) => {
         {data &&
           data.map((item) => (
             <SwiperSlide key={item.id}>
-              <div className="item flex flex-col items-center overflow-hidden px-1">
+              <div className="item flex flex-col items-center px-1 group cursor-pointer">
                 <Link
                   to={`/anime/${item.id}`}
-                  className="poster w-full h-0 pb-[115%] bg-lightbg relative overflow-hidden rounded-md shadow"
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl shadow-lg overflow-hidden transition-transform duration-300 ease-in-out group-hover:scale-105"
                 >
                   <img
                     className="absolute inset-0 w-full h-full object-cover"
@@ -36,13 +38,14 @@ const TrendingLayout = ({ data }) => {
                     src={item.poster}
                     alt={item.title}
                   />
-                  <div className="rank p-1 text-xs md:text-sm font-bold absolute top-0 left-0 bg-white text-black">
-                    0{item.rank}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-25 transition-opacity duration-300 rounded-xl"></div>
+                  <div className="rank absolute top-3 left-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
+                    #{item.rank.toString().padStart(2, "0")}
                   </div>
                 </Link>
                 <h2
                   title={item.title}
-                  className="title cursor-default text-sm font-semibold text-center truncate w-full mt-2"
+                  className="title mt-3 text-center text-gray-800 font-semibold text-base truncate w-full select-none"
                 >
                   {item.title}
                 </h2>
