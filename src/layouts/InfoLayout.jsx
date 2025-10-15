@@ -2,8 +2,7 @@
 import { useState } from "react";
 import SoundsInfo from "../components/SoundsInfo";
 import { Link } from "react-router-dom";
-import { FaCirclePlay } from "react-icons/fa6";
-import { FaArrowRight } from "react-icons/fa";
+import { FaCirclePlay, FaArrowRight } from "react-icons/fa6";
 import CircleRatting from "../components/CircleRatting";
 
 const InfoLayout = ({ data, showBigPoster }) => {
@@ -20,48 +19,65 @@ const InfoLayout = ({ data, showBigPoster }) => {
   ];
 
   return (
-    <div className="banner min-h-[700px] relative w-full bg-gray-900 text-white pt-10 md:pt-20">
-      {/* Background Poster */}
-      <div className="backdrop-img absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+    <section className="relative min-h-[700px] w-full text-white overflow-hidden bg-black">
+      {/* Background Image */}
+      <div className="absolute inset-0">
         <img
           src={data.poster}
           alt={data.title}
-          className="object-cover w-full h-full"
+          className="w-full h-full object-cover opacity-20 blur-sm scale-105"
           loading="lazy"
         />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black"></div>
       </div>
-      <div className="opacity-overlay absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/60 to-black/90"></div>
 
-      {/* Content */}
-      <div className="content max-w-[1200px] mx-auto flex flex-col md:flex-row gap-6 relative px-4 md:px-0">
-        {/* Left Poster */}
-        <div className="left flex justify-center md:w-1/3">
+      {/* Content Container */}
+      <div className="relative z-10 max-w-[1300px] mx-auto px-5 md:px-10 py-16 md:py-24 flex flex-col md:flex-row gap-10 items-start">
+        
+        {/* Left: Poster */}
+        <div className="flex justify-center md:w-[35%]">
           <div
-            className="posterImg cursor-pointer rounded-xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-300"
             onClick={() => showBigPoster(data.poster)}
+            className="rounded-2xl overflow-hidden shadow-2xl cursor-pointer transition-transform duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)]"
           >
-            <img src={data.poster} alt={data.title} className="w-full h-full object-cover" />
+            <img
+              src={data.poster}
+              alt={data.title}
+              className="object-cover w-full h-full"
+            />
           </div>
         </div>
 
-        {/* Right Info */}
-        <div className="right flex-1 flex flex-col gap-4">
-          {/* Breadcrumbs */}
+        {/* Right: Info */}
+        <div className="flex-1 flex flex-col gap-5 md:gap-6">
+          {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
             <Link to="/home" className="hover:text-primary">Home</Link>
             <span>•</span>
-            <Link to={`/animes/${data.type.toLowerCase()}`} className="hover:text-primary">{data.type}</Link>
+            <Link to={`/animes/${data.type.toLowerCase()}`} className="hover:text-primary capitalize">
+              {data.type}
+            </Link>
             <span>•</span>
-            <span>{data.title}</span>
+            <span className="text-gray-300">{data.title}</span>
           </div>
 
           {/* Titles */}
-          <h1 className="text-3xl md:text-5xl font-extrabold">{data.title}</h1>
-          <h2 className="text-lg text-gray-300 font-semibold">{data.alternativeTitle}</h2>
-          <h3 className="text-md text-gray-400">{data.japanese}</h3>
+          <div>
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+              {data.title}
+            </h1>
+            {data.alternativeTitle && (
+              <h2 className="text-lg text-gray-300 font-medium italic">
+                {data.alternativeTitle}
+              </h2>
+            )}
+            {data.japanese && (
+              <h3 className="text-sm text-gray-500 mt-1">{data.japanese}</h3>
+            )}
+          </div>
 
-          {/* Sounds Info */}
-          <div className="sounds flex flex-wrap items-center gap-4 text-sm md:text-base">
+          {/* Rating & Meta */}
+          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300">
             <SoundsInfo episodes={{ rating: data.rating, ...data.episodes }} />
             <span>•</span>
             <span className="capitalize">{data.type}</span>
@@ -69,63 +85,85 @@ const InfoLayout = ({ data, showBigPoster }) => {
             <span>{data.duration}</span>
           </div>
 
-          {/* Circle Rating */}
-          <div className="circle-rating my-3">
+          <div className="mt-2">
             <CircleRatting rating={data.MAL_score} />
           </div>
 
           {/* Watch Button */}
           {data.id && (
-            <Link to={`/watch/${data.id}`}>
-              <button className="flex items-center gap-2 py-2 px-5 bg-primary text-black font-bold rounded-full hover:scale-105 transition-transform duration-300">
-                <FaCirclePlay /> Watch Now
+            <Link to={`/watch/${data.id}`} className="mt-2">
+              <button className="flex items-center gap-2 py-3 px-6 bg-primary text-black font-bold rounded-full hover:scale-105 hover:shadow-[0_0_20px_-5px_rgba(255,255,255,0.4)] transition-all duration-300">
+                <FaCirclePlay className="text-xl" /> Watch Now
               </button>
             </Link>
           )}
 
           {/* Genres */}
-          <div className="genres flex flex-wrap gap-2 mt-3">
-            {data.genres.map((genre, index) => (
-              <Link key={genre} to={`/animes/genre/${genre.toLowerCase()}`}>
-                <span
-                  className="px-3 py-1 rounded-full text-black font-semibold cursor-pointer hover:opacity-80 transition"
-                  style={{ background: colors[index % colors.length] }}
-                >
-                  {genre}
-                </span>
-              </Link>
-            ))}
-          </div>
+          {data.genres && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {data.genres.map((genre, index) => (
+                <Link key={genre} to={`/animes/genre/${genre.toLowerCase()}`}>
+                  <span
+                    className="px-3 py-1 text-black text-sm font-semibold rounded-full hover:scale-105 transition-transform"
+                    style={{ background: colors[index % colors.length] }}
+                  >
+                    {genre}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Synopsis */}
           {data.synopsis && (
-            <div className="overview mt-4">
-              <p className={`text-gray-300 text-sm md:text-base ${showFull ? "line-clamp-none" : "line-clamp-3"}`}>
+            <div className="mt-4">
+              <p
+                className={`text-gray-300 leading-relaxed text-sm md:text-base ${
+                  showFull ? "" : "line-clamp-3"
+                }`}
+              >
                 {data.synopsis}
               </p>
-              <span
-                className="text-primary cursor-pointer font-bold"
+              <button
                 onClick={() => setShowFull(!showFull)}
+                className="mt-2 text-primary font-bold hover:underline"
               >
                 {showFull ? "Show Less" : "Read More"}
-              </span>
+              </button>
             </div>
           )}
 
           {/* Status & Aired */}
-          <div className="info mt-4 flex flex-wrap gap-6 text-gray-400 text-sm">
-            <div>Status: <span className="text-white">{data.status}</span></div>
+          <div className="mt-4 flex flex-wrap gap-6 text-gray-400 text-sm">
             <div>
-              Aired: <span className="text-white">{data.aired.from}</span>
-              {data.aired.to && <> <FaArrowRight className="inline mx-1" /> <span className="text-white">{data.aired.to}</span></>}
+              Status:{" "}
+              <span className="text-white font-medium">{data.status}</span>
+            </div>
+            <div>
+              Aired:{" "}
+              <span className="text-white font-medium">{data.aired.from}</span>
+              {data.aired.to && (
+                <>
+                  {" "}
+                  <FaArrowRight className="inline mx-1 text-xs" />{" "}
+                  <span className="text-white font-medium">
+                    {data.aired.to}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
           {/* Studios */}
           {data.studios && (
-            <div className="studio mt-3">
-              Studio:{" "}
-              <Link to={`/producer/${data.studios.toLowerCase().replace(" ", "-")}`} className="text-primary font-semibold">
+            <div className="mt-3">
+              <span className="text-gray-400">Studio:</span>{" "}
+              <Link
+                to={`/producer/${data.studios
+                  .toLowerCase()
+                  .replace(" ", "-")}`}
+                className="text-primary font-semibold hover:underline"
+              >
                 {data.studios}
               </Link>
             </div>
@@ -133,13 +171,13 @@ const InfoLayout = ({ data, showBigPoster }) => {
 
           {/* Producers */}
           {data.producers && data.producers.length > 0 && (
-            <div className="producers mt-4">
-              <h4 className="font-bold mb-2">Producers</h4>
+            <div className="mt-4">
+              <h4 className="font-bold mb-2 text-gray-200">Producers</h4>
               <div className="flex flex-wrap gap-2">
                 {data.producers.map((producer, index) => (
                   <Link key={producer} to={`/producer/${producer}`}>
                     <span
-                      className="px-3 py-1 rounded-full font-semibold cursor-pointer hover:opacity-80 transition"
+                      className="px-3 py-1 rounded-full font-semibold text-sm cursor-pointer hover:scale-105 transition-transform"
                       style={{ background: colors[index % colors.length] }}
                     >
                       {producer}
@@ -151,7 +189,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
