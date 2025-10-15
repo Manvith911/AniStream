@@ -1,170 +1,190 @@
 #slider {
-  background: none;
+  background: transparent;
   overflow: hidden;
-  z-index: 1;
   position: relative;
-  display: block;
-  width: 100%; /* Full width */
-  max-width: 100%; /* Ensure no max width constraint */
+  width: 100%;
+  max-width: 100%;
+  z-index: 1;
+  font-family: 'Poppins', sans-serif; /* Modern clean font */
+  color: #f9f9f9; /* Light text by default */
 }
 
+/* Each slide with subtle shadow and rounded corners */
 #slider .swiper-slide {
   position: relative;
   overflow: hidden;
-  background: var(--background);
-  width: 100%; /* Ensure full width */
-}
-
-.deslide-item {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(22, 33, 62, 0.5);
   width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  max-width: 100%; /* Full width */
+  transition: transform 0.3s ease;
 }
 
+#slider .swiper-slide:hover {
+  transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(22, 33, 62, 0.7);
+}
+
+/* The blurred background image cover */
 #slider .deslide-cover {
   position: absolute;
   top: 0;
-  left: 30%;
+  left: 20%;
   right: 0;
   bottom: 0;
   overflow: hidden;
-  background-image: linear-gradient(
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  background: linear-gradient(
     90deg,
-    transparent 0,
-    var(--background) 10%,
-    var(--background) 10%,
-    transparent
+    transparent 0%,
+    rgba(22, 33, 62, 0.9) 15%,
+    rgba(22, 33, 62, 0.95) 40%,
+    transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    var(--background) 10%,
-    var(--background) 10%,
-    transparent
+    transparent 0%,
+    rgba(22, 33, 62, 0.9) 15%,
+    rgba(22, 33, 62, 0.95) 40%,
+    transparent 100%
   );
 }
 
+/* Blurred background image with subtle brightness */
 #slider .swiper-slide .deslide-cover-img img {
   position: absolute;
   object-fit: cover;
   width: 100%;
   height: 100%;
-  filter: blur(1px);
-  max-width: 100%; /* Ensure full width */
+  filter: blur(6px) brightness(0.5);
+  transition: filter 0.3s ease;
+  max-width: 100%;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
+#slider .swiper-slide:hover .deslide-cover-img img {
+  filter: blur(4px) brightness(0.6);
+}
+
+/* Content container with better spacing and max-width */
 .deslide-item-content {
-  max-width: 1000px; /* Increase content width */
+  max-width: 900px;
   position: absolute;
-  bottom: 40px;
+  bottom: 50px;
+  left: 40px;
+  right: 50%;
+  color: #fff;
+  z-index: 2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
+/* Subtitle styling */
 .deslide-item .desi-sub-text {
-  font-size: 18px;
-  line-height: 1.3em;
-  font-weight: 400;
-  margin-bottom: 20px;
-  color: #ffbade;
+  font-size: 20px;
+  font-weight: 500;
+  color: #ff7eb9; /* Softer pink */
+  margin-bottom: 12px;
+  letter-spacing: 1.2px;
 }
 
+/* Main title with bigger font and smooth truncation */
 .deslide-item .desi-head-title {
-  font-size: 3em;
-  line-height: 1.3em;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
+  font-size: 3.8rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  line-height: 1.1;
+  max-width: 95%;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
+/* Smaller detail text */
 #slider .sc-detail {
-  font-size: 1em;
-  font-weight: 300;
-  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  opacity: 0.75;
+  letter-spacing: 0.8px;
+  color: #dcdde1;
 }
 
+/* Description with softer text */
 .deslide-item .desi-description {
-  font-size: 0.95em;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  line-height: 1.7;
   font-weight: 300;
   margin-bottom: 2rem;
+  color: #d0d0d0;
+  max-width: 95%;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Subtle opacity layer for depth */
 .opacity-layer {
-  mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      var(--background) 30%,
-      var(--background) 70%,
-      transparent
-    ),
-    linear-gradient(
-      to bottom,
-      transparent 0,
-      var(--background) 30%,
-      var(--background) 70%,
-      transparent
-    );
-  mask-composite: intersect;
-  mask-size: 100% 100%, 100% 100%;
-  mask-repeat: no-repeat, no-repeat;
-  -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      var(--background) 30%,
-      var(--background) 70%,
-      transparent
-    ),
-    linear-gradient(
-      to bottom,
-      transparent 0,
-      var(--background) 30%,
-      var(--background) 70%,
-      transparent
-    );
-  -webkit-mask-size: 100% 100%, 100% 100%;
-  -webkit-mask-repeat: no-repeat, no-repeat;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(22, 33, 62, 0.8) 0%,
+    rgba(22, 33, 62, 0.95) 40%,
+    rgba(22, 33, 62, 0.95) 60%,
+    rgba(22, 33, 62, 0.8) 100%
+  );
+  border-radius: 16px;
+  z-index: 1;
 }
 
+/* Synopsis hidden on smaller devices */
 .synopsis {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: #ccc;
 }
 
+/* Pagination bullets: modern rounded with subtle animation */
 .swiper-pagination {
-  gap: 7px;
+  bottom: 20px !important;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .swiper-pagination-bullet {
-  opacity: 1;
-  background-color: #ccc;
-  height: 12px; /* Increased bullet size */
-  width: 12px; /* Increased bullet size */
+  width: 14px;
+  height: 14px;
+  background: #6c63ff;
+  opacity: 0.5;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 8px rgba(108, 99, 255, 0.4);
+  cursor: pointer;
 }
 
 .swiper-pagination-bullet-active {
   opacity: 1;
-  background: #ffc107;
-  margin: 0;
+  background: #ff6584;
+  box-shadow: 0 0 12px rgba(255, 101, 132, 0.8);
+  transform: scale(1.2);
 }
 
+/* Item and title tweaks */
 .item {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
 }
 
 .title {
@@ -174,13 +194,24 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   text-overflow: ellipsis;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
 }
 
 .swiper-button-prev,
 .swiper-button-next {
-  color: #ccc;
+  color: #a29bfe;
+  filter: drop-shadow(0 0 3px rgba(162, 155, 254, 0.8));
+  transition: color 0.3s ease;
 }
 
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  color: #ff6584;
+}
+
+/* Responsive improvements */
 @media screen and (max-width: 1299px) {
   #slider {
     width: 100%;
@@ -188,6 +219,9 @@
   }
   .deslide-item-content {
     max-width: 90%;
+    left: 20px;
+    right: 50%;
+    bottom: 40px;
   }
 }
 
@@ -195,10 +229,27 @@
   .synopsis {
     display: none;
   }
+  .deslide-item .desi-head-title {
+    font-size: 2.5rem;
+  }
+  .deslide-item-content {
+    bottom: 20px;
+    left: 15px;
+    right: 40%;
+  }
 }
 
 @media screen and (max-width: 650px) {
   .swiper-pagination {
     display: none;
+  }
+  .deslide-item-content {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: 100%;
+  }
+  #slider .swiper-slide {
+    border-radius: 12px;
   }
 }
