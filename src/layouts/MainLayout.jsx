@@ -59,12 +59,31 @@ const MainLayout = ({ title, data, label, endpoint }) => {
             title: item.title || item.name || "Unknown Title",
             poster: item.poster || item.image || "",
             genres: item.genres || item.tags || [],
-            description: item.synopsis || "",
-         };
+            description: item.description || item.synopsis || "",
+          };
 
           return (
             <SwiperSlide key={anime.id}>
               <div className="relative group flex flex-col items-center px-1 cursor-pointer">
+                {/* Hover Info Card */}
+                <div className="absolute z-30 bottom-full mb-3 w-72 p-4 bg-gray-900 text-white rounded-lg shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+                  <h2 className="font-bold text-base mb-1">
+                    {anime.title}
+                  </h2>
+
+                  {anime.genres.length > 0 && (
+                    <p className="text-xs text-gray-400 mb-1">
+                      {anime.genres.join(" • ")}
+                    </p>
+                  )}
+
+                  {anime.description && (
+                    <p className="text-sm text-gray-300 line-clamp-3">
+                      {anime.description}
+                    </p>
+                  )}
+                </div>
+
                 {/* Anime Card */}
                 <Link
                   to={`/anime/${anime.id}`}
@@ -78,25 +97,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
 
-                  {/* Always-visible info box */}
-                  <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/80 via-black/50 to-transparent text-white p-3 transition-all duration-300 group-hover:from-black/90 group-hover:via-black/70">
-                    <h2 className="font-semibold text-sm md:text-base mb-1 truncate">
-                      {anime.title}
-                    </h2>
-
-                    {anime.genres.length > 0 && (
-                      <p className="text-xs text-gray-300 mb-1 truncate">
-                        {anime.genres.join(" • ")}
-                      </p>
-                    )}
-
-                    {anime.description && (
-                      <p className="text-xs text-gray-400 line-clamp-2 group-hover:line-clamp-3 transition-all duration-300">
-                        {anime.description}
-                      </p>
-                    )}
-                  </div>
-
                   {/* Optional Label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
@@ -105,7 +105,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </Link>
 
-                {/* Title below card (optional duplicate for mobile clarity) */}
+                {/* Title below card (still visible for clarity) */}
                 <h2
                   title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
