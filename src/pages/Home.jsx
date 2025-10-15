@@ -1,60 +1,68 @@
+import { useEffect } from "react";
+import { Helmet } from "react-helmet";
 import Loader from "../components/Loader";
-import { useApi } from "../services/useApi";
 import HeroBanner from "../components/HeroBanner";
-import notify from "../utils/Toast";
 import TrendingLayout from "../layouts/TrendingLayout";
 import DynamicLayout from "../layouts/DynamicLayout";
 import MainLayout from "../layouts/MainLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
-import useGenresStore from "../store/genresStore";
-import { useEffect } from "react";
-import useTopTenStore from "../store/toptenStore";
+import TopUpcomingLayout from "../layouts/TopUpcomingLayout";
 import Footer from "../components/Footer";
-
+import { useApi } from "../services/useApi";
+import useGenresStore from "../store/genresStore";
+import useTopTenStore from "../store/toptenStore";
+import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
-import { Helmet } from "react-helmet";
+
 const Home = () => {
   const { data, isLoading, error, isError } = useApi("/home");
-
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
+  // Set static genres on mount
   useEffect(() => {
     setGenres(genres);
   }, []);
 
+  // Update Top 10 list when data loads
   useEffect(() => {
-    if (data?.data) {
-      setTopTen(data.data.top10);
-    }
+    if (data?.data) setTopTen(data.data.top10);
   }, [data]);
 
   if (isError) {
     notify("error", error.message);
-    return;
+    return null;
   }
+
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
+      {/* SEO */}
       <Helmet>
         <title>
-          Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime
-          Website
+          Watch Anime Online, Free Anime Streaming Online on AnimeRealm
         </title>
         <meta
           name="description"
-          content=" AnimeRealm to is a free no ads anime site to watch free anime. Online anime streaming at AnimeRealm with DUB, SUB in HD animerealm.vercel.app."
+          content="AnimeRealm.to is a free, no-ads anime streaming site. Watch subbed and dubbed anime online in HD — latest episodes, trending shows, and more!"
         />
-        <meta property="og:title" content="home - AnimeRealm" />
+        <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
+
+      {/* Loading State */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
+          {/* Hero Banner */}
           <HeroBanner slides={data?.data?.spotlight} />
-          <div className="xl:mx-10">
+
+          <div className="xl:mx-10 mt-6">
+            {/* Trending Section */}
             <TrendingLayout data={data?.data?.trending} />
-            <div className="grid mx-2 grid-cols-12 gap-4 my-5">
+
+            {/* Dynamic Grids */}
+            <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
                 endpoint="top-airing"
@@ -76,29 +84,31 @@ const Home = () => {
                 data={data?.data?.latestCompleted}
               />
             </div>
-            <div className="row grid my-10 gap-2 justify-center grid-cols-12 sm:mx-2">
-              <div className="left col-span-12 xl:col-span-9">
+
+            {/* Main Section */}
+            <div className="grid grid-cols-12 gap-8 my-16 px-2">
+              {/* Left Column */}
+              <div className="col-span-12 xl:col-span-9 space-y-10">
                 <MainLayout
-                  title="Latest Episode"
+                  title="Latest Episodes"
                   endpoint="recently-updated"
                   data={data?.data?.latestEpisode}
                 />
                 <MainLayout
-                  title="New Added"
+                  title="Newly Added"
                   endpoint="recently-added"
                   data={data?.data?.newAdded}
                 />
-                <MainLayout
-                  title="Top Upcoming"
-                  endpoint="top-upcoming"
-                  data={data?.data?.topUpcoming}
-                />
+                <TopUpcomingLayout data={data?.data?.topUpcoming} />
               </div>
-              <div className="right col-span-12 xl:col-span-3">
+
+              {/* Right Sidebar */}
+              <aside className="col-span-12 xl:col-span-3 space-y-6">
                 <GenresLayout />
                 <Top10Layout />
-              </div>
+              </aside>
             </div>
+
             <Footer />
           </div>
         </>
