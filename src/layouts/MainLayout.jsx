@@ -6,7 +6,7 @@ import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 
-const MainLayout = ({ title, data, label, viewMore }) => {
+const MainLayout = ({ title, data, label, endpoint }) => {
   return (
     <div className="main-layout mt-10 px-2 md:px-4">
       {/* Section Heading */}
@@ -15,12 +15,26 @@ const MainLayout = ({ title, data, label, viewMore }) => {
           {title}
         </Heading>
 
-        {viewMore && (
+        {endpoint && (
           <Link
-            to={viewMore}
-            className="text-sm text-sky-400 hover:underline font-semibold"
+            to={`/animes/${endpoint}`}
+            className="text-sm text-sky-400 hover:underline font-semibold flex items-center gap-1"
           >
-            View More
+            <span>View More</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </Link>
         )}
       </div>
