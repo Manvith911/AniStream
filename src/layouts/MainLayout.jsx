@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 
 const MainLayout = ({ title, data, label, endpoint }) => {
+  if (!data || data.length === 0) return null;
+
   return (
     <div className="main-layout mt-10 px-2 md:px-4">
       {/* Section Heading */}
@@ -51,43 +53,52 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           1320: { slidesPerView: 6 },
         }}
       >
-        {data &&
-          data.map((item) => (
-            <SwiperSlide key={item.id}>
+        {data.map((item) => {
+          // Map API fields to consistent names
+          const anime = {
+            id: item.id,
+            title: item.title || item.name || "Unknown Title",
+            poster: item.poster || item.image || "",
+            genres: item.genres || item.tags || [],
+            description: item.description || item.synopsis || "",
+          };
+
+          return (
+            <SwiperSlide key={anime.id}>
               <div className="relative group flex flex-col items-center px-1 cursor-pointer">
                 {/* Anime Card */}
                 <Link
-                  to={`/anime/${item.id}`}
+                  to={`/anime/${anime.id}`}
                   className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
                 >
-                  {/* Background Image */}
+                  {/* Poster Image */}
                   <img
-                    src={item.poster}
-                    alt={item.title}
+                    src={anime.poster}
+                    alt={anime.title}
                     loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
 
-                  {/* Dark overlay with info (appears on hover) */}
+                  {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3 rounded-xl translate-y-4 group-hover:translate-y-0">
                     <h2 className="text-white font-semibold text-sm md:text-base mb-1 truncate">
-                      {item.title}
+                      {anime.title}
                     </h2>
 
-                    {item.genres && (
+                    {anime.genres.length > 0 && (
                       <p className="text-xs text-gray-300 mb-1 truncate">
-                        {item.genres.join(" • ")}
+                        {anime.genres.join(" • ")}
                       </p>
                     )}
 
-                    {item.description && (
+                    {anime.description && (
                       <p className="text-xs text-gray-400 line-clamp-2">
-                        {item.description}
+                        {anime.description}
                       </p>
                     )}
                   </div>
 
-                  {/* Label (optional) */}
+                  {/* Optional label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -95,16 +106,17 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </Link>
 
-                {/* Title below card (optional) */}
+                {/* Title below card */}
                 <h2
-                  title={item.title}
+                  title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
                 >
-                  {item.title}
+                  {anime.title}
                 </h2>
               </div>
             </SwiperSlide>
-          ))}
+          );
+        })}
       </Swiper>
     </div>
   );
