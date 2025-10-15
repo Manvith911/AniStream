@@ -9,16 +9,16 @@ import Heading from "../components/Heading";
 
 const TrendingLayout = ({ data }) => {
   return (
-    <div className="trending mt-8 px-4 max-w-screen-xl mx-auto">
+    <div className="trending mt-8 px-2 md:px-4">
       <Heading className="mb-6 text-3xl font-extrabold tracking-wide text-gray-900">
         Trending
       </Heading>
       <Swiper
         modules={[Navigation]}
         navigation
-        spaceBetween={16}
+        spaceBetween={12}
         breakpoints={{
-          0: { slidesPerView: 2.2 },
+          0: { slidesPerView: 2.4 },
           600: { slidesPerView: 3.5 },
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
