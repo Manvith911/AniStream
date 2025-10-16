@@ -147,13 +147,13 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   {anime.title}
                 </h2>
 
-                {/* Hover Card — beside poster */}
+                {/* Hover Card */}
                 {isHovered && (
                   <div
                     onMouseEnter={handleHoverCardEnter}
                     onMouseLeave={handleHoverCardLeave}
-                    className="absolute top-1/2 left-full ml-3 -translate-y-1/2 w-[320px] bg-[#0b0b0c]/90 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-20 pointer-events-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-300 ease-out"
-                    style={{ transformOrigin: "left center" }}
+                    className="absolute -top-24 left-1/2 -translate-x-1/2 w-[320px] bg-[#0b0b0c]/90 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    style={{ transformOrigin: "bottom center" }}
                   >
                     {loading ? (
                       <div className="flex justify-center items-center h-52">
