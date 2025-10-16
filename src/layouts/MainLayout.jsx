@@ -15,6 +15,13 @@ const MainLayout = ({ title, data, label, endpoint }) => {
 
   if (!data || data.length === 0) return null;
 
+  // ✨ Limit for specific sections
+  const visibleData =
+    title === "Top Upcoming" || title === "Newly Added"
+      ? data.slice(0, 10)
+      : data;
+
+  // Fetch anime info for hover
   const fetchAnimeDetails = async (id) => {
     if (hoverDetails[id]) return;
     try {
@@ -48,8 +55,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   const handleHoverCardLeave = () => setHoveredId(null);
 
   return (
-    // isolate to keep this section's stacking context local
-    <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate">
+    <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate w-full max-w-full overflow-hidden">
+      {/* Heading + View More */}
       <div className="flex justify-between items-center mb-6">
         <Heading className="text-3xl font-extrabold tracking-wide text-white">
           {title}
@@ -79,6 +86,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         )}
       </div>
 
+      {/* Anime Swiper */}
       <Swiper
         modules={[Navigation]}
         navigation
@@ -90,8 +98,9 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           1320: { slidesPerView: 6 },
         }}
         className="overflow-visible relative z-0"
+        style={{ maxWidth: "100%" }}
       >
-        {data.map((item) => {
+        {visibleData.map((item) => {
           const anime = {
             id: item.id,
             title: item.title || item.name || "Unknown Title",
@@ -103,7 +112,10 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           const isHovered = hoveredId === anime.id;
 
           return (
-            <SwiperSlide key={anime.id} className="!overflow-visible relative z-0">
+            <SwiperSlide
+              key={anime.id}
+              className="!overflow-visible relative z-0"
+            >
               <div
                 className="relative group flex flex-col items-center px-1 cursor-pointer"
                 onMouseEnter={() => handleMouseEnter(anime.id)}
@@ -135,7 +147,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   {anime.title}
                 </h2>
 
-                {/* hover card is absolute inside the slide; z-10 so sidebar (z-40) sits above it */}
+                {/* Hover Card */}
                 {isHovered && (
                   <div
                     onMouseEnter={handleHoverCardEnter}
@@ -155,9 +167,21 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                           </h2>
 
                           <div className="flex items-center gap-2">
-                            {details.score && <span className="text-yellow-400 text-sm">⭐ {details.score}</span>}
-                            {details.type && <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">{details.type}</span>}
-                            {details.status && <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">{details.status}</span>}
+                            {details.score && (
+                              <span className="text-yellow-400 text-sm">
+                                ⭐ {details.score}
+                              </span>
+                            )}
+                            {details.type && (
+                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
+                                {details.type}
+                              </span>
+                            )}
+                            {details.status && (
+                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
+                                {details.status}
+                              </span>
+                            )}
                           </div>
 
                           {details.genres && (
@@ -172,7 +196,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                             </p>
                           )}
 
-                          {/* hide watch button for Top Upcoming */}
+                          {/* Hide watch for Top Upcoming */}
                           {title !== "Top Upcoming" && (
                             <Link
                               to={`/watch/${anime.id}`}
