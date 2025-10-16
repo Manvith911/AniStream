@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -7,7 +7,25 @@ import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 
 const MainLayout = ({ title, data, label, endpoint }) => {
+  const [hoveredId, setHoveredId] = useState(null);
+  const [hoverDetails, setHoverDetails] = useState({});
+
   if (!data || data.length === 0) return null;
+
+  const fetchAnimeDetails = async (id) => {
+    try {
+      // avoid refetching same data repeatedly
+      if (hoverDetails[id]) return;
+
+      const res = await fetch(`https://animerealm.vercel.app/api/anime/${id}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setHoverDetails((prev) => ({ ...prev, [id]: json.data }));
+      }
+    } catch (err) {
+      console.error("Error fetching anime details:", err);
+    }
+  };
 
   return (
     <div className="main-layout mt-10 px-2 md:px-4 relative z-10">
@@ -52,43 +70,43 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
-        className="overflow-visible" // 👈 allow hover card to escape
+        className="overflow-visible"
       >
         {data.map((item) => {
           const anime = {
             id: item.id,
             title: item.title || item.name || "Unknown Title",
             poster: item.poster || item.image || "",
-            genres: item.genres || item.tags || [],
-            description: item.description || item.synopsis || "",
           };
+
+          const details = hoverDetails[anime.id];
+          const synopsis = details?.synopsis || "Loading details...";
 
           return (
             <SwiperSlide key={anime.id} className="!overflow-visible">
-              <div className="relative group flex flex-col items-center px-1 cursor-pointer">
+              <div
+                className="relative group flex flex-col items-center px-1 cursor-pointer"
+                onMouseEnter={() => {
+                  setHoveredId(anime.id);
+                  fetchAnimeDetails(anime.id);
+                }}
+                onMouseLeave={() => setHoveredId(null)}
+              >
                 {/* Hover Info Card */}
-                <div
-                  className="absolute z-50 bottom-full mb-3 w-72 p-4 bg-gray-900/95 text-white rounded-lg shadow-2xl
-                    opacity-0 scale-95 pointer-events-none 
-                    group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto
-                    transition-all duration-300 origin-bottom transform"
-                >
-                  <h2 className="font-bold text-base mb-1 line-clamp-2">
-                    {anime.title}
-                  </h2>
+                {hoveredId === anime.id && (
+                  <div
+                    className="absolute z-50 bottom-full mb-3 w-72 p-4 bg-gray-900/95 text-white rounded-lg shadow-2xl
+                      opacity-100 scale-100 pointer-events-auto transition-all duration-300 origin-bottom transform"
+                  >
+                    <h2 className="font-bold text-base mb-1 line-clamp-2">
+                      {details?.title || anime.title}
+                    </h2>
 
-                  {anime.genres.length > 0 && (
-                    <p className="text-xs text-gray-400 mb-1 line-clamp-1">
-                      {anime.genres.join(" • ")}
-                    </p>
-                  )}
-
-                  {anime.description && (
                     <p className="text-sm text-gray-300 line-clamp-3">
-                      {anime.description}
+                      {synopsis}
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Anime Card */}
                 <Link
