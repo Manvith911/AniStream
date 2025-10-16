@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -6,11 +6,14 @@ import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 import Loader from "../components/Loader";
+import HoverCardPortal from "../components/HoverCardPortal";
 
 const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [hoverDetails, setHoverDetails] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const cardRefs = useRef({});
 
   if (!data || data.length === 0) return null;
 
@@ -28,6 +31,22 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     } finally {
       setLoadingId(null);
     }
+  };
+
+  const handleMouseEnter = (id) => {
+    setHoveredId(id);
+    fetchAnimeDetails(id);
+    const rect = cardRefs.current[id]?.getBoundingClientRect();
+    if (rect) {
+      setHoverPosition({
+        x: rect.right + 10,
+        y: rect.top + rect.height / 2,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredId(null);
   };
 
   return (
@@ -88,23 +107,57 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           return (
             <SwiperSlide
               key={anime.id}
-              className="!overflow-visible relative z-20"
+              className="!overflow-visible relative z-10"
             >
               <div
-                className="relative group flex flex-col items-center px-1 cursor-pointer z-30"
-                onMouseEnter={() => {
-                  setHoveredId(anime.id);
-                  fetchAnimeDetails(anime.id);
-                }}
-                onMouseLeave={() => setHoveredId(null)}
+                ref={(el) => (cardRefs.current[anime.id] = el)}
+                className="relative group flex flex-col items-center px-1 cursor-pointer"
+                onMouseEnter={() => handleMouseEnter(anime.id)}
+                onMouseLeave={handleMouseLeave}
               >
-                {/* Hover Info Card */}
-                {hoveredId === anime.id && (
+                {/* Anime Card */}
+                <Link
+                  to={`/anime/${anime.id}`}
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
+                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
+                >
+                  <img
+                    src={anime.poster}
+                    alt={anime.title}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                  />
+
+                  {/* Optional Label */}
+                  {label && (
+                    <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
+                      {label}
+                    </div>
+                  )}
+                </Link>
+
+                {/* Title below card */}
+                <h2
+                  title={anime.title}
+                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
+                    group-hover:text-sky-400 transition-colors"
+                >
+                  {anime.title}
+                </h2>
+              </div>
+
+              {/* Hover Card Portal */}
+              {hoveredId === anime.id && (
+                <HoverCardPortal>
                   <div
-                    className="absolute left-[110%] top-1/2 -translate-y-1/2 z-50 w-[340px]
-                      bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl
-                      overflow-hidden opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100
-                      transition-all duration-300 origin-left"
+                    style={{
+                      position: "fixed",
+                      top: `${hoverPosition.y}px`,
+                      left: `${hoverPosition.x}px`,
+                      transform: "translateY(-50%)",
+                      zIndex: 9999,
+                    }}
+                    className="w-[340px] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
                   >
                     {loading ? (
                       <div className="flex justify-center items-center h-64">
@@ -153,38 +206,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                       )
                     )}
                   </div>
-                )}
-
-                {/* Anime Card */}
-                <Link
-                  to={`/anime/${anime.id}`}
-                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
-                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
-                >
-                  <img
-                    src={anime.poster}
-                    alt={anime.title}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
-                  />
-
-                  {/* Optional Label */}
-                  {label && (
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
-                      {label}
-                    </div>
-                  )}
-                </Link>
-
-                {/* Title below card */}
-                <h2
-                  title={anime.title}
-                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
-                    group-hover:text-sky-400 transition-colors"
-                >
-                  {anime.title}
-                </h2>
-              </div>
+                </HoverCardPortal>
+              )}
             </SwiperSlide>
           );
         })}
