@@ -5,18 +5,19 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
+import Loader from "../components/Loader"; // 👈 use your loader component
 
 const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [hoverDetails, setHoverDetails] = useState({});
+  const [loadingId, setLoadingId] = useState(null);
 
   if (!data || data.length === 0) return null;
 
   const fetchAnimeDetails = async (id) => {
+    if (hoverDetails[id]) return; // already cached
     try {
-      // avoid refetching same data repeatedly
-      if (hoverDetails[id]) return;
-
+      setLoadingId(id);
       const res = await fetch(`https://animerealm.vercel.app/api/anime/${id}`);
       const json = await res.json();
       if (json.success && json.data) {
@@ -24,6 +25,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
       }
     } catch (err) {
       console.error("Error fetching anime details:", err);
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -80,7 +83,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           };
 
           const details = hoverDetails[anime.id];
-          const synopsis = details?.synopsis || "Loading details...";
+          const loading = loadingId === anime.id;
 
           return (
             <SwiperSlide key={anime.id} className="!overflow-visible">
@@ -95,16 +98,57 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 {/* Hover Info Card */}
                 {hoveredId === anime.id && (
                   <div
-                    className="absolute z-50 bottom-full mb-3 w-72 p-4 bg-gray-900/95 text-white rounded-lg shadow-2xl
-                      opacity-100 scale-100 pointer-events-auto transition-all duration-300 origin-bottom transform"
+                    className="absolute left-full top-1/2 -translate-y-1/2 ml-5 z-50 w-[340px]
+                      bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl
+                      overflow-hidden opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100
+                      transition-all duration-300 origin-left"
                   >
-                    <h2 className="font-bold text-base mb-1 line-clamp-2">
-                      {details?.title || anime.title}
-                    </h2>
+                    {loading ? (
+                      <div className="flex justify-center items-center h-64">
+                        <Loader />
+                      </div>
+                    ) : (
+                      details && (
+                        <div className="flex flex-col">
+                          {/* Poster */}
+                          <div className="relative w-full h-48 overflow-hidden">
+                            <img
+                              src={details.image}
+                              alt={details.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                          </div>
 
-                    <p className="text-sm text-gray-300 line-clamp-3">
-                      {synopsis}
-                    </p>
+                          {/* Info */}
+                          <div className="p-4 flex flex-col gap-2">
+                            <h2 className="font-bold text-lg text-white line-clamp-2">
+                              {details.title}
+                            </h2>
+
+                            {details.genres && (
+                              <p className="text-xs text-gray-400 line-clamp-1">
+                                {details.genres.join(" • ")}
+                              </p>
+                            )}
+
+                            {details.synopsis && (
+                              <p className="text-sm text-gray-300 line-clamp-3 mt-1">
+                                {details.synopsis}
+                              </p>
+                            )}
+
+                            <Link
+                              to={`/watch/${anime.id}`}
+                              className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
+                                text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                              Watch Now
+                            </Link>
+                          </div>
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
 
