@@ -15,27 +15,23 @@ import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
 
 const Home = () => {
-  // Main home API (static sections)
   const { data, isLoading, error, isError } = useApi("/home");
 
-  // Latest Episodes (live updates)
   const {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
   } = useApi("/recently-updated", {
-    refetchInterval: 60000, // refresh every 60 seconds
+    refetchInterval: 60000,
   });
 
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
-  // Set static genres
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
 
-  // Update Top 10 list when data loads
   useEffect(() => {
     if (data?.data) {
       setTopTen(data.data.top10);
@@ -51,11 +47,9 @@ const Home = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
-      {/* SEO Meta */}
       <Helmet>
         <title>
-          Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime
-          Website
+          Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime Website
         </title>
         <meta
           name="description"
@@ -64,16 +58,15 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
-      {/* Loader while fetching main data */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
-          {/* Hero Section */}
+          {/* 🏞 Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
-            {/* Trending Section */}
+            {/* 🔥 Trending Section (Full Width) */}
             <MainLayout
               title="Trending Now"
               data={homeData?.trending}
@@ -81,7 +74,7 @@ const Home = () => {
               label="Trending"
             />
 
-            {/* Dynamic Grids Section */}
+            {/* 🧩 Dynamic 4-grid sections */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -105,11 +98,11 @@ const Home = () => {
               />
             </div>
 
-            {/* Main Content Area */}
+            {/* 🏠 Main Content + Sidebar */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
-              {/* Left Column */}
-              <div className="col-span-12 xl:col-span-9 space-y-10">
-                {/* 🔥 Latest Episodes - live and refreshing */}
+              {/* LEFT: Main anime feeds */}
+              <div className="col-span-12 xl:col-span-9 space-y-10 overflow-hidden">
+                {/* Latest Episodes */}
                 {isLatestLoading ? (
                   <Loader className="h-40" />
                 ) : (
@@ -127,24 +120,28 @@ const Home = () => {
                   </div>
                 )}
 
-                {/* Newly Added */}
-                <MainLayout
-                  title="Newly Added"
-                  data={homeData?.newAdded}
-                  endpoint="recently-added"
-                  label="New"
-                />
+                {/* Newly Added (limited width inside column) */}
+                <div className="w-full overflow-hidden">
+                  <MainLayout
+                    title="Newly Added"
+                    data={homeData?.newAdded}
+                    endpoint="recently-added"
+                    label="New"
+                  />
+                </div>
 
-                {/* Top Upcoming */}
-                <MainLayout
-                  title="Top Upcoming"
-                  data={homeData?.topUpcoming}
-                  endpoint="top-upcoming"
-                  label="Upcoming"
-                />
+                {/* Top Upcoming (limited width inside column) */}
+                <div className="w-full overflow-hidden">
+                  <MainLayout
+                    title="Top Upcoming"
+                    data={homeData?.topUpcoming}
+                    endpoint="top-upcoming"
+                    label="Upcoming"
+                  />
+                </div>
               </div>
 
-              {/* Right Sidebar */}
+              {/* RIGHT: Sidebar */}
               <aside className="col-span-12 xl:col-span-3 space-y-6 z-[40]">
                 <GenresLayout />
                 <Top10Layout />
