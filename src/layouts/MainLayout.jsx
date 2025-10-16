@@ -126,12 +126,79 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     alt={anime.title}
                     loading="lazy"
                     className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
-                      isHovered ? "blur-sm brightness-75" : ""
+                      isHovered ? "brightness-50 scale-[1.02]" : ""
                     }`}
                   />
+
+                  {/* ✅ Label Badge */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
+                    </div>
+                  )}
+
+                  {/* ✅ Hover Details Overlay (on the card) */}
+                  {isHovered && (
+                    <div
+                      onMouseEnter={handleHoverCardEnter}
+                      onMouseLeave={handleHoverCardLeave}
+                      className="absolute inset-0 bg-[#0b0b0c]/85 backdrop-blur-sm text-white p-4 flex flex-col justify-between rounded-xl transition-opacity duration-200 z-20"
+                    >
+                      {loading ? (
+                        <div className="flex justify-center items-center h-full">
+                          <Loader />
+                        </div>
+                      ) : (
+                        details && (
+                          <>
+                            <div className="flex flex-col gap-2 overflow-hidden">
+                              <h2 className="font-bold text-lg line-clamp-2">
+                                {details.title}
+                              </h2>
+
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {details.score && (
+                                  <span className="text-yellow-400 text-sm">
+                                    ⭐ {details.score}
+                                  </span>
+                                )}
+                                {details.type && (
+                                  <span className="text-xs bg-gray-800 px-2 py-0.5 rounded">
+                                    {details.type}
+                                  </span>
+                                )}
+                                {details.status && (
+                                  <span className="text-xs bg-gray-800 px-2 py-0.5 rounded">
+                                    {details.status}
+                                  </span>
+                                )}
+                              </div>
+
+                              {details.genres && (
+                                <p className="text-xs text-gray-300 line-clamp-1">
+                                  {details.genres.join(" • ")}
+                                </p>
+                              )}
+
+                              {details.synopsis && (
+                                <p className="text-sm text-gray-300 line-clamp-3 mt-1">
+                                  {details.synopsis}
+                                </p>
+                              )}
+                            </div>
+
+                            {title !== "Top Upcoming" && (
+                              <Link
+                                to={`/watch/${anime.id}`}
+                                className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Watch Now
+                              </Link>
+                            )}
+                          </>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -142,70 +209,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 >
                   {anime.title}
                 </h2>
-
-                {/* ✅ Hover Card Appears Above the Card */}
-                {isHovered && (
-                  <div
-                    onMouseEnter={handleHoverCardEnter}
-                    onMouseLeave={handleHoverCardLeave}
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[320px] bg-[#0b0b0c]/95 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 pointer-events-auto transition-opacity duration-200"
-                    style={{ transformOrigin: "bottom center" }}
-                  >
-                    {loading ? (
-                      <div className="flex justify-center items-center h-52">
-                        <Loader />
-                      </div>
-                    ) : (
-                      details && (
-                        <div className="p-4 flex flex-col gap-2">
-                          <h2 className="font-bold text-lg text-white line-clamp-2">
-                            {details.title}
-                          </h2>
-
-                          <div className="flex items-center gap-2">
-                            {details.score && (
-                              <span className="text-yellow-400 text-sm">
-                                ⭐ {details.score}
-                              </span>
-                            )}
-                            {details.type && (
-                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
-                                {details.type}
-                              </span>
-                            )}
-                            {details.status && (
-                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
-                                {details.status}
-                              </span>
-                            )}
-                          </div>
-
-                          {details.genres && (
-                            <p className="text-xs text-gray-400 line-clamp-1">
-                              {details.genres.join(" • ")}
-                            </p>
-                          )}
-
-                          {details.synopsis && (
-                            <p className="text-sm text-gray-300 line-clamp-3 mt-1">
-                              {details.synopsis}
-                            </p>
-                          )}
-
-                          {title !== "Top Upcoming" && (
-                            <Link
-                              to={`/watch/${anime.id}`}
-                              className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
-                              onClick={(e) => e.stopPropagation()} // prevent triggering card click
-                            >
-                              Watch Now
-                            </Link>
-                          )}
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
               </div>
             </SwiperSlide>
           );
