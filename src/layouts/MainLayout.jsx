@@ -5,7 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
-import Loader from "../components/Loader"; // 👈 use your loader component
+import Loader from "../components/Loader";
 
 const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
@@ -15,7 +15,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   if (!data || data.length === 0) return null;
 
   const fetchAnimeDetails = async (id) => {
-    if (hoverDetails[id]) return; // already cached
+    if (hoverDetails[id]) return;
     try {
       setLoadingId(id);
       const res = await fetch(`https://animerealm.vercel.app/api/anime/${id}`);
@@ -86,9 +86,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           const loading = loadingId === anime.id;
 
           return (
-            <SwiperSlide key={anime.id} className="!overflow-visible">
+            <SwiperSlide
+              key={anime.id}
+              className="!overflow-visible relative z-20"
+            >
               <div
-                className="relative group flex flex-col items-center px-1 cursor-pointer"
+                className="relative group flex flex-col items-center px-1 cursor-pointer z-30"
                 onMouseEnter={() => {
                   setHoveredId(anime.id);
                   fetchAnimeDetails(anime.id);
@@ -98,7 +101,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 {/* Hover Info Card */}
                 {hoveredId === anime.id && (
                   <div
-                    className="absolute left-full top-1/2 -translate-y-1/2 ml-5 z-50 w-[340px]
+                    className="absolute left-[110%] top-1/2 -translate-y-1/2 z-50 w-[340px]
                       bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl
                       overflow-hidden opacity-0 group-hover:opacity-100 transform scale-95 group-hover:scale-100
                       transition-all duration-300 origin-left"
