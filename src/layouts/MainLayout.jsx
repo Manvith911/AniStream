@@ -39,14 +39,15 @@ const MainLayout = ({ title, data, label, endpoint }) => {
 
     const rect = cardRefs.current[id]?.getBoundingClientRect();
     const cardWidth = 340; // hover card width
-    const padding = 10; // space between card and hover
+    const padding = 4; // reduced space between hover and card
     const viewportWidth = window.innerWidth;
 
     if (rect) {
       const rightSpace = viewportWidth - rect.right;
-      const left = rightSpace > cardWidth + padding
-        ? rect.right + padding // show on right
-        : rect.left - cardWidth - padding; // show on left
+      const left =
+        rightSpace > cardWidth + padding
+          ? rect.right + padding - 6 // tighter to the card
+          : rect.left - cardWidth - padding + 6;
 
       setHoverPosition({
         x: left,
@@ -115,10 +116,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           const loading = loadingId === anime.id;
 
           return (
-            <SwiperSlide
-              key={anime.id}
-              className="!overflow-visible relative z-10"
-            >
+            <SwiperSlide key={anime.id} className="!overflow-visible relative z-10">
               <div
                 ref={(el) => (cardRefs.current[anime.id] = el)}
                 className="relative group flex flex-col items-center px-1 cursor-pointer"
@@ -170,48 +168,35 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     className="w-[340px] max-w-[calc(100vw-20px)] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
                   >
                     {loading ? (
-                      <div className="flex justify-center items-center h-64">
+                      <div className="flex justify-center items-center h-52">
                         <Loader />
                       </div>
                     ) : (
                       details && (
-                        <div className="flex flex-col">
-                          {/* Poster */}
-                          <div className="relative w-full h-48 overflow-hidden">
-                            <img
-                              src={details.image}
-                              alt={details.title}
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                          </div>
+                        <div className="p-4 flex flex-col gap-2">
+                          <h2 className="font-bold text-lg text-white line-clamp-2">
+                            {details.title}
+                          </h2>
 
-                          {/* Info */}
-                          <div className="p-4 flex flex-col gap-2">
-                            <h2 className="font-bold text-lg text-white line-clamp-2">
-                              {details.title}
-                            </h2>
+                          {details.genres && (
+                            <p className="text-xs text-gray-400 line-clamp-1">
+                              {details.genres.join(" • ")}
+                            </p>
+                          )}
 
-                            {details.genres && (
-                              <p className="text-xs text-gray-400 line-clamp-1">
-                                {details.genres.join(" • ")}
-                              </p>
-                            )}
+                          {details.synopsis && (
+                            <p className="text-sm text-gray-300 line-clamp-3 mt-1">
+                              {details.synopsis}
+                            </p>
+                          )}
 
-                            {details.synopsis && (
-                              <p className="text-sm text-gray-300 line-clamp-3 mt-1">
-                                {details.synopsis}
-                              </p>
-                            )}
-
-                            <Link
-                              to={`/watch/${anime.id}`}
-                              className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
-                                text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
-                            >
-                              Watch Now
-                            </Link>
-                          </div>
+                          <Link
+                            to={`/watch/${anime.id}`}
+                            className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
+                              text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                          >
+                            Watch Now
+                          </Link>
                         </div>
                       )
                     )}
