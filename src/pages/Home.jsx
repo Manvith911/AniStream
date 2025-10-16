@@ -145,7 +145,7 @@ const Home = () => {
               </div>
 
               {/* Right Sidebar */}
-              <aside className="col-span-12 xl:col-span-3 space-y-6">
+              <aside className="col-span-12 xl:col-span-3 space-y-6 z-[40]">
                 <GenresLayout />
                 <Top10Layout />
               </aside>
