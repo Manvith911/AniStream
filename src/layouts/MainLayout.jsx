@@ -40,10 +40,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   const handleMouseEnter = (id) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setHoveredId(id);
+    // small debounce to avoid too many quick fetches
     fetchAnimeDetails(id);
   };
 
   const handleMouseLeave = () => {
+    // small delay so user can move into the hover card
     hoverTimeoutRef.current = setTimeout(() => setHoveredId(null), 150);
   };
 
@@ -127,7 +129,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   <div className="relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]">
                     <img
                       src={anime.poster}
-                      alt={anime.title}
+                      alt={anime.title || "Anime poster"}
                       loading="lazy"
                       className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
                         isHovered ? "blur-sm brightness-75" : ""
@@ -147,11 +149,16 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     {anime.title}
                   </h2>
 
+                  {/* HOVER CARD: rendered only when hovered (isHovered) to avoid accidental blocking */}
                   {isHovered && (
                     <div
                       onMouseEnter={handleHoverCardEnter}
                       onMouseLeave={handleHoverCardLeave}
-                      className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-[340px] bg-[#1b1b1d]/95 backdrop-blur-xl border border-gray-800/70 rounded-2xl shadow-2xl overflow-hidden z-[9999] pointer-events-auto opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"
+                      // NOTE: don't use group-hover classes here — visibility controlled by state
+                      className={
+                        // fixed set of classes (avoid bracketed z if Tailwind purges it)
+                        "absolute top-full mt-3 left-1/2 -translate-x-1/2 w-[340px] bg-[#1b1b1d]/95 backdrop-blur-xl border border-gray-800/70 rounded-2xl shadow-2xl overflow-hidden z-50 pointer-events-auto transition-all duration-300 transform opacity-100 scale-100"
+                      }
                       style={{ transformOrigin: "top center" }}
                     >
                       {loading ? (
