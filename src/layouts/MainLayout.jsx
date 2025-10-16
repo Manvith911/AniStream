@@ -38,19 +38,18 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     fetchAnimeDetails(id);
 
     const rect = cardRefs.current[id]?.getBoundingClientRect();
-    const hoverCardWidth = 340;
-    const padding = 12;
-    const screenWidth = window.innerWidth;
+    const cardWidth = 340; // hover card width
+    const padding = 10; // space between card and hover
+    const viewportWidth = window.innerWidth;
 
     if (rect) {
-      const spaceOnRight = screenWidth - rect.right;
-      const x =
-        spaceOnRight > hoverCardWidth + padding
-          ? rect.right + padding
-          : rect.left - hoverCardWidth - padding;
+      const rightSpace = viewportWidth - rect.right;
+      const left = rightSpace > cardWidth + padding
+        ? rect.right + padding // show on right
+        : rect.left - cardWidth - padding; // show on left
 
       setHoverPosition({
-        x,
+        x: left,
         y: rect.top + rect.height / 2,
       });
     }
@@ -129,7 +128,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 {/* Anime Card */}
                 <Link
                   to={`/anime/${anime.id}`}
-                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
+                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
                 >
                   <img
                     src={anime.poster}
@@ -137,6 +137,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
+
+                  {/* Optional Label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -147,13 +149,14 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 {/* Title below card */}
                 <h2
                   title={anime.title}
-                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
+                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
+                    group-hover:text-sky-400 transition-colors"
                 >
                   {anime.title}
                 </h2>
               </div>
 
-              {/* Hover Card */}
+              {/* Hover Card Portal */}
               {hoveredId === anime.id && (
                 <HoverCardPortal>
                   <div
@@ -164,72 +167,54 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                       transform: "translateY(-50%)",
                       zIndex: 9999,
                     }}
-                    className="w-[340px] max-w-[calc(100vw-20px)] bg-[#1f1f1f]/90 backdrop-blur-xl border border-gray-700 rounded-xl shadow-xl overflow-hidden text-sm text-gray-300"
+                    className="w-[340px] max-w-[calc(100vw-20px)] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
                   >
                     {loading ? (
                       <div className="flex justify-center items-center h-64">
                         <Loader />
                       </div>
-                    ) : details ? (
-                      <div className="flex flex-col">
-                        {/* Image */}
-                        <div className="relative w-full h-44 overflow-hidden">
-                          <img
-                            src={details.image}
-                            alt={details.title}
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-4 space-y-2">
-                          <h2 className="text-lg font-bold text-white leading-snug line-clamp-2">
-                            {details.title}
-                          </h2>
-
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="text-yellow-400">⭐ {details.rating || "N/A"}</span>
-                            {details.type && (
-                              <span className="bg-pink-500/20 text-pink-400 px-2 py-0.5 rounded-full font-medium">
-                                {details.type}
-                              </span>
-                            )}
+                    ) : (
+                      details && (
+                        <div className="flex flex-col">
+                          {/* Poster */}
+                          <div className="relative w-full h-48 overflow-hidden">
+                            <img
+                              src={details.image}
+                              alt={details.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                           </div>
 
-                          {details.synopsis && (
-                            <p className="text-gray-400 text-sm line-clamp-3">
-                              {details.synopsis}
-                            </p>
-                          )}
+                          {/* Info */}
+                          <div className="p-4 flex flex-col gap-2">
+                            <h2 className="font-bold text-lg text-white line-clamp-2">
+                              {details.title}
+                            </h2>
 
-                          <div className="text-xs text-gray-400 space-y-1">
-                            {details.japanese && (
-                              <p><span className="text-gray-500">Japanese:</span> {details.japanese}</p>
-                            )}
-                            {details.aired && (
-                              <p><span className="text-gray-500">Aired:</span> {details.aired}</p>
-                            )}
-                            {details.status && (
-                              <p><span className="text-gray-500">Status:</span> {details.status}</p>
-                            )}
                             {details.genres && (
-                              <p><span className="text-gray-500">Genres:</span> {details.genres.join(", ")}</p>
+                              <p className="text-xs text-gray-400 line-clamp-1">
+                                {details.genres.join(" • ")}
+                              </p>
                             )}
-                          </div>
 
-                          <Link
-                            to={`/watch/${anime.id}`}
-                            className="mt-3 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-2 rounded-full hover:opacity-90 transition"
-                          >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M6 4l10 6-10 6V4z" />
-                            </svg>
-                            Watch now
-                          </Link>
+                            {details.synopsis && (
+                              <p className="text-sm text-gray-300 line-clamp-3 mt-1">
+                                {details.synopsis}
+                              </p>
+                            )}
+
+                            <Link
+                              to={`/watch/${anime.id}`}
+                              className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
+                                text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                              Watch Now
+                            </Link>
+                          </div>
                         </div>
-                      </div>
-                    ) : null}
+                      )
+                    )}
                   </div>
                 </HoverCardPortal>
               )}
