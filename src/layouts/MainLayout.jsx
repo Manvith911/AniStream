@@ -12,7 +12,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [hoverDetails, setHoverDetails] = useState({});
   const [loadingId, setLoadingId] = useState(null);
-  const [hoverStyle, setHoverStyle] = useState({});
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const cardRefs = useRef({});
   const hoverTimeoutRef = useRef(null);
 
@@ -40,18 +40,29 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     fetchAnimeDetails(id);
 
     const rect = cardRefs.current[id]?.getBoundingClientRect();
+    const cardWidth = 340; // hover card width
+    const padding = 4; // small spacing
+    const viewportWidth = window.innerWidth;
+
     if (rect) {
-      const top = rect.top + window.scrollY - 80; // lift hover card above anime card
-      const left = rect.left + rect.width / 2;
-      setHoverStyle({
-        top: `${top}px`,
-        left: `${left}px`,
+      const rightSpace = viewportWidth - rect.right;
+      const left =
+        rightSpace > cardWidth + padding
+          ? rect.right + padding - 6
+          : rect.left - cardWidth - padding + 6;
+
+      setHoverPosition({
+        x: left,
+        y: rect.top + rect.height / 2,
       });
     }
   };
 
   const handleMouseLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => setHoveredId(null), 150);
+    // add small delay before hiding hover
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredId(null);
+    }, 150);
   };
 
   const handleHoverCardEnter = () => {
@@ -116,7 +127,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
 
           const details = hoverDetails[anime.id];
           const loading = loadingId === anime.id;
-          const isHovered = hoveredId === anime.id;
 
           return (
             <SwiperSlide key={anime.id} className="!overflow-visible relative z-10">
@@ -127,23 +137,27 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 onMouseLeave={handleMouseLeave}
               >
                 {/* Anime Card */}
-                <div className="relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]">
+                <Link
+                  to={`/anime/${anime.id}`}
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
+                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
+                >
                   <img
                     src={anime.poster}
                     alt={anime.title}
                     loading="lazy"
-                    className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
-                      isHovered ? "blur-sm brightness-75" : ""
-                    }`}
+                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   />
+
+                  {/* Optional Label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
                     </div>
                   )}
-                </div>
+                </Link>
 
-                {/* Title */}
+                {/* Title below card */}
                 <h2
                   title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
@@ -154,19 +168,19 @@ const MainLayout = ({ title, data, label, endpoint }) => {
               </div>
 
               {/* Hover Card Portal */}
-              {isHovered && (
+              {hoveredId === anime.id && (
                 <HoverCardPortal>
                   <div
                     style={{
-                      position: "absolute",
-                      top: hoverStyle.top,
-                      left: hoverStyle.left,
-                      transform: "translate(-50%, -100%)",
+                      position: "fixed",
+                      top: `${hoverPosition.y}px`,
+                      left: `${hoverPosition.x}px`,
+                      transform: "translateY(-50%)",
                       zIndex: 9999,
                     }}
                     onMouseEnter={handleHoverCardEnter}
                     onMouseLeave={handleHoverCardLeave}
-                    className="w-[340px] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl transition-all duration-150"
+                    className="w-[340px] max-w-[calc(100vw-20px)] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl overflow-hidden transition-all duration-150"
                   >
                     {loading ? (
                       <div className="flex justify-center items-center h-52">
@@ -175,9 +189,15 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     ) : (
                       details && (
                         <div className="p-4 flex flex-col gap-2">
-                          <h2 className="font-bold text-lg text-white">
+                          <h2 className="font-bold text-lg text-white line-clamp-2">
                             {details.title}
                           </h2>
+
+                          {details.genres && (
+                            <p className="text-xs text-gray-400 line-clamp-1">
+                              {details.genres.join(" • ")}
+                            </p>
+                          )}
 
                           {details.synopsis && (
                             <p className="text-sm text-gray-300 line-clamp-3 mt-1">
@@ -185,36 +205,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                             </p>
                           )}
 
-                          {details.japanese && (
-                            <p className="text-xs text-gray-400">
-                              Japanese: {details.japanese}
-                            </p>
-                          )}
-
-                          {details.aired && (
-                            <p className="text-xs text-gray-400">
-                              Aired: {details.aired}
-                            </p>
-                          )}
-
-                          {details.status && (
-                            <p className="text-xs text-gray-400">
-                              Status: {details.status}
-                            </p>
-                          )}
-
-                          {details.genres && (
-                            <p className="text-xs text-gray-400">
-                              Genres: {details.genres.join(", ")}
-                            </p>
-                          )}
-
                           <Link
                             to={`/watch/${anime.id}`}
-                            className="mt-3 bg-gradient-to-r from-pink-500 to-purple-500
+                            className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
                               text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
                           >
-                            Watch now
+                            Watch Now
                           </Link>
                         </div>
                       )
