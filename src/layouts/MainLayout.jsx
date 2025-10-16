@@ -12,6 +12,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [hoverDetails, setHoverDetails] = useState({});
   const [loadingId, setLoadingId] = useState(null);
+  const [hoverStyle, setHoverStyle] = useState({});
   const cardRefs = useRef({});
   const hoverTimeoutRef = useRef(null);
 
@@ -37,6 +38,16 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setHoveredId(id);
     fetchAnimeDetails(id);
+
+    const rect = cardRefs.current[id]?.getBoundingClientRect();
+    if (rect) {
+      const top = rect.top + window.scrollY - 80; // lift hover card above anime card
+      const left = rect.left + rect.width / 2;
+      setHoverStyle({
+        top: `${top}px`,
+        left: `${left}px`,
+      });
+    }
   };
 
   const handleMouseLeave = () => {
@@ -47,7 +58,9 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
   };
 
-  const handleHoverCardLeave = () => setHoveredId(null);
+  const handleHoverCardLeave = () => {
+    setHoveredId(null);
+  };
 
   return (
     <div className="main-layout mt-10 px-2 md:px-4 relative z-10">
@@ -123,7 +136,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                       isHovered ? "blur-sm brightness-75" : ""
                     }`}
                   />
-
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -131,7 +143,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </div>
 
-                {/* Title below card */}
+                {/* Title */}
                 <h2
                   title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
@@ -139,80 +151,77 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 >
                   {anime.title}
                 </h2>
-
-                {/* Hover Card (Overlapping) */}
-                {isHovered && (
-                  <HoverCardPortal>
-                    <div
-                      onMouseEnter={handleHoverCardEnter}
-                      onMouseLeave={handleHoverCardLeave}
-                      className="absolute -top-10 left-1/2 -translate-x-1/2 w-[340px] bg-[#0d0d0d]/95 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden transition-all duration-150"
-                      style={{
-                        transform: "translate(-50%, -100%)",
-                        zIndex: 9999,
-                      }}
-                    >
-                      {loading ? (
-                        <div className="flex justify-center items-center h-52">
-                          <Loader />
-                        </div>
-                      ) : (
-                        details && (
-                          <div className="p-4 flex flex-col gap-2">
-                            <h2 className="font-bold text-lg text-white leading-tight">
-                              {details.title}
-                            </h2>
-
-                            {details.score && (
-                              <p className="text-yellow-400 text-sm flex items-center gap-1">
-                                ⭐ {details.score}
-                              </p>
-                            )}
-
-                            {details.synopsis && (
-                              <p className="text-sm text-gray-300 line-clamp-3 mt-1">
-                                {details.synopsis}
-                              </p>
-                            )}
-
-                            {details.japanese && (
-                              <p className="text-xs text-gray-400 mt-1">
-                                Japanese: {details.japanese}
-                              </p>
-                            )}
-
-                            {details.aired && (
-                              <p className="text-xs text-gray-400">
-                                Aired: {details.aired}
-                              </p>
-                            )}
-
-                            {details.status && (
-                              <p className="text-xs text-gray-400">
-                                Status: {details.status}
-                              </p>
-                            )}
-
-                            {details.genres && (
-                              <p className="text-xs text-gray-400">
-                                Genres: {details.genres.join(", ")}
-                              </p>
-                            )}
-
-                            <Link
-                              to={`/watch/${anime.id}`}
-                              className="mt-3 bg-gradient-to-r from-pink-500 to-purple-500
-                                text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
-                            >
-                              Watch now
-                            </Link>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </HoverCardPortal>
-                )}
               </div>
+
+              {/* Hover Card Portal */}
+              {isHovered && (
+                <HoverCardPortal>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: hoverStyle.top,
+                      left: hoverStyle.left,
+                      transform: "translate(-50%, -100%)",
+                      zIndex: 9999,
+                    }}
+                    onMouseEnter={handleHoverCardEnter}
+                    onMouseLeave={handleHoverCardLeave}
+                    className="w-[340px] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl transition-all duration-150"
+                  >
+                    {loading ? (
+                      <div className="flex justify-center items-center h-52">
+                        <Loader />
+                      </div>
+                    ) : (
+                      details && (
+                        <div className="p-4 flex flex-col gap-2">
+                          <h2 className="font-bold text-lg text-white">
+                            {details.title}
+                          </h2>
+
+                          {details.synopsis && (
+                            <p className="text-sm text-gray-300 line-clamp-3 mt-1">
+                              {details.synopsis}
+                            </p>
+                          )}
+
+                          {details.japanese && (
+                            <p className="text-xs text-gray-400">
+                              Japanese: {details.japanese}
+                            </p>
+                          )}
+
+                          {details.aired && (
+                            <p className="text-xs text-gray-400">
+                              Aired: {details.aired}
+                            </p>
+                          )}
+
+                          {details.status && (
+                            <p className="text-xs text-gray-400">
+                              Status: {details.status}
+                            </p>
+                          )}
+
+                          {details.genres && (
+                            <p className="text-xs text-gray-400">
+                              Genres: {details.genres.join(", ")}
+                            </p>
+                          )}
+
+                          <Link
+                            to={`/watch/${anime.id}`}
+                            className="mt-3 bg-gradient-to-r from-pink-500 to-purple-500
+                              text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                          >
+                            Watch now
+                          </Link>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </HoverCardPortal>
+              )}
             </SwiperSlide>
           );
         })}
