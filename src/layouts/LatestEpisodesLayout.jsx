@@ -48,19 +48,11 @@ const LatestEpisodesLayout = ({
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-95 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                {/* Tags */}
+                {/* Episode Tag */}
                 {item.episode && (
-                  <>
-                    {/* Top-left: 'Latest' Tag */}
-                    <div className="absolute top-2 left-2 bg-rose-600/90 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider transition-all group-hover:scale-105 group-hover:bg-rose-500">
-                      Latest
-                    </div>
-
-                    {/* Top-right: Episode Number */}
-                    <div className="absolute top-2 right-2 bg-sky-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                      Ep {item.episode}
-                    </div>
-                  </>
+                  <div className="absolute top-2 right-2 bg-sky-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                    Episode {item.episode}
+                  </div>
                 )}
               </div>
 
