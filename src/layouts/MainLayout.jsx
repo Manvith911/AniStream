@@ -6,14 +6,12 @@ import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 import Heading from "../components/Heading";
 import Loader from "../components/Loader";
-import HoverCardPortal from "../components/HoverCardPortal";
 
 const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
   const [hoverDetails, setHoverDetails] = useState({});
   const [loadingId, setLoadingId] = useState(null);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
-  const cardRefs = useRef({});
+  const hoverTimeoutRef = useRef(null);
 
   if (!data || data.length === 0) return null;
 
@@ -34,34 +32,29 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   };
 
   const handleMouseEnter = (id) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setHoveredId(id);
     fetchAnimeDetails(id);
-
-    const rect = cardRefs.current[id]?.getBoundingClientRect();
-    const cardWidth = 340; // hover card width
-    const padding = 4; // reduced space between hover and card
-    const viewportWidth = window.innerWidth;
-
-    if (rect) {
-      const rightSpace = viewportWidth - rect.right;
-      const left =
-        rightSpace > cardWidth + padding
-          ? rect.right + padding - 6 // tighter to the card
-          : rect.left - cardWidth - padding + 6;
-
-      setHoverPosition({
-        x: left,
-        y: rect.top + rect.height / 2,
-      });
-    }
   };
 
   const handleMouseLeave = () => {
+    // small delay so moving to hover card won't close it
+    hoverTimeoutRef.current = setTimeout(() => setHoveredId(null), 150);
+  };
+
+  const handleHoverCardEnter = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+  };
+
+  const handleHoverCardLeave = () => {
     setHoveredId(null);
   };
 
+  const hideWatchButton = title === "Top Upcoming";
+
   return (
-    <div className="main-layout mt-10 px-2 md:px-4 relative z-10">
+    // "isolate" creates a local stacking context so this section can't visually override the next sections
+    <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate">
       {/* Section Heading */}
       <div className="flex justify-between items-center mb-6">
         <Heading className="text-3xl font-extrabold tracking-wide text-white">
@@ -93,6 +86,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
       </div>
 
       {/* Swiper Carousel */}
+      {/* overflow-visible so hover can extend outside slides without clipping */}
       <Swiper
         modules={[Navigation]}
         navigation
@@ -103,7 +97,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
-        className="overflow-visible"
+        className="overflow-visible relative z-0"
       >
         {data.map((item) => {
           const anime = {
@@ -114,58 +108,50 @@ const MainLayout = ({ title, data, label, endpoint }) => {
 
           const details = hoverDetails[anime.id];
           const loading = loadingId === anime.id;
+          const isHovered = hoveredId === anime.id;
 
           return (
-            <SwiperSlide key={anime.id} className="!overflow-visible relative z-10">
+            // each slide remains in normal flow; hover card will be absolute inside it
+            <SwiperSlide key={anime.id} className="!overflow-visible relative z-0">
               <div
-                ref={(el) => (cardRefs.current[anime.id] = el)}
                 className="relative group flex flex-col items-center px-1 cursor-pointer"
                 onMouseEnter={() => handleMouseEnter(anime.id)}
                 onMouseLeave={handleMouseLeave}
               >
                 {/* Anime Card */}
-                <Link
-                  to={`/anime/${anime.id}`}
-                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
-                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
-                >
+                <div className="relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]">
                   <img
                     src={anime.poster}
                     alt={anime.title}
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                    className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
+                      isHovered ? "blur-sm brightness-75" : ""
+                    }`}
                   />
 
-                  {/* Optional Label */}
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
                     </div>
                   )}
-                </Link>
+                </div>
 
                 {/* Title below card */}
                 <h2
                   title={anime.title}
-                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
-                    group-hover:text-sky-400 transition-colors"
+                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
                 >
                   {anime.title}
                 </h2>
-              </div>
 
-              {/* Hover Card Portal */}
-              {hoveredId === anime.id && (
-                <HoverCardPortal>
+                {/* Hover details card: absolute inside slide (doesn't create global overlap) */}
+                {isHovered && (
                   <div
-                    style={{
-                      position: "fixed",
-                      top: `${hoverPosition.y}px`,
-                      left: `${hoverPosition.x}px`,
-                      transform: "translateY(-50%)",
-                      zIndex: 9999,
-                    }}
-                    className="w-[340px] max-w-[calc(100vw-20px)] bg-[#0d0d0d]/95 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+                    onMouseEnter={handleHoverCardEnter}
+                    onMouseLeave={handleHoverCardLeave}
+                    // slight overlap above the poster, centered horizontally relative to the card
+                    className="absolute -top-24 left-1/2 -translate-x-1/2 w-[320px] bg-[#0b0b0c]/90 backdrop-blur-md border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    style={{ transformOrigin: "bottom center" }}
                   >
                     {loading ? (
                       <div className="flex justify-center items-center h-52">
@@ -177,6 +163,23 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                           <h2 className="font-bold text-lg text-white line-clamp-2">
                             {details.title}
                           </h2>
+
+                          {/* small status/score row if available */}
+                          <div className="flex items-center gap-2">
+                            {details.score && (
+                              <span className="text-yellow-400 text-sm">⭐ {details.score}</span>
+                            )}
+                            {details.type && (
+                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
+                                {details.type}
+                              </span>
+                            )}
+                            {details.status && (
+                              <span className="text-xs text-gray-300 bg-gray-800 px-2 py-0.5 rounded">
+                                {details.status}
+                              </span>
+                            )}
+                          </div>
 
                           {details.genres && (
                             <p className="text-xs text-gray-400 line-clamp-1">
@@ -190,19 +193,21 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                             </p>
                           )}
 
-                          <Link
-                            to={`/watch/${anime.id}`}
-                            className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500
-                              text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
-                          >
-                            Watch Now
-                          </Link>
+                          {/* Watch Now hidden for Top Upcoming */}
+                          {!hideWatchButton && (
+                            <Link
+                              to={`/watch/${anime.id}`}
+                              className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                            >
+                              Watch Now
+                            </Link>
+                          )}
                         </div>
                       )
                     )}
                   </div>
-                </HoverCardPortal>
-              )}
+                )}
+              </div>
             </SwiperSlide>
           );
         })}
