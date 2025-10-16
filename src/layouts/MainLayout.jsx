@@ -10,7 +10,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="main-layout mt-10 px-2 md:px-4">
+    <div className="main-layout mt-10 px-2 md:px-4 relative z-10">
       {/* Section Heading */}
       <div className="flex justify-between items-center mb-6">
         <Heading className="text-3xl font-extrabold tracking-wide text-white">
@@ -52,6 +52,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           1024: { slidesPerView: 5 },
           1320: { slidesPerView: 6 },
         }}
+        className="overflow-visible" // 👈 allow hover card to escape
       >
         {data.map((item) => {
           const anime = {
@@ -63,16 +64,21 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           };
 
           return (
-            <SwiperSlide key={anime.id}>
+            <SwiperSlide key={anime.id} className="!overflow-visible">
               <div className="relative group flex flex-col items-center px-1 cursor-pointer">
                 {/* Hover Info Card */}
-                <div className="absolute z-30 bottom-full mb-3 w-72 p-4 bg-gray-900 text-white rounded-lg shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
-                  <h2 className="font-bold text-base mb-1">
+                <div
+                  className="absolute z-50 bottom-full mb-3 w-72 p-4 bg-gray-900/95 text-white rounded-lg shadow-2xl
+                    opacity-0 scale-95 pointer-events-none 
+                    group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto
+                    transition-all duration-300 origin-bottom transform"
+                >
+                  <h2 className="font-bold text-base mb-1 line-clamp-2">
                     {anime.title}
                   </h2>
 
                   {anime.genres.length > 0 && (
-                    <p className="text-xs text-gray-400 mb-1">
+                    <p className="text-xs text-gray-400 mb-1 line-clamp-1">
                       {anime.genres.join(" • ")}
                     </p>
                   )}
@@ -87,9 +93,9 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 {/* Anime Card */}
                 <Link
                   to={`/anime/${anime.id}`}
-                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
+                  className="poster relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg
+                    transition-transform duration-300 ease-in-out group-hover:scale-[1.05]"
                 >
-                  {/* Poster Image */}
                   <img
                     src={anime.poster}
                     alt={anime.title}
@@ -105,10 +111,11 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </Link>
 
-                {/* Title below card (still visible for clarity) */}
+                {/* Title below card */}
                 <h2
                   title={anime.title}
-                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
+                  className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none
+                    group-hover:text-sky-400 transition-colors"
                 >
                   {anime.title}
                 </h2>
