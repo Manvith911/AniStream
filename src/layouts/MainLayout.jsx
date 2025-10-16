@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Heading from "../components/Heading";
 import Loader from "../components/Loader";
 
@@ -12,16 +12,15 @@ const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoverDetails, setHoverDetails] = useState({});
   const [loadingId, setLoadingId] = useState(null);
   const hoverTimeoutRef = useRef(null);
+  const navigate = useNavigate();
 
   if (!data || data.length === 0) return null;
 
-  // ✨ Limit for specific sections
   const visibleData =
     title === "Top Upcoming" || title === "Newly Added"
       ? data.slice(0, 10)
       : data;
 
-  // Fetch anime info for hover
   const fetchAnimeDetails = async (id) => {
     if (hoverDetails[id]) return;
     try {
@@ -54,9 +53,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
 
   const handleHoverCardLeave = () => setHoveredId(null);
 
+  const handleCardClick = (id) => {
+    navigate(`/anime/${id}`);
+  };
+
   return (
     <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate w-full max-w-full overflow-hidden">
-      {/* Heading + View More */}
       <div className="flex justify-between items-center mb-6">
         <Heading className="text-3xl font-extrabold tracking-wide text-white">
           {title}
@@ -86,7 +88,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         )}
       </div>
 
-      {/* Anime Swiper */}
       <Swiper
         modules={[Navigation]}
         navigation
@@ -112,16 +113,13 @@ const MainLayout = ({ title, data, label, endpoint }) => {
           const isHovered = hoveredId === anime.id;
 
           return (
-            <SwiperSlide
-              key={anime.id}
-              className="!overflow-visible relative z-0"
-            >
+            <SwiperSlide key={anime.id} className="!overflow-visible relative z-0">
               <div
                 className="relative group flex flex-col items-center px-1 cursor-pointer"
                 onMouseEnter={() => handleMouseEnter(anime.id)}
                 onMouseLeave={handleMouseLeave}
+                onClick={() => handleCardClick(anime.id)}
               >
-                {/* Poster card */}
                 <div className="relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]">
                   <img
                     src={anime.poster}
@@ -131,7 +129,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                       isHovered ? "blur-sm brightness-75" : ""
                     }`}
                   />
-
                   {label && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-sky-500 to-teal-500 text-white font-semibold px-3 py-1 rounded-full text-sm shadow-md select-none">
                       {label}
@@ -139,7 +136,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   )}
                 </div>
 
-                {/* Title */}
                 <h2
                   title={anime.title}
                   className="mt-3 text-center text-gray-300 font-semibold text-base truncate w-full select-none group-hover:text-sky-400 transition-colors"
@@ -147,7 +143,6 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   {anime.title}
                 </h2>
 
-                {/* Hover Card */}
                 {isHovered && (
                   <div
                     onMouseEnter={handleHoverCardEnter}
@@ -196,11 +191,11 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                             </p>
                           )}
 
-                          {/* Hide watch for Top Upcoming */}
                           {title !== "Top Upcoming" && (
                             <Link
                               to={`/watch/${anime.id}`}
                               className="mt-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-center py-2 rounded-lg font-semibold hover:opacity-90 transition"
+                              onClick={(e) => e.stopPropagation()} // prevent triggering card click
                             >
                               Watch Now
                             </Link>
