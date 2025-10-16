@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Loader from "../components/Loader";
 import HeroBanner from "../components/HeroBanner";
-import MainLayout from "../layouts/MainLayout"; // Reusable carousel layout
+import MainLayout from "../layouts/MainLayout";
 import DynamicLayout from "../layouts/DynamicLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
-import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout"; // Keep this separate
+import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
 import Footer from "../components/Footer";
 import { useApi } from "../services/useApi";
 import useGenresStore from "../store/genresStore";
@@ -16,11 +16,13 @@ import { genres } from "../utils/genres";
 
 const Home = () => {
   const { data, isLoading, error, isError } = useApi("/home");
+  const { data: latestEpisodes, isLoading: isLatestLoading } =
+    useApi("/recently-updated");
 
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
-  // Set static genres on mount
+  // Set static genres
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
@@ -41,7 +43,6 @@ const Home = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
-      {/* SEO Meta */}
       <Helmet>
         <title>
           Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime
@@ -58,7 +59,6 @@ const Home = () => {
         <Loader className="h-[100dvh]" />
       ) : (
         <>
-          {/* Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
@@ -70,7 +70,7 @@ const Home = () => {
               label="Trending"
             />
 
-            {/* Dynamic Grids Section */}
+            {/* Dynamic Sections */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -94,24 +94,30 @@ const Home = () => {
               />
             </div>
 
-            {/* Main Content Area */}
+            {/* Main Content */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
               {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10">
-                {/* Latest Episodes stays separate */}
-                <LatestEpisodesLayout
-                  title="Latest Episodes"
-                  endpoint="recently-updated"
-                  data={homeData?.latestEpisode}
-                />
+                {/* Latest Episodes */}
+                {isLatestLoading ? (
+                  <Loader className="h-40" />
+                ) : (
+                  <LatestEpisodesLayout
+                    title="Latest Episodes"
+                    endpoint="recently-updated"
+                    data={latestEpisodes?.data || homeData?.latestEpisode}
+                  />
+                )}
 
-                {/* Other sections using MainLayout */}
+                {/* Newly Added */}
                 <MainLayout
                   title="Newly Added"
                   data={homeData?.newAdded}
                   endpoint="recently-added"
                   label="New"
                 />
+
+                {/* Top Upcoming */}
                 <MainLayout
                   title="Top Upcoming"
                   data={homeData?.topUpcoming}
