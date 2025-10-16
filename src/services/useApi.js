@@ -8,27 +8,30 @@ export const API_BASE_URL =
     ? config.localUrl
     : config.serverUrl;
 
+// Normal data fetcher
 const fetchData = async (url) => {
-  console.log(API_BASE_URL);
   try {
-    const { data } = await axios.get(API_BASE_URL + url);
-
+    const { data } = await axios.get(`${API_BASE_URL}${url}`);
     return data;
   } catch (error) {
     throw new Error(error);
   }
 };
 
-export const useApi = (endpoint) => {
+// ✅ Updated useApi (adds timestamp + auto refresh support)
+export const useApi = (endpoint, options = {}) => {
   return useQuery({
     queryKey: [endpoint],
-    queryFn: () => fetchData(endpoint),
+    queryFn: () => fetchData(`${endpoint}?_t=${Date.now()}`), // prevent cache
     retry: 2,
     enabled: !!endpoint,
     refetchOnWindowFocus: false,
+    refetchInterval: options.refetchInterval || false, // background refresh
+    staleTime: options.staleTime || 0, // always refetch
   });
 };
 
+// Infinite scroll data fetcher
 const fetchInfiniteData = async ({ queryKey, pageParam }) => {
   try {
     const { data } = await axios.get(API_BASE_URL + queryKey + pageParam);
@@ -37,6 +40,8 @@ const fetchInfiniteData = async ({ queryKey, pageParam }) => {
     throw new Error(error);
   }
 };
+
+// Infinite scroll hook
 export const useInfiniteApi = (endpoint) => {
   return useInfiniteQuery({
     queryKey: [endpoint],
