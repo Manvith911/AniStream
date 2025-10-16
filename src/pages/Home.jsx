@@ -15,9 +15,17 @@ import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
 
 const Home = () => {
+  // Main home API (static sections)
   const { data, isLoading, error, isError } = useApi("/home");
-  const { data: latestEpisodes, isLoading: isLatestLoading } =
-    useApi("/recently-updated");
+
+  // Latest Episodes (live updates)
+  const {
+    data: latestEpisodes,
+    isLoading: isLatestLoading,
+    isFetching: isRefreshing,
+  } = useApi("/recently-updated", {
+    refetchInterval: 60000, // refresh every 60 seconds
+  });
 
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
@@ -43,6 +51,7 @@ const Home = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
+      {/* SEO Meta */}
       <Helmet>
         <title>
           Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime
@@ -55,10 +64,12 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
+      {/* Loader while fetching main data */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
+          {/* Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
@@ -70,7 +81,7 @@ const Home = () => {
               label="Trending"
             />
 
-            {/* Dynamic Sections */}
+            {/* Dynamic Grids Section */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -94,19 +105,26 @@ const Home = () => {
               />
             </div>
 
-            {/* Main Content */}
+            {/* Main Content Area */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
               {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10">
-                {/* Latest Episodes */}
+                {/* 🔥 Latest Episodes - live and refreshing */}
                 {isLatestLoading ? (
                   <Loader className="h-40" />
                 ) : (
-                  <LatestEpisodesLayout
-                    title="Latest Episodes"
-                    endpoint="recently-updated"
-                    data={latestEpisodes?.data || homeData?.latestEpisode}
-                  />
+                  <div className="relative">
+                    {isRefreshing && (
+                      <div className="absolute -top-6 right-2 text-xs text-sky-400 animate-pulse">
+                        Refreshing...
+                      </div>
+                    )}
+                    <LatestEpisodesLayout
+                      title="Latest Episodes"
+                      endpoint="recently-updated"
+                      data={latestEpisodes?.data || homeData?.latestEpisode}
+                    />
+                  </div>
                 )}
 
                 {/* Newly Added */}
