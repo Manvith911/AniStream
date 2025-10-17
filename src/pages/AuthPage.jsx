@@ -62,7 +62,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-r from-purple-900 to-indigo-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-neutral-800 rounded-xl shadow-lg p-8 space-y-6 text-white">
         <h2 className="text-3xl font-bold text-center">
           {isLogin ? "Login to Your Account" : "Create a New Account"}
@@ -95,7 +95,7 @@ const AuthPage = () => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-md transition"
+            className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-black font-semibold rounded-md transition"
             disabled={loading}
           >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
