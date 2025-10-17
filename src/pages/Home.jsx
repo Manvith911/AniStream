@@ -1,26 +1,32 @@
-import { useEffect, useState } from "react";
+// React & Utilities
+import { useEffect } from "react";
 import { Helmet } from "react-helmet";
+
+// Components
 import Loader from "../components/Loader";
 import HeroBanner from "../components/HeroBanner";
 import Footer from "../components/Footer";
+
+// Layouts
 import MainLayout from "../layouts/MainLayout";
 import DynamicLayout from "../layouts/DynamicLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
 import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
+
+// Hooks & Stores
 import { useApi } from "../services/useApi";
 import useGenresStore from "../store/genresStore";
 import useTopTenStore from "../store/toptenStore";
+
+// Utils
 import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
-import { supabase } from "../services/supabaseClient";
 
 const Home = () => {
-  // ====== State ======
-  const [profile, setProfile] = useState(null);
-
   // ====== API Calls ======
   const { data, isLoading, error, isError } = useApi("/home");
+
   const {
     data: latestEpisodes,
     isLoading: isLatestLoading,
@@ -42,33 +48,18 @@ const Home = () => {
     }
   }, [data, setTopTen]);
 
-  // Fetch logged-in user's profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      setProfile(profileData);
-    };
-
-    fetchProfile();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(() => fetchProfile());
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
   // ====== Error Handling ======
   if (isError) {
     notify("error", error.message);
     return null;
   }
 
+  // ====== Data Extraction ======
   const homeData = data?.data;
 
+  // ============================
+  // 🧩 Render
+  // ============================
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
       <Helmet>
@@ -81,21 +72,6 @@ const Home = () => {
         />
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
-
-      {/* Optional: show profile info */}
-      {profile && (
-        <div className="absolute top-24 right-6 bg-card p-3 rounded-md flex items-center gap-2 z-50">
-          <img
-            src={profile.avatar_url || "/default-avatar.png"}
-            alt="Avatar"
-            className="w-10 h-10 rounded-full"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">{profile.username || profile.email}</span>
-            <span className="text-xs text-gray-400">{profile.bio || "Welcome back!"}</span>
-          </div>
-        </div>
-      )}
 
       {isLoading ? (
         <Loader className="h-[100dvh]" />
