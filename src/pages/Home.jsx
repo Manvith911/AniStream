@@ -123,7 +123,7 @@ const Home = () => {
                     )}
                     <LatestEpisodesLayout
                       title="Latest Episodes"
-                      endpoint="/animes/recently-updated"
+                      viewMoreUrl="/animes/recently-updated"  // <-- fixed here to avoid double slashes
                       data={latestEpisodes?.data?.response || homeData?.latestEpisode}
                     />
                   </div>
