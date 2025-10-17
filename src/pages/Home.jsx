@@ -1,39 +1,44 @@
+// React & Utilities
 import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 
+// Components
 import Loader from "../components/Loader";
 import HeroBanner from "../components/HeroBanner";
+import Footer from "../components/Footer";
+
+// Layouts
 import MainLayout from "../layouts/MainLayout";
 import DynamicLayout from "../layouts/DynamicLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
 import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
-import Footer from "../components/Footer";
 
+// Hooks & Stores
 import { useApi } from "../services/useApi";
 import useGenresStore from "../store/genresStore";
 import useTopTenStore from "../store/toptenStore";
 
+// Utils
 import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
 
+
 const Home = () => {
-  // --- Fetch home page static data ---
+  // ====== API Calls ======
   const { data, isLoading, error, isError } = useApi("/home");
 
-  // --- Fetch latest episodes with hourly refresh ---
   const {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
-  } = useApi("/animes/recently-updated", {
-    refetchInterval: 3600000, // 1 hour
-  });
+  } = useApi("/recently-updated", { refetchInterval: 60000 });
 
-  // --- Set stores ---
+  // ====== Global Stores ======
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
+  // ====== Effects ======
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
@@ -44,17 +49,21 @@ const Home = () => {
     }
   }, [data, setTopTen]);
 
-  // --- Handle errors ---
+  // ====== Error Handling ======
   if (isError) {
     notify("error", error.message);
     return null;
   }
 
+  // ====== Data Extraction ======
   const homeData = data?.data;
 
+  // ============================
+  // 🧩 Render
+  // ============================
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
-      {/* --- SEO --- */}
+      {/* 🧠 SEO Meta */}
       <Helmet>
         <title>
           Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime Website
@@ -66,15 +75,16 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
+      {/* 🌀 Loader */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
-          {/* --- Hero Section --- */}
+          {/* 🏞 Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
-            {/* --- Trending Section --- */}
+            {/* 🔥 Trending Section */}
             <MainLayout
               title="Trending Now"
               data={homeData?.trending}
@@ -82,7 +92,7 @@ const Home = () => {
               label="Trending"
             />
 
-            {/* --- Dynamic 4-grid Sections --- */}
+            {/* 🧩 Dynamic 4-Grid Sections */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -106,11 +116,11 @@ const Home = () => {
               />
             </div>
 
-            {/* --- Main Content + Sidebar --- */}
+            {/* 🏠 Main Content + Sidebar */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
-              {/* LEFT: Main anime feeds */}
+              {/* LEFT: Main Anime Feeds */}
               <div className="col-span-12 xl:col-span-9 space-y-10 overflow-hidden">
-                {/* --- Latest Episodes --- */}
+                {/* Latest Episodes */}
                 {isLatestLoading ? (
                   <Loader className="h-40" />
                 ) : (
@@ -123,14 +133,12 @@ const Home = () => {
                     <LatestEpisodesLayout
                       title="Latest Episodes"
                       endpoint="recently-updated"
-                      data={Array.isArray(latestEpisodes?.data)
-                        ? latestEpisodes.data
-                        : []} // Safe check
+                      data={latestEpisodes?.data || homeData?.latestEpisode}
                     />
                   </div>
                 )}
 
-                {/* --- Newly Added --- */}
+                {/* Newly Added */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Newly Added"
@@ -140,7 +148,7 @@ const Home = () => {
                   />
                 </div>
 
-                {/* --- Top Upcoming --- */}
+                {/* Top Upcoming */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Top Upcoming"
@@ -158,7 +166,7 @@ const Home = () => {
               </aside>
             </div>
 
-            {/* --- Footer --- */}
+            {/* 🦶 Footer */}
             <Footer />
           </div>
         </>
