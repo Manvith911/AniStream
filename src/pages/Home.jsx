@@ -62,7 +62,6 @@ const Home = () => {
   // ============================
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
-      {/* 🧠 SEO Meta */}
       <Helmet>
         <title>
           Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime Website
@@ -74,16 +73,13 @@ const Home = () => {
         <meta property="og:title" content="Home - AnimeRealm" />
       </Helmet>
 
-      {/* 🌀 Loader */}
       {isLoading ? (
         <Loader className="h-[100dvh]" />
       ) : (
         <>
-          {/* 🏞 Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
-            {/* 🔥 Trending Section */}
             <MainLayout
               title="Trending Now"
               data={homeData?.trending}
@@ -91,7 +87,6 @@ const Home = () => {
               label="Trending"
             />
 
-            {/* 🧩 Dynamic 4-Grid Sections */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -115,11 +110,8 @@ const Home = () => {
               />
             </div>
 
-            {/* 🏠 Main Content + Sidebar */}
             <div className="grid grid-cols-12 gap-8 my-16 px-2">
-              {/* LEFT: Main Anime Feeds */}
               <div className="col-span-12 xl:col-span-9 space-y-10 overflow-hidden">
-                {/* Latest Episodes */}
                 {isLatestLoading ? (
                   <Loader className="h-40" />
                 ) : (
@@ -131,13 +123,12 @@ const Home = () => {
                     )}
                     <LatestEpisodesLayout
                       title="Latest Episodes"
-                      endpoint="animes/recently-updated"
+                      endpoint="/animes/recently-updated"
                       data={latestEpisodes?.data?.response || homeData?.latestEpisode}
                     />
                   </div>
                 )}
 
-                {/* Newly Added */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Newly Added"
@@ -147,7 +138,6 @@ const Home = () => {
                   />
                 </div>
 
-                {/* Top Upcoming */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Top Upcoming"
@@ -158,14 +148,12 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* RIGHT: Sidebar */}
               <aside className="col-span-12 xl:col-span-3 space-y-6 z-[40]">
                 <GenresLayout />
                 <Top10Layout />
               </aside>
             </div>
 
-            {/* 🦶 Footer */}
             <Footer />
           </div>
         </>
