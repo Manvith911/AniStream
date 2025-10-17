@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
+import AuthPage from "./pages/AuthPage";
 import Root from "./pages/Root";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
@@ -34,6 +35,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/anime/:id" element={<DetailPage />} />
           <Route path="/animes/:category/:query?" element={<ListPage />} />
           <Route path="/search" element={<SearchResult />} />
