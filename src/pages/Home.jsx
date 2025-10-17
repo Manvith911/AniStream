@@ -123,8 +123,13 @@ const Home = () => {
                     )}
                     <LatestEpisodesLayout
                       title="Latest Episodes"
-                      viewMoreUrl="/animes/recently-updated"  // <-- fixed here to avoid double slashes
-                      data={latestEpisodes?.data?.response || homeData?.latestEpisode}
+                      viewMoreUrl="/animes/recently-updated"
+                      data={
+                        (latestEpisodes?.data?.response || homeData?.latestEpisode)?.slice(
+                          0,
+                          15
+                        )
+                      }
                     />
                   </div>
                 )}
