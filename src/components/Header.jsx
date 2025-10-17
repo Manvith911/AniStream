@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
+import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../services/useApi";
 import Logo from "./Logo";
@@ -14,7 +15,6 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  // Modal open state
   const [modalOpen, setModalOpen] = useState(false);
 
   const changeInput = (e) => {
@@ -63,7 +63,6 @@ const Header = () => {
     }
   };
 
-  // Toggle modal
   const toggleModal = () => setModalOpen((prev) => !prev);
 
   return (
@@ -176,8 +175,8 @@ const Header = () => {
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-70">
-          <div className="bg-card rounded-lg p-6 w-full max-w-md relative">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-70 px-4">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md relative shadow-lg">
             <button
               onClick={toggleModal}
               className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -186,11 +185,25 @@ const Header = () => {
               <FaXmark size={24} />
             </button>
 
-            <h2 className="text-2xl font-bold mb-4 text-center">Sign In / Sign Up</h2>
+            {/* Favicon Style Welcome */}
+            <div className="flex items-center justify-center mb-6 gap-3">
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-black font-extrabold text-lg select-none">
+                AR
+              </div>
+              <h2 className="text-2xl font-bold text-center">Welcome to AnimeRealm</h2>
+            </div>
+
+            {/* Google Continue Button */}
+            <button
+              onClick={() => alert("Continue with Google clicked!")}
+              className="flex items-center justify-center gap-3 w-full py-2 mb-4 rounded-md border border-gray-600 hover:bg-gray-700 transition text-white"
+            >
+              <FcGoogle size={24} />
+              <span className="font-semibold">Continue with Google</span>
+            </button>
 
             {/* Simple Tabs */}
             <Tabs />
-
           </div>
         </div>
       )}
@@ -198,7 +211,6 @@ const Header = () => {
   );
 };
 
-// Simple Tabs component for Sign In and Sign Up forms
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState("signIn");
 
@@ -235,7 +247,6 @@ const Tabs = () => {
 const SignInForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your sign in logic here
     alert("Sign In submitted");
   };
 
@@ -266,7 +277,6 @@ const SignInForm = () => {
 const SignUpForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your sign up logic here
     alert("Sign Up submitted");
   };
 
