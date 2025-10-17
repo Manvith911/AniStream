@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
@@ -7,6 +8,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -21,13 +23,14 @@ const AuthPage = () => {
         if (error) throw error;
 
         user = data.user;
+
         if (!user.email_confirmed_at) {
           setMessage("Please verify your email before logging in.");
           setLoading(false);
           return;
         }
 
-        window.location.href = "/";
+        navigate("/home");
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
@@ -52,7 +55,7 @@ const AuthPage = () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin },
     });
     if (error) setMessage(error.message);
     setLoading(false);
