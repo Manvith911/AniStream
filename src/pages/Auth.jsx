@@ -3,7 +3,7 @@ import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true); // toggle between login/signup
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -18,14 +18,12 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        // 🟢 LOGIN
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
       } else {
-        // 🟢 SIGN UP
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -34,7 +32,7 @@ const Auth = () => {
         if (error) throw error;
       }
 
-      navigate("/profile");
+      navigate("/home");
     } catch (err) {
       setError(err.message);
     } finally {
