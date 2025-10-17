@@ -34,7 +34,6 @@ const AuthPage = () => {
 
         user = data.user;
 
-        // create profile automatically
         await supabase.from("profiles").upsert({
           id: user.id,
           email: user.email,
@@ -60,33 +59,71 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? "Login" : "Sign Up"}</h2>
-        {message && <p className="text-center text-sm text-red-500 mb-4">{message}</p>}
-        <form onSubmit={handleAuth} className="flex flex-col gap-4">
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
-            className="border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
-            className="border p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
-          <button type="submit"
-            className="bg-primary text-white py-2 rounded-md font-semibold hover:bg-yellow-500 transition"
-            disabled={loading}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
+        <h2 className="text-3xl font-bold text-center text-gray-800">
+          {isLogin ? "Welcome Back 👋" : "Create an Account"}
+        </h2>
+
+        {message && (
+          <div className="bg-red-100 text-red-700 px-4 py-2 rounded text-sm text-center">
+            {message}
+          </div>
+        )}
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+            required
+          />
+
+          <button
+            type="submit"
+            className="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition"
+            disabled={loading}
+          >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
-        <div className="my-4 text-center text-gray-500">OR</div>
-        <button onClick={handleGoogleSignIn}
-          className="flex items-center justify-center gap-2 border py-2 rounded-md hover:bg-gray-100 transition w-full">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-            alt="Google" className="w-5 h-5" />
-          Sign in with Google
+
+        <div className="relative text-center my-4">
+          <span className="bg-white px-2 text-gray-400 text-sm">OR</span>
+          <hr className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 border-gray-200" />
+        </div>
+
+        <button
+          onClick={handleGoogleSignIn}
+          className="flex items-center justify-center gap-3 w-full border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition"
+        >
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          <span className="text-sm font-medium text-gray-700">Sign in with Google</span>
         </button>
-        <p className="text-center text-sm mt-4">
+
+        <p className="text-center text-sm text-gray-600">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span className="text-primary cursor-pointer font-semibold" onClick={() => setIsLogin(!isLogin)}>
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-yellow-600 font-medium hover:underline"
+          >
             {isLogin ? "Sign Up" : "Login"}
-          </span>
+          </button>
         </p>
       </div>
     </div>
