@@ -120,7 +120,11 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 onMouseLeave={handleMouseLeave}
                 onClick={() => handleCardClick(anime.id)}
               >
-                <div className="relative w-full h-0 pb-[140%] rounded-xl overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05]">
+                {/* ✅ Fixed consistent card ratio (safe and minimal) */}
+                <div
+                  className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05] rounded-xl
+                  ${title === "Trending Now" ? "pb-[140%]" : "pb-[145%]"}`}
+                >
                   <img
                     src={anime.poster}
                     alt={anime.title}
@@ -137,7 +141,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                     </div>
                   )}
 
-                  {/* ✅ Hover Details Overlay (on the card) */}
+                  {/* ✅ Hover Details Overlay */}
                   {isHovered && (
                     <div
                       onMouseEnter={handleHoverCardEnter}
