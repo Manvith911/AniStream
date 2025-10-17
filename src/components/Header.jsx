@@ -17,8 +17,9 @@ const Header = () => {
 
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Fetch user profile on mount & on auth change
+  // Fetch user profile
   const fetchProfile = async () => {
     setLoadingProfile(true);
     const {
@@ -43,12 +44,11 @@ const Header = () => {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Search handlers
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
     timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
 
@@ -58,7 +58,7 @@ const Header = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim().length > 0) {
+    if (value.trim()) {
       navigate(`/search?keyword=${value}`);
       resetSearch();
     }
@@ -83,9 +83,15 @@ const Header = () => {
 
   const goToLogin = () => navigate("/auth");
 
-  const logout = async () => {
+  // Dropdown toggle
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
+  // Logout handler
+  const handleLogout = async () => {
     await supabase.auth.signOut();
-    setProfile(null); // Clear profile immediately
+    setProfile(null);
+    setDropdownOpen(false);
+    navigate("/auth");
   };
 
   return (
@@ -145,8 +151,12 @@ const Header = () => {
                             />
                           </div>
                           <div className="info">
-                            <h4 className="title text-sm font-semibold line-clamp-2">{item.title}</h4>
-                            <h6 className="gray text-xs line-clamp-1">{item.alternativeTitle}</h6>
+                            <h4 className="title text-sm font-semibold line-clamp-2">
+                              {item.title}
+                            </h4>
+                            <h6 className="gray text-xs line-clamp-1">
+                              {item.alternativeTitle}
+                            </h6>
                             <div className="flex items-center gap-2 text-xs gray">
                               <h6>{item.aired}</h6>
                               <span className="h-1 w-1 rounded-full bg-primary" />
@@ -166,28 +176,52 @@ const Header = () => {
                       </button>
                     </>
                   ) : (
-                    <h1 className="text-center text-sm text-primary py-3">Anime not found :(</h1>
+                    <h1 className="text-center text-sm text-primary py-3">
+                      Anime not found :(
+                    </h1>
                   )}
                 </div>
               )}
             </div>
 
             {/* Right: Login/Profile */}
-            <div className="flex justify-end sm:ml-4">
+            <div className="flex justify-end sm:ml-4 relative">
               {!loadingProfile && profile ? (
-                <div className="flex items-center gap-2">
+                <div className="relative">
                   <img
                     src={profile.avatar_url || "/default-avatar.png"}
                     alt="Avatar"
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
+                    onClick={toggleDropdown}
                   />
-                  <span>{profile.username || profile.email}</span>
-                  <button
-                    onClick={logout}
-                    className="ml-2 px-2 py-1 bg-red-600 rounded-md text-sm hover:bg-red-700 transition"
-                  >
-                    Logout
-                  </button>
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-44 bg-card shadow-lg rounded-md overflow-hidden z-50">
+                      <button
+                        onClick={() => {
+                          navigate("/edit-profile");
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-neutral-700 transition text-sm"
+                      >
+                        Edit Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/settings");
+                          setDropdownOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left hover:bg-neutral-700 transition text-sm"
+                      >
+                        Settings
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 text-left hover:bg-red-600 transition text-sm text-white"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <button
