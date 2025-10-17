@@ -59,14 +59,14 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-6">
-        <h2 className="text-3xl font-bold text-center text-gray-800">
-          {isLogin ? "Welcome Back 👋" : "Create an Account"}
+    <div className="min-h-screen bg-neutral-900 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-neutral-800 rounded-xl shadow-lg p-8 space-y-6 text-white">
+        <h2 className="text-3xl font-bold text-center">
+          {isLogin ? "Login to Your Account" : "Create a New Account"}
         </h2>
 
         {message && (
-          <div className="bg-red-100 text-red-700 px-4 py-2 rounded text-sm text-center">
+          <div className="bg-red-600 text-white px-4 py-2 rounded text-sm text-center">
             {message}
           </div>
         )}
@@ -77,7 +77,7 @@ const AuthPage = () => {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+            className="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-400"
             required
           />
 
@@ -86,13 +86,13 @@ const AuthPage = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+            className="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-md focus:ring-2 focus:ring-yellow-500 focus:outline-none text-white placeholder-gray-400"
             required
           />
 
           <button
             type="submit"
-            className="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-md transition"
+            className="w-full py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-md transition"
             disabled={loading}
           >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
@@ -100,27 +100,27 @@ const AuthPage = () => {
         </form>
 
         <div className="relative text-center my-4">
-          <span className="bg-white px-2 text-gray-400 text-sm">OR</span>
-          <hr className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 border-gray-200" />
+          <span className="bg-neutral-800 px-2 text-gray-400 text-sm">OR</span>
+          <hr className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 border-neutral-700" />
         </div>
 
         <button
           onClick={handleGoogleSignIn}
-          className="flex items-center justify-center gap-3 w-full border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition"
+          className="flex items-center justify-center gap-3 w-full border border-neutral-600 py-3 rounded-md hover:bg-neutral-700 transition"
         >
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
             alt="Google"
             className="w-5 h-5"
           />
-          <span className="text-sm font-medium text-gray-700">Sign in with Google</span>
+          <span className="text-sm font-medium text-white">Sign in with Google</span>
         </button>
 
-        <p className="text-center text-sm text-gray-600">
+        <p className="text-center text-sm text-gray-400">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-yellow-600 font-medium hover:underline"
+            className="text-yellow-400 font-semibold hover:underline"
           >
             {isLogin ? "Sign Up" : "Login"}
           </button>
