@@ -32,7 +32,7 @@ const Home = () => {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
-  } = useApi("/recently-updated", { refetchInterval: 60000 });
+  } = useApi("/animes/recently-updated", { refetchInterval: 60000 });
 
   // ====== Global Stores ======
   const setGenres = useGenresStore((state) => state.setGenres);
