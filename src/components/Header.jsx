@@ -14,6 +14,9 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
+  // Modal open state
+  const [modalOpen, setModalOpen] = useState(false);
+
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
@@ -60,12 +63,15 @@ const Header = () => {
     }
   };
 
+  // Toggle modal
+  const toggleModal = () => setModalOpen((prev) => !prev);
+
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -154,10 +160,143 @@ const Header = () => {
                 </div>
               )}
             </div>
+
+            {/* Login Button */}
+            <div>
+              <button
+                onClick={toggleModal}
+                className="bg-primary text-black px-4 py-1 rounded-md font-semibold hover:bg-primary-dark transition"
+              >
+                Login
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-70">
+          <div className="bg-card rounded-lg p-6 w-full max-w-md relative">
+            <button
+              onClick={toggleModal}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white"
+              aria-label="Close modal"
+            >
+              <FaXmark size={24} />
+            </button>
+
+            <h2 className="text-2xl font-bold mb-4 text-center">Sign In / Sign Up</h2>
+
+            {/* Simple Tabs */}
+            <Tabs />
+
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
+
+// Simple Tabs component for Sign In and Sign Up forms
+const Tabs = () => {
+  const [activeTab, setActiveTab] = useState("signIn");
+
+  return (
+    <div>
+      <div className="flex justify-center mb-6 gap-4">
+        <button
+          onClick={() => setActiveTab("signIn")}
+          className={`px-4 py-2 rounded-md font-semibold ${
+            activeTab === "signIn"
+              ? "bg-primary text-black"
+              : "bg-gray-700 text-white"
+          }`}
+        >
+          Sign In
+        </button>
+        <button
+          onClick={() => setActiveTab("signUp")}
+          className={`px-4 py-2 rounded-md font-semibold ${
+            activeTab === "signUp"
+              ? "bg-primary text-black"
+              : "bg-gray-700 text-white"
+          }`}
+        >
+          Sign Up
+        </button>
+      </div>
+
+      {activeTab === "signIn" ? <SignInForm /> : <SignUpForm />}
+    </div>
+  );
+};
+
+const SignInForm = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Add your sign in logic here
+    alert("Sign In submitted");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="email"
+        placeholder="Email"
+        required
+        className="w-full rounded-md border border-gray-600 px-3 py-2 text-black"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        required
+        className="w-full rounded-md border border-gray-600 px-3 py-2 text-black"
+      />
+      <button
+        type="submit"
+        className="w-full bg-primary text-black py-2 rounded-md font-semibold hover:bg-primary-dark transition"
+      >
+        Sign In
+      </button>
+    </form>
+  );
+};
+
+const SignUpForm = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Add your sign up logic here
+    alert("Sign Up submitted");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="text"
+        placeholder="Username"
+        required
+        className="w-full rounded-md border border-gray-600 px-3 py-2 text-black"
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        required
+        className="w-full rounded-md border border-gray-600 px-3 py-2 text-black"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        required
+        className="w-full rounded-md border border-gray-600 px-3 py-2 text-black"
+      />
+      <button
+        type="submit"
+        className="w-full bg-primary text-black py-2 rounded-md font-semibold hover:bg-primary-dark transition"
+      >
+        Sign Up
+      </button>
+    </form>
   );
 };
 
