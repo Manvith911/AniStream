@@ -3,57 +3,57 @@ import axios from "axios";
 import config from "../config/config";
 
 export const API_BASE_URL =
-  import.meta.env.VITE_APP_MODE &&
   import.meta.env.VITE_APP_MODE === "development"
     ? config.localUrl
     : config.serverUrl;
 
-// Normal data fetcher
+// ---------- Normal data fetcher ----------
 const fetchData = async (url) => {
   try {
     const { data } = await axios.get(`${API_BASE_URL}${url}`);
     return data;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.response?.data?.message || error.message);
   }
 };
 
-// ✅ Updated useApi (adds timestamp + auto refresh support)
+// ---------- useApi hook ----------
 export const useApi = (endpoint, options = {}) => {
   return useQuery({
     queryKey: [endpoint],
-    queryFn: () => fetchData(`${endpoint}`), // prevent cache
-    retry: 2,
+    queryFn: () => fetchData(endpoint),
+    retry: options.retry ?? 2,
     enabled: !!endpoint,
-    refetchOnWindowFocus: false,
-    refetchInterval: options.refetchInterval || false, // background refresh
-    staleTime: options.staleTime || 0, // always refetch
+    refetchOnWindowFocus: options.refetchOnWindowFocus ?? false,
+    refetchInterval: options.refetchInterval || false,
+    staleTime: options.staleTime || 0,
   });
 };
 
-// Infinite scroll data fetcher
-const fetchInfiniteData = async ({ queryKey, pageParam }) => {
+// ---------- Infinite scroll data fetcher ----------
+const fetchInfiniteData = async ({ queryKey, pageParam = 1 }) => {
+  const endpoint = queryKey[0];
   try {
-    const { data } = await axios.get(API_BASE_URL + queryKey + pageParam);
+    const { data } = await axios.get(`${API_BASE_URL}${endpoint}?page=${pageParam}`);
     return data;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.response?.data?.message || error.message);
   }
 };
 
-// Infinite scroll hook
-export const useInfiniteApi = (endpoint) => {
+// ---------- useInfiniteApi hook ----------
+export const useInfiniteApi = (endpoint, options = {}) => {
   return useInfiniteQuery({
     queryKey: [endpoint],
     queryFn: fetchInfiniteData,
     initialPageParam: 1,
-    retry: 0,
-    getNextPageParam: (lastpage) => {
-      if (lastpage.data.pageInfo.hasNextPage) {
-        return lastpage.data.pageInfo.currentPage + 1;
-      } else {
-        return undefined;
-      }
+    retry: options.retry ?? 0,
+    getNextPageParam: (lastPage) => {
+      return lastPage.pageInfo?.hasNextPage
+        ? lastPage.pageInfo.currentPage + 1
+        : undefined;
     },
+    refetchInterval: options.refetchInterval || false,
+    staleTime: options.staleTime || 0,
   });
 };
