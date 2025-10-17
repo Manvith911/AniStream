@@ -60,12 +60,16 @@ const Header = () => {
     }
   };
 
+  const goToLogin = () => {
+    navigate("/login"); // Navigate to login/signup page
+  };
+
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -74,7 +78,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
+            {/* Middle: Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -154,6 +158,16 @@ const Header = () => {
                 </div>
               )}
             </div>
+
+            {/* Right: Login Button */}
+            <div className="flex justify-end sm:ml-4">
+              <button
+                onClick={goToLogin}
+                className="bg-primary text-black px-4 py-1 rounded-md text-sm font-semibold hover:bg-yellow-400 transition"
+              >
+                Login
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -161,4 +175,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
