@@ -5,8 +5,8 @@ import Heading from "../components/Heading";
 
 const LatestEpisodesLayout = ({
   title = "Latest Episodes",
+  viewMoreUrl = "/animes/recently-updated",
   data,
-  viewMoreUrl = "/animes/recently-updated", // new prop for "View more" link
 }) => {
   return (
     <div className="latest-episodes mt-12 px-4 md:px-8">
