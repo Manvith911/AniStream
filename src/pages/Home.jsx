@@ -23,7 +23,7 @@ const Home = () => {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
-  } = useApi("/api/animes/recently-updated", {
+  } = useApi("animes/recently-updated", {
     refetchInterval: 3600000, // refresh every 1 hour
   });
 
