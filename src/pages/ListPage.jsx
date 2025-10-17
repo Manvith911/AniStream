@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React from "react";
 import { useParams } from "react-router-dom";
 import { useInfiniteApi } from "../services/useApi";
 import Loader from "../components/Loader";
@@ -8,12 +7,12 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Image from "../components/Image";
 import Heading from "../components/Heading";
 import AZ from "../layouts/AZ";
+import React from "react";
 import Footer from "../components/Footer";
 import { Helmet } from "react-helmet";
 
 const ListPage = () => {
-  // List of valid categories/queries
-  const validCategories = [
+  const validateQueries = [
     "top-airing",
     "most-popular",
     "most-favorite",
@@ -32,69 +31,46 @@ const ListPage = () => {
     "genre",
     "producer",
   ];
-
   const { category, query = null } = useParams();
 
-  // Validate category param
-  const isValidCategory = validCategories.includes(category);
+  const isValidQuery = validateQueries.includes(category);
 
-  if (!isValidCategory) {
+  if (!isValidQuery) {
     return <PageNotFound />;
   }
 
-  // Compose API endpoint for infinite loading
   const endpoint = `/animes/${category}${query ? `/${query}` : ""}?page=`;
-
-  // Fetch data with infinite scroll hook
-  const {
-    data,
-    isError,
-    error,
-    isLoading,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteApi(endpoint);
+  const { data, isError, error, isLoading, hasNextPage, fetchNextPage } =
+    useInfiniteApi(endpoint);
 
   if (isError) {
     return <PageNotFound />;
   }
-
   const pages = data?.pages;
 
   return (
     <div className="list-page pt-14">
       <Helmet>
-        <title>{`${category}${query ? ` - ${query}` : ""} Anime - AnimeRealm`}</title>
-        <meta property="og:title" content="Explore - AnimeRealm" />
+        <title>{category} animes</title>
+        <meta property="og:title" content="explore - AnimeRealm" />
       </Helmet>
-
-      {/* Special layout for A-Z list */}
       {category === "az-list" && <AZ selected={query} />}
-
       {pages && !isLoading ? (
         <InfiniteScroll
-          dataLength={pages.flat().length || 0} // Important for infinite scroll
+          dataLength={data?.pages.flat().length || 0} // This is important field to render the next data
           next={fetchNextPage}
           hasMore={hasNextPage}
           loader={<Loader className="h-fit" />}
           endMessage={<Footer />}
         >
           <Heading>
-            {/* Only show category and query if available */}
-            {category !== "az-list" && (
-              <>
-                {category.replace(/-/g, " ")}
-                {query ? ` - ${query}` : ""}
-                {" Anime"}
-              </>
-            )}
+            {query ? "" : category} {query} Anime
           </Heading>
-
           <div className="flex flex-wrap justify-around items-center gap-4">
             {pages.map((page, pageIndex) => (
               <React.Fragment key={pageIndex}>
                 {page.data.response.map((item) => (
-                  <div key={item.id} className="flw-item">
+                  <div key={item.id} className="flw-item rounded-lg overflow-hidden">
                     <Image data={item} />
                   </div>
                 ))}
