@@ -42,7 +42,6 @@ const App = () => {
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
           <Route path="*" element={<PageNotFound />} />
-          <Route path="/auth" element={<AuthPage />} />
         </Routes>
       </main>
     </>
