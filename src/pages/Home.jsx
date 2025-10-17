@@ -23,7 +23,6 @@ import useTopTenStore from "../store/toptenStore";
 import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
 
-
 const Home = () => {
   // ====== API Calls ======
   const { data, isLoading, error, isError } = useApi("/home");
@@ -32,7 +31,7 @@ const Home = () => {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
-  } = useApi("/recently-updated", { refetchInterval: 60000 });
+  } = useApi("/animes/recently-updated", { refetchInterval: 60000 });
 
   // ====== Global Stores ======
   const setGenres = useGenresStore((state) => state.setGenres);
@@ -132,8 +131,8 @@ const Home = () => {
                     )}
                     <LatestEpisodesLayout
                       title="Latest Episodes"
-                      endpoint="recently-updated"
-                      data={latestEpisodes?.data || homeData?.latestEpisode}
+                      endpoint="animes/recently-updated"
+                      data={latestEpisodes?.data?.response || homeData?.latestEpisode}
                     />
                   </div>
                 )}
