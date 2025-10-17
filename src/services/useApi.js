@@ -22,7 +22,7 @@ const fetchData = async (url) => {
 export const useApi = (endpoint, options = {}) => {
   return useQuery({
     queryKey: [endpoint],
-    queryFn: () => fetchData(`${endpoint}?_t=${Date.now()}`), // prevent cache
+    queryFn: () => fetchData(`${endpoint}`), // prevent cache
     retry: 2,
     enabled: !!endpoint,
     refetchOnWindowFocus: false,
