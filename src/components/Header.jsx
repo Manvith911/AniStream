@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,6 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { supabase } from "../services/supabaseClient";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -15,43 +14,17 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Fetch user profile
-  useEffect(() => {
-    const getProfile = async () => {
-      setLoadingProfile(true);
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData?.session?.user) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", sessionData.session.user.id)
-          .single();
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-      setLoadingProfile(false);
-    };
-
-    getProfile();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      getProfile();
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  // Search handlers
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(newValue);
+    }, 500);
   };
 
   const { data, isLoading } = useApi(
@@ -60,7 +33,7 @@ const Header = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim()) {
+    if (value.trim().length > 0) {
       navigate(`/search?keyword=${value}`);
       resetSearch();
     }
@@ -74,32 +47,26 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  };
-
-  const goToLogin = () => navigate("/auth");
-
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setDropdownOpen(false);
-    navigate("/auth");
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar + Logo */}
+          {/* Header container */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+            {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -107,7 +74,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Middle: Search */}
+            {/* Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -121,7 +88,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -130,23 +101,24 @@ const Header = () => {
                 </button>
               </form>
 
+              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
                     <>
-                      {data.data.map((item) => (
+                      {data?.data?.map((item) => (
                         <div
-                          key={item.id}
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
+                          key={item.id}
                         >
                           <div className="poster shrink-0 relative w-10 h-14">
                             <img
+                              className="h-full w-full object-cover object-center rounded-sm"
                               src={item.poster}
                               alt={item.title}
-                              className="h-full w-full object-cover object-center rounded-sm"
                             />
                           </div>
                           <div className="info">
@@ -182,40 +154,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            {/* Right: Profile / Login */}
-            <div className="flex justify-end sm:ml-4 relative">
-              {profile ? (
-                <div>
-                  <img
-                    src={profile.avatar_url || "https://i.pravatar.cc/40"}
-                    alt="avatar"
-                    className="w-10 h-10 rounded-full cursor-pointer"
-                    onClick={toggleDropdown}
-                  />
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 bg-card shadow-lg rounded-md overflow-hidden w-40 text-black z-50">
-                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={() => navigate("/profile/edit")}>
-                        Edit Profile
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={() => navigate("/settings")}>
-                        Settings
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={handleLogout}>
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={goToLogin}
-                  className="bg-primary text-black px-4 py-1 rounded-md text-sm font-semibold hover:bg-yellow-400 transition"
-                >
-                  Login
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -223,4 +161,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 
