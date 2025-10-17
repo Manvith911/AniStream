@@ -15,23 +15,27 @@ import notify from "../utils/Toast";
 import { genres } from "../utils/genres";
 
 const Home = () => {
+  // Fetch home data for static sections
   const { data, isLoading, error, isError } = useApi("/home");
 
+  // Fetch latest episodes with auto-refresh every 60 seconds
   const {
     data: latestEpisodes,
     isLoading: isLatestLoading,
     isFetching: isRefreshing,
-  } = useApi("/recently-updated", {
-    refetchInterval: 60000,
+  } = useApi("/animes/recently-updated", {
+    refetchInterval: 3600000, // refresh every 1 hour
   });
 
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
+  // Set genres store
   useEffect(() => {
     setGenres(genres);
   }, [setGenres]);
 
+  // Set top 10 store
   useEffect(() => {
     if (data?.data) {
       setTopTen(data.data.top10);
@@ -115,12 +119,12 @@ const Home = () => {
                     <LatestEpisodesLayout
                       title="Latest Episodes"
                       endpoint="recently-updated"
-                      data={latestEpisodes?.data || homeData?.latestEpisode}
+                      data={latestEpisodes?.data || []} // always live
                     />
                   </div>
                 )}
 
-                {/* Newly Added (limited width inside column) */}
+                {/* Newly Added */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Newly Added"
@@ -130,7 +134,7 @@ const Home = () => {
                   />
                 </div>
 
-                {/* Top Upcoming (limited width inside column) */}
+                {/* Top Upcoming */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Top Upcoming"
