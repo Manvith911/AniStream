@@ -20,27 +20,29 @@ const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Fetch user profile
-  const fetchProfile = async () => {
-    setLoadingProfile(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      setProfile(profileData);
-    } else {
-      setProfile(null);
-    }
-    setLoadingProfile(false);
-  };
-
   useEffect(() => {
-    fetchProfile();
-    const { data: listener } = supabase.auth.onAuthStateChange(() => fetchProfile());
+    const getProfile = async () => {
+      setLoadingProfile(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", sessionData.session.user.id)
+          .single();
+        setProfile(profileData);
+      } else {
+        setProfile(null);
+      }
+      setLoadingProfile(false);
+    };
+
+    getProfile();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      getProfile();
+    });
+
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -83,10 +85,8 @@ const Header = () => {
 
   const goToLogin = () => navigate("/auth");
 
-  // Dropdown toggle
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
-  // Logout handler
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setProfile(null);
@@ -107,7 +107,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Middle: Search Bar */}
+            {/* Middle: Search */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -130,7 +130,6 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
@@ -184,40 +183,25 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right: Login/Profile */}
+            {/* Right: Profile / Login */}
             <div className="flex justify-end sm:ml-4 relative">
-              {!loadingProfile && profile ? (
-                <div className="relative">
+              {profile ? (
+                <div>
                   <img
-                    src={profile.avatar_url || "/default-avatar.png"}
-                    alt="Avatar"
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
+                    src={profile.avatar_url || "https://i.pravatar.cc/40"}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full cursor-pointer"
                     onClick={toggleDropdown}
                   />
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-card shadow-lg rounded-md overflow-hidden z-50">
-                      <button
-                        onClick={() => {
-                          navigate("/edit-profile");
-                          setDropdownOpen(false);
-                        }}
-                        className="w-full px-4 py-2 text-left hover:bg-neutral-700 transition text-sm"
-                      >
+                    <div className="absolute right-0 mt-2 bg-card shadow-lg rounded-md overflow-hidden w-40 text-black z-50">
+                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={() => navigate("/profile/edit")}>
                         Edit Profile
                       </button>
-                      <button
-                        onClick={() => {
-                          navigate("/settings");
-                          setDropdownOpen(false);
-                        }}
-                        className="w-full px-4 py-2 text-left hover:bg-neutral-700 transition text-sm"
-                      >
+                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={() => navigate("/settings")}>
                         Settings
                       </button>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full px-4 py-2 text-left hover:bg-red-600 transition text-sm text-white"
-                      >
+                      <button className="w-full text-left px-4 py-2 hover:bg-neutral-700" onClick={handleLogout}>
                         Logout
                       </button>
                     </div>
