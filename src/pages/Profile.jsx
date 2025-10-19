@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
-import toast, { Toaster } from "react-hot-toast";
+import notify from "../utils/notify";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState({
@@ -9,17 +9,20 @@ const ProfilePage = () => {
     bio: "",
     avatar_url: "",
   });
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const user = supabase.auth.getUser();
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) return;
+
       const { data } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", userId)
         .single();
+
       if (data) setProfile(data);
     };
     fetchProfile();
@@ -29,19 +32,21 @@ const ProfilePage = () => {
 
   const saveProfile = async () => {
     setLoading(true);
-    const user = supabase.auth.getUser();
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (!userId) return notify("error", "User not logged in.");
+
     const { error } = await supabase
       .from("profiles")
-      .upsert({ ...profile, id: user.id });
+      .upsert({ ...profile, id: userId });
     setLoading(false);
-    if (error) toast.error(error.message);
-    else toast.success("Profile updated!");
+
+    if (error) notify("error", error.message);
+    else notify("success", "Profile updated!");
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center py-10 bg-[#0f0f0f] text-white">
-      <Toaster position="top-right" />
-
       <h2 className="text-3xl font-bold mb-6">Your Profile</h2>
       <div className="w-full max-w-md flex flex-col gap-4">
         <input
@@ -77,7 +82,6 @@ const ProfilePage = () => {
           placeholder="Avatar URL"
           className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none"
         />
-
         <button
           onClick={saveProfile}
           disabled={loading}
