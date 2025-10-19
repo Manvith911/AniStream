@@ -176,7 +176,6 @@ Watch {id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm </title> </Helme
     )}
   </div>
 </div>
-```
 
 );
 };
