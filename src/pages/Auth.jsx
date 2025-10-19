@@ -1,50 +1,51 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, signUp, loginWithGoogle } from "../services/Auth";
-import { Toaster, toast } from "react-hot-toast";
+import notify from "../utils/notify";
 import { FaGoogle } from "react-icons/fa";
 import Logo from "../components/Logo";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
-  const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
   const toggleMode = () => setIsLogin(!isLogin);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
 
     if (isLogin) {
       const { error } = await login(form.email, form.password);
       setLoading(false);
-      if (error) setErrorMsg(error);
-      else navigate("/home");
+      if (error) notify("error", error);
+      else {
+        notify("success", "Logged in successfully!");
+        navigate("/home");
+      }
     } else {
       const { error } = await signUp(form);
       setLoading(false);
-      if (error) setErrorMsg(error);
-      else toast.success("Confirmation email sent! Please verify to login.");
+      if (error) notify("error", error);
+      else notify("success", "Confirmation email sent! Please verify to login.");
     }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     const { error } = await loginWithGoogle();
-    if (error) toast.error(error);
     setLoading(false);
+    if (error) notify("error", error);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] relative overflow-hidden">
-      <Toaster position="top-right" />
-
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="relative z-10 w-full max-w-md bg-card/60 backdrop-blur-xl shadow-2xl rounded-2xl border border-gray-700 p-8 text-center">
         <Logo />
         <h2 className="text-2xl font-bold text-white mt-4 mb-2">
@@ -73,9 +74,6 @@ const Auth = () => {
             placeholder="Password"
             className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none focus:ring-2 focus:ring-primary"
           />
-
-          {errorMsg && <p className="text-red-500 text-sm mt-1">{errorMsg}</p>}
-
           <button
             type="submit"
             disabled={loading}
