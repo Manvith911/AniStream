@@ -1,4 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+
 import Home from "./pages/Home";
 import Root from "./pages/Root";
 import Header from "./components/Header";
@@ -13,9 +15,9 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
+
 import Auth from "./pages/Auth"; // ✅ Combined login/signup
 import ProfilePage from "./pages/Profile"; // Profile page with edit
-import { useEffect, useState } from "react";
 import { supabase } from "./services/supabaseClient";
 
 const App = () => {
