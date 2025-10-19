@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-// Login with email/password
+// Email/password login
 export const login = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -9,17 +9,15 @@ export const login = async (email, password) => {
   return { data, error: error?.message };
 };
 
-// Signup with email/password (only)
+// Email/password signup (only)
 export const signUp = async ({ email, password }) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/login`, // redirect after confirmation
+      emailRedirectTo: `${window.location.origin}/login`,
     },
   });
-
-  // Profile will not be created here; user can update in Profile page later
   return { data, error: error?.message };
 };
 
@@ -27,9 +25,7 @@ export const signUp = async ({ email, password }) => {
 export const loginWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/home`,
-    },
+    options: { redirectTo: `${window.location.origin}/home` },
   });
   return { data, error: error?.message };
 };
