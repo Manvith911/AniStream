@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, signUp, loginWithGoogle } from "../services/Auth";
-import { fetchRandomCharacter } from "../services/characters";
+import { Toaster, toast } from "react-hot-toast";
 import { FaGoogle } from "react-icons/fa";
 import Logo from "../components/Logo";
 
@@ -9,32 +9,13 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    username: "",
-    gender: "",
-    bio: "",
-    avatar_url: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Form input change
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Toggle between login and signup
   const toggleMode = () => setIsLogin(!isLogin);
 
-  // Randomize avatar using AniList
-  const randomizeAvatar = async () => {
-    setLoading(true);
-    const char = await fetchRandomCharacter();
-    if (char) setForm((prev) => ({ ...prev, avatar_url: char.avatar_url }));
-    setLoading(false);
-  };
-
-  // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -49,53 +30,30 @@ const Auth = () => {
       const { error } = await signUp(form);
       setLoading(false);
       if (error) setErrorMsg(error);
-      else navigate("/home");
+      else toast.success("Confirmation email sent! Please verify to login.");
     }
   };
 
-  // Google login
   const handleGoogleLogin = async () => {
     setLoading(true);
     const { error } = await loginWithGoogle();
-    if (error) setErrorMsg(error);
+    if (error) toast.error(error);
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-primary opacity-20 blur-3xl rounded-full -translate-x-1/3 -translate-y-1/3" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-500 opacity-20 blur-3xl rounded-full translate-x-1/3 translate-y-1/3" />
+      <Toaster position="top-right" />
 
-      {/* Card */}
       <div className="relative z-10 w-full max-w-md bg-card/60 backdrop-blur-xl shadow-2xl rounded-2xl border border-gray-700 p-8 text-center">
         <Logo />
         <h2 className="text-2xl font-bold text-white mt-4 mb-2">
           {isLogin ? "Welcome Back" : "Create Account"}
         </h2>
         <p className="text-gray-400 text-sm mb-6">
-          {isLogin
-            ? "Login to continue exploring anime"
-            : "Join the anime community!"}
+          {isLogin ? "Login to continue exploring anime" : "Sign up to join the community"}
         </p>
 
-        {/* Avatar preview for signup */}
-        {!isLogin && (
-          <div className="flex justify-center mb-4">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-primary shadow-lg">
-              <img
-                src={
-                  form.avatar_url ||
-                  "https://via.placeholder.com/150?text=Anime"
-                }
-                alt="Profile Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
           <input
             name="email"
@@ -116,47 +74,6 @@ const Auth = () => {
             className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none focus:ring-2 focus:ring-primary"
           />
 
-          {!isLogin && (
-            <>
-              <input
-                name="username"
-                type="text"
-                value={form.username}
-                onChange={handleChange}
-                required
-                placeholder="Username"
-                className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <select
-                name="gender"
-                value={form.gender || ""}
-                onChange={handleChange}
-                className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-              <textarea
-                name="bio"
-                value={form.bio || ""}
-                onChange={handleChange}
-                placeholder="Write something about yourself..."
-                rows="3"
-                className="px-4 py-2 rounded-md bg-[#FBF8EF] text-black focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              />
-              <button
-                type="button"
-                onClick={randomizeAvatar}
-                disabled={loading}
-                className="px-4 py-2 mt-2 bg-primary text-black rounded-md font-semibold hover:bg-yellow-400 transition-all"
-              >
-                {loading ? "Loading..." : "Random Avatar"}
-              </button>
-            </>
-          )}
-
           {errorMsg && <p className="text-red-500 text-sm mt-1">{errorMsg}</p>}
 
           <button
@@ -168,18 +85,16 @@ const Auth = () => {
                 : "bg-primary hover:bg-yellow-400 text-black"
             }`}
           >
-            {loading ? (isLogin ? "Logging in..." : "Creating account...") : isLogin ? "Login" : "Sign Up"}
+            {loading ? (isLogin ? "Logging in..." : "Signing up...") : isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
 
-        {/* OR separator */}
         <div className="flex items-center my-5">
           <hr className="flex-1 border-gray-600" />
           <span className="text-gray-400 text-xs px-2">OR</span>
           <hr className="flex-1 border-gray-600" />
         </div>
 
-        {/* Google login */}
         <button
           onClick={handleGoogleLogin}
           className="flex items-center justify-center gap-2 w-full py-2 bg-white text-black rounded-md font-semibold hover:bg-gray-200 transition-all"
@@ -187,15 +102,9 @@ const Auth = () => {
           <FaGoogle className="text-lg" /> Continue with Google
         </button>
 
-        {/* Toggle link */}
         <p className="text-gray-400 text-sm mt-6 text-center">
-          {isLogin
-            ? "Don’t have an account? "
-            : "Already have an account? "}
-          <span
-            onClick={toggleMode}
-            className="text-primary cursor-pointer hover:underline"
-          >
+          {isLogin ? "Don’t have an account? " : "Already have an account? "}
+          <span onClick={toggleMode} className="text-primary cursor-pointer hover:underline">
             {isLogin ? "Sign Up" : "Login"}
           </span>
         </p>
