@@ -1,6 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Root from "./pages/Root";
 import Header from "./components/Header";
@@ -16,33 +14,11 @@ import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 
-import Auth from "./pages/Auth"; // ✅ Combined login/signup
-import ProfilePage from "./pages/Profile"; // Profile page with edit
-import { supabase } from "./services/supabaseClient";
-
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
   const togglesidebar = useSidebarStore((state) => state.toggleSidebar);
   const location = useLocation();
   const path = location.pathname === "/";
-  const [session, setSession] = useState(null);
-
-  // Track Supabase auth state
-  useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-    };
-    getSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <>
@@ -53,10 +29,8 @@ const App = () => {
           onClick={togglesidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
-
-        {!path && <Header session={session} />} {/* Pass session to Header */}
+        {!path && <Header />}
         <ScrollToTop />
-
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
@@ -67,24 +41,36 @@ const App = () => {
           <Route path="/characters/:id" element={<CharactersPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
-
-          {/* Auth Route */}
-          <Route
-            path="/login"
-            element={!session ? <Auth /> : <Navigate to="/home" />}
-          />
-
-          {/* Profile Route */}
-          <Route
-            path="/profile"
-            element={session ? <ProfilePage /> : <Navigate to="/login" />}
-          />
-
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
     </>
   );
 };
+
+// pages
+// /
+// /home
+// /:id
+// top-rated
+// most-popular
+// most-favotite
+// completed
+// recently-added
+// recently-updated
+// top-upcoming
+// subbed-anime
+// dubbed-anime
+// movie
+// tv
+// ova
+// ona
+// special
+// events
+// /genre/:genre
+//  /watch/:id?ep=${number}
+//  /character/:id
+//  /people/:id
+// filter
 
 export default App;
