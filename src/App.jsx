@@ -13,10 +13,10 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
-import Auth from "./pages/Auth";
-import ProfilePage from "./pages/ProfilePage";
+import Auth from "./pages/Auth"; // ✅ Combined login/signup
+import ProfilePage from "./pages/Profile"; // Profile page with edit
 import { useEffect, useState } from "react";
-import { supabase } from "./supabaseClient";
+import { supabase } from "./services/supabase";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
@@ -25,7 +25,7 @@ const App = () => {
   const path = location.pathname === "/";
   const [session, setSession] = useState(null);
 
-  // ✅ Track Supabase auth state
+  // Track Supabase auth state
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -52,7 +52,7 @@ const App = () => {
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
 
-        {!path && <Header session={session} />} {/* ✅ Pass session to Header */}
+        {!path && <Header session={session} />} {/* Pass session to Header */}
         <ScrollToTop />
 
         <Routes>
@@ -66,8 +66,13 @@ const App = () => {
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
 
-          {/* ✅ Auth & Profile Routes */}
-          <Route path="/login" element={!session ? <Auth /> : <Navigate to="/home" />} />
+          {/* Auth Route */}
+          <Route
+            path="/login"
+            element={!session ? <Auth /> : <Navigate to="/home" />}
+          />
+
+          {/* Profile Route */}
           <Route
             path="/profile"
             element={session ? <ProfilePage /> : <Navigate to="/login" />}
