@@ -16,7 +16,7 @@ import CharactersPage from "./pages/CharactersPage";
 import Auth from "./pages/Auth"; // ✅ Combined login/signup
 import ProfilePage from "./pages/Profile"; // Profile page with edit
 import { useEffect, useState } from "react";
-import { supabase } from "./services/supabase";
+import { supabase } from "./services/supabaseClient";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
