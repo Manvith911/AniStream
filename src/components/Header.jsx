@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
+import { supabase } from "../services/supabaseClient"; // <-- your Supabase setup file
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -14,17 +15,16 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
+  // --- Auth states ---
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // --- Search logic ---
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(newValue);
-    }, 500);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
 
   const { data, isLoading } = useApi(
@@ -47,25 +47,58 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
+
+  // --- Auth Handlers ---
+  const handleLogin = async () => {
+    navigate("/login");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setShowDropdown(false);
+  };
+
+  const handleViewProfile = () => {
+    navigate("/profile");
+    setShowDropdown(false);
+  };
+
+  // --- Check Supabase session on mount ---
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUser(data.user);
+    };
+    getUser();
+
+    // Listen for login/logout changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  // --- Derive avatar / initials ---
+  const avatarUrl =
+    user?.user_metadata?.avatar_url ||
+    `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user?.email || "Guest"}`;
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -74,8 +107,8 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
-            <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
+            {/* Center: Search Bar */}
+            <div className="relative w-full sm:ml-6 sm:max-w-[400px] flex-grow">
               <form
                 onSubmit={handleSubmit}
                 className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
@@ -88,11 +121,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -103,7 +132,7 @@ const Header = () => {
 
               {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
+                <div className="absolute top-full mt-1 left-0 w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
@@ -150,6 +179,44 @@ const Header = () => {
                     <h1 className="text-center text-sm text-primary py-3">
                       Anime not found :(
                     </h1>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Login/Profile Section */}
+            <div className="relative flex items-center justify-end min-w-[100px]">
+              {!user ? (
+                <button
+                  onClick={handleLogin}
+                  className="bg-primary text-black font-semibold px-4 py-1 rounded-full hover:bg-yellow-400 transition-all"
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="relative">
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full cursor-pointer border-2 border-primary"
+                    onClick={() => setShowDropdown((prev) => !prev)}
+                  />
+
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-40 bg-card rounded-md shadow-lg border border-gray-700 z-50">
+                      <button
+                        onClick={handleViewProfile}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg text-sm"
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg text-sm text-red-500"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
