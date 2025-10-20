@@ -1,6 +1,6 @@
 import { FaArrowCircleRight, FaSearch } from "react-icons/fa";
 import banner from "../assets/homeBanner.png";
-import background from "../assets/background.jpg";   // ← imported asset
+import background from "../assets/background.jpg"; // Import the background image
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -20,31 +20,34 @@ const Root = () => {
     "Sailor Moon",
   ];
 
-  const changeInput = (e) => setValue(e.target.value);
+  const changeInput = (e) => {
+    setValue(e.target.value);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!value.trim()) return;
-    navigate(`/search?keyword=${encodeURIComponent(value)}`);
+    navigate(`/search?keyword=${value}`);
   };
 
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat text-white"
-      style={{ backgroundImage: `url(${background})` }}   // ← used here
+      style={{ backgroundImage: `url(${background})` }} // Use the imported background image
     >
-      {/* softer overlay so the picture is visible */}
-      <div className="min-h-screen bg-black/50">
+      <div className="bg-black bg-opacity-50 min-h-screen"> {/* Reduced opacity for better visibility */}
         <Navbar />
 
         <div className="flex items-center justify-center px-4 md:px-10 py-10">
-          <div className="w-full max-w-6xl bg-[#1e1e2f]/90 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row backdrop-blur-md">
-            {/* LEFT */}
+          <div className="w-full max-w-6xl bg-[#1e1e2f] rounded-3xl overflow-hidden shadow-lg flex flex-col md:flex-row backdrop-blur-md">
+            {/* Left Section */}
             <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-6">
+              {/* Logo */}
               <div className="flex justify-start">
                 <Logo />
               </div>
 
+              {/* Search Form */}
               <form
                 onSubmit={handleSubmit}
                 className="flex items-center rounded-full overflow-hidden bg-white border-2 border-pink-400"
@@ -54,31 +57,35 @@ const Root = () => {
                   value={value}
                   onChange={changeInput}
                   placeholder="Search anime..."
-                  className="flex-grow px-4 py-3 text-black placeholder-gray-500 text-base focus:outline-none"
+                  className="flex-grow px-4 py-2 text-black placeholder-gray-500 text-base focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="bg-pink-500 text-white px-5 py-3 hover:bg-pink-400 transition"
+                  className="bg-pink-500 text-white px-4 py-2 hover:bg-pink-400 transition"
                 >
                   <FaSearch />
                 </button>
               </form>
 
+              {/* Trending Tags */}
               <div>
                 <p className="text-sm text-gray-100 mb-2 font-semibold">Trending now:</p>
                 <div className="flex flex-wrap gap-2">
-                  {trendingKeywords.map((k) => (
+                  {trendingKeywords.map((keyword, index) => (
                     <button
-                      key={k}
-                      onClick={() => navigate(`/search?keyword=${encodeURIComponent(k)}`)}
+                      key={index}
+                      onClick={() =>
+                        navigate(`/search?keyword=${encodeURIComponent(keyword)}`)
+                      }
                       className="bg-[#2f2f4f] hover:bg-pink-500 hover:text-black transition px-3 py-1 rounded-full text-sm text-gray-200"
                     >
-                      {k}
+                      {keyword}
                     </button>
                   ))}
                 </div>
               </div>
 
+              {/* CTA Button inside gradient capsule */}
               <div className="mt-6">
                 <div className="bg-gradient-to-r from-pink-400 via-fuchsia-500 to-purple-600 p-[2px] rounded-full inline-block shadow-lg">
                   <Link
@@ -91,7 +98,7 @@ const Root = () => {
               </div>
             </div>
 
-            {/* RIGHT */}
+            {/* Right Section - Banner */}
             <div className="w-full md:w-1/2">
               <img
                 src={banner}
