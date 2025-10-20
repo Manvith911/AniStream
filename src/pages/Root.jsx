@@ -35,8 +35,8 @@ const Root = () => {
         backgroundImage: `url(${background})`,
       }}
     >
-      {/* Slight dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+      {/* Lighter overlay for better visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40 backdrop-blur-[1px]"></div>
 
       {/* Content Layer */}
       <div className="relative min-h-screen flex flex-col">
@@ -115,7 +115,7 @@ const Root = () => {
                 alt="Anime Banner"
                 className="w-full h-full object-cover opacity-95"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b14]/60 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b14]/50 to-transparent"></div>
             </div>
           </div>
         </div>
