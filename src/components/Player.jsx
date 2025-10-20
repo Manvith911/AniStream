@@ -11,7 +11,7 @@ const Player = ({
   hasPrevEp,
 }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("megaPlay"); // Default to MegaPlay
+  const [server, setServer] = useState("megaPlay");
   const [loading, setLoading] = useState(true);
 
   const iframeSrc = useMemo(() => {
@@ -20,20 +20,19 @@ const Player = ({
     return `https://${base}/stream/s-2/${epId}/${category}`;
   }, [server, episodeId, category]);
 
-  const handleIframeLoad = () => setLoading(false);
   useEffect(() => setLoading(true), [server, category, episodeId]);
+  const handleIframeLoad = () => setLoading(false);
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col items-center text-white rounded-xl overflow-hidden bg-[#0e0e10] border border-[#2a2a2f] shadow-[0_0_15px_rgba(255,0,128,0.15)]">
-      {/* --- Player Frame --- */}
-      <div className="relative w-full aspect-video bg-black rounded-t-xl overflow-hidden">
+    <div className="w-full max-w-5xl mx-auto bg-[#0b0b0d] rounded-lg overflow-hidden border border-[#1f1f23] shadow-md">
+      {/* --- Video Frame --- */}
+      <div className="relative aspect-video bg-black">
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-10">
-            <img src={loaderGif} alt="Loading..." className="w-16 h-16 mb-2 opacity-90" />
-            <p className="text-gray-300 text-sm font-medium">Loading episode...</p>
+            <img src={loaderGif} alt="Loading..." className="w-12 h-12 mb-2 opacity-90" />
+            <p className="text-gray-300 text-sm">Loading...</p>
           </div>
         )}
-
         <iframe
           src={iframeSrc}
           width="100%"
@@ -44,80 +43,63 @@ const Player = ({
         ></iframe>
       </div>
 
-      {/* --- Controls & Info --- */}
-      <div className="w-full bg-[#151518] p-4 flex flex-col gap-4 border-t border-[#2a2a2f]">
-        {/* Episode Info Box */}
-        <div className="bg-[#1c1c21] rounded-md p-3 text-center text-sm shadow-inner border border-[#2c2c31]">
-          <p className="text-gray-300">
-            You are watching{" "}
-            <span className="text-pink-500 font-semibold">
-              Episode {currentEp?.episodeNumber}
-            </span>
-          </p>
-          {currentEp?.isFiller && (
-            <p className="text-red-400 mt-1">This is a filler episode 👻</p>
-          )}
-          <p className="text-xs text-gray-500 mt-1">
-            If the current server doesn’t work, try switching below.
-          </p>
+      {/* --- Controls --- */}
+      <div className="bg-[#141416] border-t border-[#1f1f23] px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-gray-300">
+        {/* Left side: Server and Category */}
+        <div className="flex flex-wrap gap-2">
+          {["vidWish", "megaPlay"].map((srv) => (
+            <button
+              key={srv}
+              onClick={() => setServer(srv)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 ${
+                server === srv
+                  ? "bg-[#2563eb] text-white"
+                  : "bg-[#1f1f23] hover:bg-[#2a2a2e] text-gray-300"
+              }`}
+            >
+              {srv === "vidWish" ? "HD-1" : "HD-2"}
+            </button>
+          ))}
+          {["sub", "dub"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setCategory(type)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 ${
+                category === type
+                  ? "bg-[#2563eb] text-white"
+                  : "bg-[#1f1f23] hover:bg-[#2a2a2e] text-gray-300"
+              }`}
+            >
+              {type.toUpperCase()}
+            </button>
+          ))}
         </div>
 
-        {/* Server & Language Switcher */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
-          {/* Servers */}
-          <div className="flex gap-2">
-            {["vidWish", "megaPlay"].map((srv) => (
-              <button
-                key={srv}
-                onClick={() => setServer(srv)}
-                className={`px-5 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
-                  server === srv
-                    ? "bg-pink-500 text-white shadow-[0_0_10px_rgba(255,0,128,0.6)]"
-                    : "bg-[#2a2a31] hover:bg-[#3a3a42] text-gray-300"
-                }`}
-              >
-                {srv === "vidWish" ? "HD-1" : "HD-2"}
-              </button>
-            ))}
-          </div>
-
-          {/* Category (Sub / Dub) */}
-          <div className="flex gap-2">
-            {["sub", "dub"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setCategory(type)}
-                className={`px-5 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
-                  category === type
-                    ? "bg-pink-500 text-white shadow-[0_0_10px_rgba(255,0,128,0.6)]"
-                    : "bg-[#2a2a31] hover:bg-[#3a3a42] text-gray-300"
-                }`}
-              >
-                {type.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-center gap-4 mt-1">
+        {/* Right side: Episode Nav */}
+        <div className="flex gap-2 justify-center sm:justify-end">
           {hasPrevEp && (
             <button
-              className="flex items-center gap-1 bg-pink-500 hover:bg-pink-400 text-black px-4 py-1.5 rounded-md text-sm font-semibold transition"
               onClick={() => changeEpisode("prev")}
+              className="flex items-center gap-1 bg-[#2563eb] hover:bg-[#3b82f6] text-white px-3 py-1.5 rounded-md text-sm font-medium"
             >
-              <TbPlayerTrackPrevFilled size={18} /> Prev
+              <TbPlayerTrackPrevFilled size={16} /> Prev
             </button>
           )}
           {hasNextEp && (
             <button
-              className="flex items-center gap-1 bg-pink-500 hover:bg-pink-400 text-black px-4 py-1.5 rounded-md text-sm font-semibold transition"
               onClick={() => changeEpisode("next")}
+              className="flex items-center gap-1 bg-[#2563eb] hover:bg-[#3b82f6] text-white px-3 py-1.5 rounded-md text-sm font-medium"
             >
-              Next <TbPlayerTrackNextFilled size={18} />
+              Next <TbPlayerTrackNextFilled size={16} />
             </button>
           )}
         </div>
+      </div>
+
+      {/* --- Bottom Info (small, subtle like HiAnime) --- */}
+      <div className="bg-[#0f0f12] text-center text-xs text-gray-500 py-2 border-t border-[#1f1f23]">
+        Episode {currentEp?.episodeNumber}
+        {currentEp?.isFiller && <span className="text-red-400"> • Filler Episode 👻</span>}
       </div>
     </div>
   );
