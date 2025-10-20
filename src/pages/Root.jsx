@@ -35,8 +35,8 @@ const Root = () => {
         backgroundImage: `url(${background})`,
       }}
     >
-      {/* Lighter overlay for better visibility */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40 backdrop-blur-[1px]"></div>
+      {/* Lighter overlay for better visibility (reduced opacity) */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-black/15 backdrop-blur-[1px]"></div>
 
       {/* Content Layer */}
       <div className="relative min-h-screen flex flex-col">
@@ -101,6 +101,7 @@ const Root = () => {
                   <Link
                     to="/home"
                     className="flex items-center gap-2 px-6 py-3 bg-pink-600 text-white font-semibold rounded-full hover:bg-pink-700 transition-all duration-300 shadow-lg"
+                    style={{ backgroundColor: "rgb(219 39 119)" }} // force pink color if tailwind doesn't apply
                   >
                     Watch Anime <FaArrowCircleRight />
                   </Link>
