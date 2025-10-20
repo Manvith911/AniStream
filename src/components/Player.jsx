@@ -1,32 +1,23 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useRef, useState } from "react";
-import {
-  TbPlayerTrackPrevFilled,
-  TbPlayerTrackNextFilled,
-} from "react-icons/tb";
+import { useState } from "react";
+import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb";
 
-const Player = ({
-  episodeId,
-  currentEp,
-  changeEpisode,
-  hasNextEp,
-  hasPrevEp,
-}) => {
+const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("vidWish");
+  const [server, setServer] = useState("megaPlay"); // 🔹 Default to megaplay
 
   const changeCategory = (newType) => {
-    if (newType !== category) {
-      setCategory(newType);
-    }
+    if (newType !== category) setCategory(newType);
   };
-  function changeServer(newServer) {
+
+  const changeServer = (newServer) => {
     if (newServer !== server) setServer(newServer);
-  }
+  };
 
   return (
-    <>
-      <div className="w-full bg-background aspect-video relative rounded-sm  max-w-screen-xl overflow-hidden">
+    <div className="w-full flex flex-col items-center bg-[#181818] rounded-xl shadow-lg overflow-hidden border border-[#242424]">
+      {/* Player Frame */}
+      <div className="w-full max-w-screen-xl aspect-video bg-black relative rounded-t-xl overflow-hidden">
         <iframe
           src={`https://${
             server === "vidWish" ? "vidwish.live" : "megaplay.buzz"
@@ -34,78 +25,87 @@ const Player = ({
           width="100%"
           height="100%"
           allowFullScreen
+          className="w-full h-full"
         ></iframe>
       </div>
-      <div className="category flex flex-wrap flex-col sm:flex-row items-center justify-center  sm:justify-between px-2 md:px-20 gap-3 bg-lightbg py-2">
-        <div className="servers flex gap-4">
+
+      {/* Player Controls */}
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-[#1f1f1f]/90 px-4 py-3 text-white gap-4 rounded-b-xl border-t border-[#292929]">
+        {/* Server Switcher */}
+        <div className="flex gap-3">
           <button
             onClick={() => changeServer("vidWish")}
-            className={`${
+            className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
               server === "vidWish"
-                ? "bg-primary text-black"
-                : "bg-btnbg  text-white"
-            } px-2 py-1 rounded text-sm font-semibold`}
+                ? "bg-[#ff6699] text-black"
+                : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+            }`}
           >
-            vidwish
+            VidWish
           </button>
           <button
             onClick={() => changeServer("megaPlay")}
-            className={`${
+            className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
               server === "megaPlay"
-                ? "bg-primary text-black"
-                : "bg-btnbg  text-white"
-            } px-2 py-1 rounded text-sm font-semibold`}
+                ? "bg-[#ff6699] text-black"
+                : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+            }`}
           >
-            megaplay
+            MegaPlay
           </button>
         </div>
-        <div className="flex gap-5">
-          <div className="sound flex gap-3">
+
+        {/* Category + Episode Controls */}
+        <div className="flex flex-wrap gap-4 items-center justify-center">
+          <div className="flex gap-3">
             {["sub", "dub"].map((type) => (
               <button
                 key={type}
                 onClick={() => changeCategory(type)}
-                className={`${
+                className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
                   category === type
-                    ? "bg-primary text-black"
-                    : "bg-btnbg  text-white"
-                } px-2 py-1 rounded text-sm font-semibold`}
+                    ? "bg-[#ff6699] text-black"
+                    : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+                }`}
               >
                 {type.toUpperCase()}
               </button>
             ))}
           </div>
-          <div className="btns flex gap-4">
+
+          <div className="flex gap-3">
             {hasPrevEp && (
               <button
-                title="prev"
-                className="prev bg-primary px-2 py-1 rounded-md text-black"
+                title="Previous Episode"
+                className="bg-[#ff6699] hover:bg-[#ff7bab] text-black px-2.5 py-1.5 rounded-md transition"
                 onClick={() => changeEpisode("prev")}
               >
-                <TbPlayerTrackPrevFilled />
+                <TbPlayerTrackPrevFilled size={18} />
               </button>
             )}
             {hasNextEp && (
               <button
-                title="next"
-                className="next bg-primary px-2 py-1 rounded-md text-black"
+                title="Next Episode"
+                className="bg-[#ff6699] hover:bg-[#ff7bab] text-black px-2.5 py-1.5 rounded-md transition"
                 onClick={() => changeEpisode("next")}
               >
-                <TbPlayerTrackNextFilled />
+                <TbPlayerTrackNextFilled size={18} />
               </button>
             )}
           </div>
         </div>
-        <div className="flex flex-col">
+
+        {/* Episode Info */}
+        <div className="flex flex-col text-center sm:text-right text-sm">
           <p className="text-gray-400">
-            you are watching Episode {currentEp.episodeNumber}
+            You are watching <span className="text-white font-medium">Episode {currentEp.episodeNumber}</span>
           </p>
           {currentEp.isFiller && (
-            <p className="text-red-400">your are watching filler Episode 👻</p>
+            <p className="text-[#ff6b6b]">You are watching a filler episode 👻</p>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
