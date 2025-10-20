@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Loader from "../components/Loader";
 import Player from "../components/Player";
@@ -8,6 +8,7 @@ import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
 import { MdTableRows } from "react-icons/md";
 import { HiMiniViewColumns } from "react-icons/hi2";
+import Recommended from "../layouts/Recommended";
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -15,9 +16,11 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const ep = searchParams.get("ep");
 
+  // Fetch episodes
   const { data: epData, isError: epError, isLoading: epLoading } = useApi(`/episodes/${id}`);
   const episodes = epData?.data;
 
+  // Fetch anime details
   const { data: detailsData, isError: detailsError, isLoading: detailsLoading } = useApi(`/anime/${id}`);
   const details = detailsData?.data;
 
@@ -37,7 +40,9 @@ const WatchPage = () => {
   }, [ep, episodes]);
 
   if (epError || detailsError) return <PageNotFound />;
-  if (epLoading || detailsLoading || !episodes || !details) return <Loader className="h-screen" />;
+  if (epLoading || detailsLoading || !episodes || !details) {
+    return <Loader className="h-screen" />;
+  }
 
   const currentEp = episodes.find((e) => e.id.split("ep=").pop() === ep);
   if (!currentEp) return <Loader className="h-screen" />;
@@ -55,26 +60,29 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="min-h-screen bg-[#0e0e10] p-4 text-white">
+    <div className="min-h-screen flex flex-col bg-[#0e0e10] p-4 text-white">
       <Helmet>
         <title>{`${details?.title} - Episode ${currentEp?.episodeNumber}`}</title>
       </Helmet>
 
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <main className="flex-1 flex flex-col lg:flex-row gap-6">
         {/* Left: Episode List */}
         <div className="lg:w-[25%] bg-[#1a1a1f] rounded-xl p-4 max-h-[80vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-sm font-semibold">Episodes</h3>
             <div className="flex bg-[#2a2a2f] rounded-md">
               <button
-                className={`p-2 transition ${layout === "row" ? "bg-primary text-black" : "text-white"}`}
+                className={`p-2 transition ${
+                  layout === "row" ? "bg-primary text-black" : "text-white"
+                }`}
                 onClick={() => setLayout("row")}
               >
                 <MdTableRows size={18} />
               </button>
               <button
-                className={`p-2 transition ${layout === "column" ? "bg-primary text-black" : "text-white"}`}
+                className={`p-2 transition ${
+                  layout === "column" ? "bg-primary text-black" : "text-white"
+                }`}
                 onClick={() => setLayout("column")}
               >
                 <HiMiniViewColumns size={18} />
@@ -82,7 +90,13 @@ const WatchPage = () => {
             </div>
           </div>
 
-          <ul className={`grid gap-1 ${layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
+          <ul
+            className={`grid gap-1 ${
+              layout === "row"
+                ? "grid-cols-1"
+                : "grid-cols-2 sm:grid-cols-3"
+            }`}
+          >
             {episodes.map((episode) => (
               <Episodes
                 key={episode.id}
@@ -116,45 +130,44 @@ const WatchPage = () => {
             className="w-full rounded-lg object-cover shadow-md"
           />
           <div>
-            <h1 className="text-xl font-bold text-white mb-1">{details?.title}</h1>
+            <h1 className="text-xl font-bold text-white mb-1">
+              {details?.title}
+            </h1>
             {details?.alternativeTitle && (
-              <h2 className="text-sm text-gray-400 italic mb-2">{details.alternativeTitle}</h2>
+              <h2 className="text-sm text-gray-400 italic mb-2">
+                {details.alternativeTitle}
+              </h2>
             )}
-            <p className="text-sm text-gray-400 line-clamp-6">{details?.synopsis}</p>
+            <p className="text-sm text-gray-400 line-clamp-6">
+              {details?.synopsis}
+            </p>
           </div>
           <div className="grid grid-cols-1 gap-1 text-xs">
-            <div><span className="text-gray-500">Type:</span> {details?.type}</div>
-            <div><span className="text-gray-500">Status:</span> {details?.status}</div>
-            <div><span className="text-gray-500">Premiered:</span> {details?.premiered}</div>
-            <div><span className="text-gray-500">Duration:</span> {details?.duration}</div>
-            <div><span className="text-gray-500">Genres:</span> {details?.genres?.join(", ")}</div>
-            <div><span className="text-gray-500">Rating:</span> {details?.rating}</div>
+            <div>
+              <span className="text-gray-500">Type:</span> {details?.type}
+            </div>
+            <div>
+              <span className="text-gray-500">Status:</span> {details?.status}
+            </div>
+            <div>
+              <span className="text-gray-500">Premiered:</span> {details?.premiered}
+            </div>
+            <div>
+              <span className="text-gray-500">Duration:</span> {details?.duration}
+            </div>
+            <div>
+              <span className="text-gray-500">Genres:</span>{" "}
+              {details?.genres?.join(", ")}
+            </div>
+            <div>
+              <span className="text-gray-500">Rating:</span> {details?.rating}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Recommended Section */}
-      {details?.recommended && details.recommended.length > 0 && (
-        <div className="mt-10">
-          <h3 className="text-xl font-semibold mb-4">You might also like</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {details.recommended.map((rec) => (
-              <Link
-                key={rec.id}
-                to={`/anime/${rec.id}`}
-                className="block hover:scale-105 transition transform"
-              >
-                <img
-                  src={rec.poster}
-                  alt={rec.title}
-                  className="w-full rounded-lg"
-                />
-                <p className="mt-2 text-sm text-gray-300 text-center">{rec.title}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      <Recommended recommendedList={details.recommended} />
     </div>
   );
 };
