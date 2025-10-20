@@ -88,14 +88,16 @@ const Root = () => {
                 </div>
               </div>
 
-              {/* CTA Button */}
-              <div className="mt-4">
-                <Link
-                  to="/home"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-pink-400 text-black font-semibold rounded-full hover:bg-pink-300 transition shadow-md"
-                >
-                  Watch anime <FaArrowCircleRight />
-                </Link>
+              {/* CTA Button inside gradient capsule */}
+              <div className="mt-6">
+                <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 p-[2px] rounded-full inline-block shadow-lg">
+                  <Link
+                    to="/home"
+                    className="flex items-center gap-2 px-6 py-3 bg-[#121222] text-white font-semibold rounded-full hover:bg-[#1a1a2e] transition-all duration-300"
+                  >
+                    Watch Anime <FaArrowCircleRight />
+                  </Link>
+                </div>
               </div>
             </div>
 
