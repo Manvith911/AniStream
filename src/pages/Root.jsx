@@ -100,7 +100,7 @@ const Root = () => {
                 <div className="p-[2px] rounded-full inline-block bg-gradient-to-r from-pink-400 via-fuchsia-500 to-purple-600 shadow-lg">
                   <Link
                     to="/home"
-                    className="flex items-center gap-2 px-6 py-3 bg-[#1b1b2e]/80 text-white font-semibold rounded-full hover:bg-[#2a2a48]/80 transition-all duration-300"
+                    className="flex items-center gap-2 px-6 py-3 bg-pink-600 text-white font-semibold rounded-full hover:bg-pink-700 transition-all duration-300 shadow-lg"
                   >
                     Watch Anime <FaArrowCircleRight />
                   </Link>
