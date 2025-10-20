@@ -1,4 +1,4 @@
-import { FaArrowCircleRight, FaSearch } from "react-icons/fa";
+import { FaArrowRight, FaSearch } from "react-icons/fa";
 import banner from "../assets/homeBanner.png";
 import background from "../assets/background.jpg";
 import Navbar from "../components/Navbar";
@@ -17,7 +17,7 @@ const Root = () => {
 
   return (
     <div
-      className="min-h-[100dvh] w-full flex flex-col bg-[#131321] text-white"
+      className="min-h-[100vh] w-full bg-[#111122] text-white flex flex-col"
       style={{
         backgroundImage: `url(${background})`,
         backgroundSize: "cover",
@@ -27,12 +27,12 @@ const Root = () => {
     >
       <Navbar />
 
-      {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center px-6 py-10">
-        <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl w-full bg-[#1b1b2a]/95 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-2xl">
-          {/* Left Side */}
-          <section className="flex-1 text-center md:text-left space-y-6">
-            <Logo className="mx-auto md:mx-0 mb-4" />
+      {/* Centered Hero Card */}
+      <main className="flex-grow flex items-center justify-center px-4 md:px-6 py-10">
+        <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-6xl bg-[#1b1b2a]/90 backdrop-blur-md rounded-[2rem] shadow-2xl overflow-hidden border border-[#2a2a3d]">
+          {/* Left Content */}
+          <section className="flex-1 w-full p-8 md:p-12 text-center md:text-left">
+            <Logo className="mx-auto md:mx-0 mb-6" />
 
             {/* Search Bar */}
             <form
@@ -54,30 +54,30 @@ const Root = () => {
               </button>
             </form>
 
-            {/* Top Search */}
-            <div className="text-sm text-gray-300">
+            {/* Top Searches */}
+            <div className="text-sm text-gray-300 mt-6 leading-relaxed">
               <p className="font-semibold text-white mb-1">Top search:</p>
-              <p className="space-x-2 leading-relaxed text-gray-400">
-                One Piece, One-Punch Man Season 3, My Hero Academia, Demon Slayer, 
-                Spy x Family, Jujutsu Kaisen, Chainsaw Man
+              <p className="text-gray-400">
+                One Piece, One Punch Man Season 3, Demon Slayer, Jujutsu Kaisen,
+                My Hero Academia, Spy x Family, Chainsaw Man
               </p>
             </div>
 
             {/* Watch Button */}
             <Link
               to="/home"
-              className="inline-flex items-center justify-center gap-2 bg-pink-400 hover:bg-pink-500 text-black font-semibold rounded-lg px-6 py-3 shadow-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-pink-400 hover:bg-pink-500 text-black font-semibold rounded-lg px-6 py-3 shadow-lg transition-all mt-8"
             >
-              Watch anime <FaArrowCircleRight />
+              Watch anime <FaArrowRight />
             </Link>
           </section>
 
-          {/* Right Side (Banner Image) */}
-          <section className="flex-1 mt-8 md:mt-0 md:ml-8 flex justify-center">
+          {/* Right Image */}
+          <section className="flex-1 flex justify-center items-center p-6 md:p-0">
             <img
               src={banner}
-              alt="Anime collage"
-              className="rounded-3xl shadow-lg w-full max-w-md object-cover opacity-90 hover:opacity-100 transition-opacity"
+              alt="Anime Collage"
+              className="rounded-[1.5rem] w-full max-w-md object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
               loading="lazy"
             />
           </section>
@@ -88,3 +88,4 @@ const Root = () => {
 };
 
 export default Root;
+v
