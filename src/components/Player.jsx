@@ -1,155 +1,109 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb";
 
-// Custom hook to fetch the next episode time
-function useNextEpisodeTime(animeSlug) {
-  const [nextTime, setNextTime] = useState(null);
-
-  useEffect(() => {
-    fetch(`https://animerealm.vercel.app/api/schadule/next/${animeSlug}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.success && json.data?.time) {
-          setNextTime(json.data.time);
-        }
-      })
-      .catch(err => console.error("Failed to fetch next episode time", err));
-  }, [animeSlug]);
-
-  return nextTime;
-}
-
-const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp, animeSlug }) => {
+const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("HD-1");
+  const [server, setServer] = useState("megaPlay"); // 🔹 Default to megaplay
 
-  const nextEpisodeTime = useNextEpisodeTime(animeSlug);
-
-  const formattedNextTime = nextEpisodeTime
-    ? new Date(nextEpisodeTime).toLocaleString(undefined, {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: true,
-      })
-    : null;
-
-  // Server domain mapping
-  const serverHosts = {
-    "HD-1": "megaplay.buzz",
-    "HD-2": "megaplay2.buzz",
-    "HD-3": "vidwish.live",
+  const changeCategory = (newType) => {
+    if (newType !== category) setCategory(newType);
   };
 
-  const streamHost = serverHosts[server] || "megaplay.buzz";
-  const epNumber = episodeId.split("ep=").pop();
+  const changeServer = (newServer) => {
+    if (newServer !== server) setServer(newServer);
+  };
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col items-center text-white font-sans">
-      {/* Video Frame */}
-      <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+    <div className="w-full flex flex-col items-center bg-[#181818] rounded-xl shadow-lg overflow-hidden border border-[#242424]">
+      {/* Player Frame */}
+      <div className="w-full max-w-screen-xl aspect-video bg-black relative rounded-t-xl overflow-hidden">
         <iframe
-          src={`https://${streamHost}/stream/s-2/${epNumber}/${category}`}
+          src={`https://${
+            server === "vidWish" ? "vidwish.live" : "megaplay.buzz"
+          }/stream/s-2/${episodeId.split("ep=").pop()}/${category}`}
+          width="100%"
+          height="100%"
           allowFullScreen
           className="w-full h-full"
         ></iframe>
       </div>
 
       {/* Player Controls */}
-      <div className="w-full bg-[#1f1f1f] px-4 py-4 rounded-b-xl border-t border-[#292929] mt-2 space-y-4">
-        {/* Top Info and Navigation */}
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          {/* Episode Info */}
-          <div className="bg-pink-300 text-black px-4 py-2 rounded font-semibold text-sm">
-            You are watching Episode {currentEp.episodeNumber}
-            <br />
-            <span className="text-xs">
-              If current server doesn't work please try other servers beside.
-            </span>
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-[#1f1f1f]/90 px-4 py-3 text-white gap-4 rounded-b-xl border-t border-[#292929]">
+        {/* Server Switcher */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => changeServer("vidWish")}
+            className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
+              server === "vidWish"
+                ? "bg-[#ff6699] text-black"
+                : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+            }`}
+          >
+            VidWish
+          </button>
+          <button
+            onClick={() => changeServer("megaPlay")}
+            className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
+              server === "megaPlay"
+                ? "bg-[#ff6699] text-black"
+                : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+            }`}
+          >
+            MegaPlay
+          </button>
+        </div>
+
+        {/* Category + Episode Controls */}
+        <div className="flex flex-wrap gap-4 items-center justify-center">
+          <div className="flex gap-3">
+            {["sub", "dub"].map((type) => (
+              <button
+                key={type}
+                onClick={() => changeCategory(type)}
+                className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
+                  category === type
+                    ? "bg-[#ff6699] text-black"
+                    : "bg-[#2a2a2a] text-gray-200 hover:bg-[#343434]"
+                }`}
+              >
+                {type.toUpperCase()}
+              </button>
+            ))}
           </div>
 
-          {/* Prev / Next Buttons */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex gap-3">
             {hasPrevEp && (
               <button
+                title="Previous Episode"
+                className="bg-[#ff6699] hover:bg-[#ff7bab] text-black px-2.5 py-1.5 rounded-md transition"
                 onClick={() => changeEpisode("prev")}
-                className="flex items-center gap-1 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 rounded-md transition"
               >
-                <TbPlayerTrackPrevFilled size={18} /> Prev
+                <TbPlayerTrackPrevFilled size={18} />
               </button>
             )}
             {hasNextEp && (
               <button
+                title="Next Episode"
+                className="bg-[#ff6699] hover:bg-[#ff7bab] text-black px-2.5 py-1.5 rounded-md transition"
                 onClick={() => changeEpisode("next")}
-                className="flex items-center gap-1 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 rounded-md transition"
               >
-                Next <TbPlayerTrackNextFilled size={18} />
+                <TbPlayerTrackNextFilled size={18} />
               </button>
             )}
           </div>
-
-          {/* Extra Buttons */}
-          <div className="flex items-center gap-4 text-sm">
-            <button className="hover:underline">Add to List</button>
-            <button className="text-pink-400 hover:underline">Watch2gether</button>
-          </div>
         </div>
 
-        {/* Server Buttons */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          {/* SUB Servers */}
-          <div className="text-center">
-            <p className="mb-1 text-sm">SUB:</p>
-            {["HD-1", "HD-2", "HD-3"].map((s) => (
-              <button
-                key={`sub-${s}`}
-                onClick={() => {
-                  setServer(s);
-                  setCategory("sub");
-                }}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium mr-1 ${
-                  server === s && category === "sub"
-                    ? "bg-pink-500 text-black"
-                    : "bg-[#2a2a2a] text-white hover:bg-[#343434]"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
-          {/* DUB Servers */}
-          <div className="text-center">
-            <p className="mb-1 text-sm">DUB:</p>
-            {["HD-1", "HD-2", "HD-3"].map((s) => (
-              <button
-                key={`dub-${s}`}
-                onClick={() => {
-                  setServer(s);
-                  setCategory("dub");
-                }}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium mr-1 ${
-                  server === s && category === "dub"
-                    ? "bg-pink-500 text-black"
-                    : "bg-[#2a2a2a] text-white hover:bg-[#343434]"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+        {/* Episode Info */}
+        <div className="flex flex-col text-center sm:text-right text-sm">
+          <p className="text-gray-400">
+            You are watching <span className="text-white font-medium">Episode {currentEp.episodeNumber}</span>
+          </p>
+          {currentEp.isFiller && (
+            <p className="text-[#ff6b6b]">You are watching a filler episode 👻</p>
+          )}
         </div>
-
-        {/* Bottom Estimate Bar */}
-        {formattedNextTime && (
-          <div className="w-full bg-[#2ab7ca] text-black text-sm text-center px-4 py-2 rounded-md font-medium">
-            Estimated the next episode will come at {formattedNextTime}
-          </div>
-        )}
       </div>
     </div>
   );
