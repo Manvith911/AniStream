@@ -1,6 +1,6 @@
 import { FaArrowCircleRight, FaSearch } from "react-icons/fa";
 import banner from "../assets/homeBanner.png";
-import background from "../assets/background.jpg"; // Import the background image
+import background from "../assets/background.jpg";
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -34,10 +34,10 @@ const Root = () => {
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat text-white"
       style={{
-        backgroundImage: `url(${background})`, // Use the imported background image
+        backgroundImage: `url(${background})`,
       }}
     >
-      <div className="bg-black bg-opacity-50 min-h-screen"> {/* Reduced opacity for better visibility */}
+      <div className="bg-black bg-opacity-80 min-h-screen">
         <Navbar />
 
         <div className="flex items-center justify-center px-4 md:px-10 py-10">
