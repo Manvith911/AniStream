@@ -17,7 +17,7 @@ const Root = () => {
 
   return (
     <div
-      className="min-h-[100vh] w-full bg-[#111122] text-white flex flex-col"
+      className="min-h-screen w-full bg-[#111122] text-white flex flex-col"
       style={{
         backgroundImage: `url(${background})`,
         backgroundSize: "cover",
@@ -27,17 +27,18 @@ const Root = () => {
     >
       <Navbar />
 
-      {/* Centered Hero Card */}
-      <main className="flex-grow flex items-center justify-center px-4 md:px-6 py-10">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-6xl bg-[#1b1b2a]/90 backdrop-blur-md rounded-[2rem] shadow-2xl overflow-hidden border border-[#2a2a3d]">
-          {/* Left Content */}
+      {/* Hero Section */}
+      <main className="flex-grow flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-6xl flex flex-col md:flex-row items-center justify-between bg-[#1b1b2a]/90 border border-[#2a2a3d] backdrop-blur-md rounded-[2rem] shadow-2xl overflow-hidden">
+          
+          {/* Left Section */}
           <section className="flex-1 w-full p-8 md:p-12 text-center md:text-left">
-            <Logo className="mx-auto md:mx-0 mb-6" />
+            <Logo className="mx-auto md:mx-0 mb-10" />
 
             {/* Search Bar */}
             <form
               onSubmit={handleSubmit}
-              className="flex items-center justify-between bg-white rounded-lg overflow-hidden shadow-md max-w-md mx-auto md:mx-0"
+              className="flex items-center bg-white rounded-lg overflow-hidden shadow-lg max-w-md mx-auto md:mx-0"
             >
               <input
                 type="text"
@@ -54,29 +55,20 @@ const Root = () => {
               </button>
             </form>
 
-            {/* Top Searches */}
-            <div className="text-sm text-gray-300 mt-6 leading-relaxed">
-              <p className="font-semibold text-white mb-1">Top search:</p>
-              <p className="text-gray-400">
-                One Piece, One Punch Man Season 3, Demon Slayer, Jujutsu Kaisen,
-                My Hero Academia, Spy x Family, Chainsaw Man
-              </p>
-            </div>
-
             {/* Watch Button */}
             <Link
               to="/home"
-              className="inline-flex items-center justify-center gap-2 bg-pink-400 hover:bg-pink-500 text-black font-semibold rounded-lg px-6 py-3 shadow-lg transition-all mt-8"
+              className="inline-flex items-center justify-center gap-2 bg-pink-400 hover:bg-pink-500 text-black font-semibold rounded-lg px-8 py-3 shadow-lg transition-all mt-10"
             >
               Watch anime <FaArrowRight />
             </Link>
           </section>
 
-          {/* Right Image */}
-          <section className="flex-1 flex justify-center items-center p-6 md:p-0">
+          {/* Right Banner */}
+          <section className="flex-1 flex justify-center items-center p-8 md:p-0">
             <img
               src={banner}
-              alt="Anime Collage"
+              alt="Anime Banner"
               className="rounded-[1.5rem] w-full max-w-md object-cover opacity-90 hover:opacity-100 transition-opacity duration-300"
               loading="lazy"
             />
