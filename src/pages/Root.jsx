@@ -40,7 +40,7 @@ const Root = () => {
       <div className="bg-black bg-opacity-80 min-h-screen">
         <Navbar />
 
-        {/* Centered Content Container */}
+        {/* Main content */}
         <div className="flex items-center justify-center px-4 md:px-10 py-10">
           <div className="w-full max-w-6xl bg-[#121222] rounded-3xl overflow-hidden shadow-lg flex flex-col md:flex-row backdrop-blur-md">
             {/* Left Section */}
@@ -53,7 +53,7 @@ const Root = () => {
               {/* Search Form */}
               <form
                 onSubmit={handleSubmit}
-                className="flex items-center rounded-lg overflow-hidden bg-white"
+                className="flex items-center rounded-full overflow-hidden bg-white"
               >
                 <input
                   type="text"
@@ -89,17 +89,17 @@ const Root = () => {
               </div>
 
               {/* CTA Button */}
-              <div>
+              <div className="mt-4">
                 <Link
                   to="/home"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-pink-400 text-black font-semibold rounded-xl hover:bg-pink-300 transition mt-2"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-pink-400 text-black font-semibold rounded-full hover:bg-pink-300 transition shadow-md"
                 >
                   Watch anime <FaArrowCircleRight />
                 </Link>
               </div>
             </div>
 
-            {/* Right Section - Banner Image */}
+            {/* Right Section - Banner */}
             <div className="w-full md:w-1/2">
               <img
                 src={banner}
