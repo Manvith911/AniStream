@@ -15,11 +15,9 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const ep = searchParams.get("ep");
 
-  // Fetch episodes
   const { data: epData, isError: epError, isLoading: epLoading } = useApi(`/episodes/${id}`);
   const episodes = epData?.data;
 
-  // Fetch anime details
   const { data: detailsData, isError: detailsError, isLoading: detailsLoading } = useApi(`/anime/${id}`);
   const details = detailsData?.data;
 
@@ -31,7 +29,6 @@ const WatchPage = () => {
     });
   };
 
-  // Set first episode if none selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -58,14 +55,15 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <>
+    <div className="min-h-screen bg-[#0e0e10] p-4 text-white">
       <Helmet>
         <title>{`${details?.title} - Episode ${currentEp?.episodeNumber}`}</title>
       </Helmet>
 
-      <div className="flex gap-5 flex-col lg:flex-row">
-        {/* Episode List (Left) */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[25%] max-h-[70vh]">
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left: Episode List */}
+        <div className="lg:w-[25%] bg-[#1a1a1f] rounded-xl p-4 max-h-[80vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-sm font-semibold">Episodes</h3>
             <div className="flex bg-[#2a2a2f] rounded-md">
@@ -96,8 +94,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Player (Middle) */}
-        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-lg lg:w-[50%]">
+        {/* Middle: Video Player */}
+        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-lg">
           {ep && id && (
             <Player
               id={id}
@@ -110,8 +108,8 @@ const WatchPage = () => {
           )}
         </div>
 
-        {/* Poster + Details (Right) */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 lg:w-[25%] text-gray-300 space-y-4">
+        {/* Right: Anime Details */}
+        <div className="lg:w-[25%] bg-[#1a1a1f] rounded-xl p-4 text-gray-300 space-y-4">
           <img
             src={details?.poster}
             alt={details?.title}
@@ -122,7 +120,7 @@ const WatchPage = () => {
             {details?.alternativeTitle && (
               <h2 className="text-sm text-gray-400 italic mb-2">{details.alternativeTitle}</h2>
             )}
-            <p className="text-sm text-gray-400">{details?.synopsis}</p>
+            <p className="text-sm text-gray-400 line-clamp-6">{details?.synopsis}</p>
           </div>
           <div className="grid grid-cols-1 gap-1 text-xs">
             <div><span className="text-gray-500">Type:</span> {details?.type}</div>
@@ -137,7 +135,7 @@ const WatchPage = () => {
 
       {/* Recommended Section */}
       {details?.recommended && details.recommended.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-10">
           <h3 className="text-xl font-semibold mb-4">You might also like</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {details.recommended.map((rec) => (
@@ -151,13 +149,13 @@ const WatchPage = () => {
                   alt={rec.title}
                   className="w-full rounded-lg"
                 />
-                <p className="mt-2 text-sm text-gray-300">{rec.title}</p>
+                <p className="mt-2 text-sm text-gray-300 text-center">{rec.title}</p>
               </Link>
             ))}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
