@@ -29,21 +29,22 @@ const Root = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0b0b14] text-white flex flex-col">
       <Navbar />
 
       <div className="flex items-center justify-center px-4 md:px-10 py-10 flex-grow">
+        {/* Box with background image */}
         <div
-          className="w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row border border-[#2a2a3b] bg-cover bg-center bg-no-repeat"
+          className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-[0_0_25px_rgba(0,0,0,0.4)] flex flex-col md:flex-row border border-white/20 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${background})`,
           }}
         >
-          {/* Overlay to improve readability */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+          {/* Dark overlay for readability */}
+          <div className="absolute inset-0 bg-black/40"></div>
 
           {/* Left Section */}
-          <div className="relative w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-6 z-10 bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center gap-6 z-10 backdrop-blur-[1px]">
             {/* Logo */}
             <div className="flex justify-start mb-4">
               <Logo />
@@ -52,7 +53,7 @@ const Root = () => {
             {/* Search Form */}
             <form
               onSubmit={handleSubmit}
-              className="flex items-center bg-white/15 rounded-full overflow-hidden border border-white/30 focus-within:border-pink-400 transition"
+              className="flex items-center bg-white/15 rounded-full overflow-hidden border border-white/30 backdrop-blur-sm focus-within:border-pink-400 transition"
             >
               <input
                 type="text"
@@ -103,12 +104,13 @@ const Root = () => {
           </div>
 
           {/* Right Section - Banner */}
-          <div className="relative w-full md:w-1/2 z-10 bg-black/40 backdrop-blur-sm">
+          <div className="relative w-full md:w-1/2 z-10 backdrop-blur-[1px]">
             <img
               src={banner}
               alt="Anime Banner"
               className="w-full h-full object-cover opacity-95"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b14]/60 to-transparent"></div>
           </div>
         </div>
       </div>
