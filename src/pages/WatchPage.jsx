@@ -31,6 +31,7 @@ const WatchPage = () => {
     });
   };
 
+  // Set first episode if none selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -57,47 +58,13 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="bg-backGround text-white pt-16 max-w-screen-2xl mx-auto px-3 md:px-6 pb-6">
+    <>
       <Helmet>
-        <title>
-          Watch {details.title} – Episode {currentEp.episodeNumber} – AnimeRealm
-        </title>
+        <title>{`${details?.title} - Episode ${currentEp?.episodeNumber}`}</title>
       </Helmet>
 
-      {/* Breadcrumbs */}
-      <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
-        <Link to="/home" className="hover:text-primary">Home</Link>
-        <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
-          {details.title}
-        </Link>
-        <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <h4 className="text-gray-400">Episode {currentEp.episodeNumber}</h4>
-      </div>
-
-      {/* Hero / Details Section */}
-      <div className="flex flex-col lg:flex-row gap-6 mb-8">
-        <div className="lg:w-1/4">
-          <img src={details.poster} alt={details.title} className="w-full rounded-xl shadow-lg" />
-        </div>
-        <div className="lg:w-3/4 space-y-4">
-          <h1 className="text-3xl font-bold">{details.title}</h1>
-          <h2 className="text-xl text-gray-400">{details.alternativeTitle}</h2>
-          <p className="text-gray-300">{details.synopsis}</p>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div><strong>Type:</strong> {details.type}</div>
-            <div><strong>Status:</strong> {details.status}</div>
-            <div><strong>Premiered:</strong> {details.premiered}</div>
-            <div><strong>Duration:</strong> {details.duration}</div>
-            <div><strong>Genres:</strong> {details.genres.join(", ")}</div>
-            <div><strong>Rating:</strong> {details.rating}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main layout */}
-      <div className="flex flex-col-reverse lg:flex-row gap-5">
-        {/* Episodes Sidebar */}
+      <div className="flex gap-5 flex-col lg:flex-row">
+        {/* Episode List (Left) */}
         <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[25%] max-h-[70vh]">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-sm font-semibold">Episodes</h3>
@@ -117,11 +84,7 @@ const WatchPage = () => {
             </div>
           </div>
 
-          <ul
-            className={`grid gap-1 ${
-              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
-            }`}
-          >
+          <ul className={`grid gap-1 ${layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
             {episodes.map((episode) => (
               <Episodes
                 key={episode.id}
@@ -133,8 +96,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Video Player Container */}
-        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-lg">
+        {/* Player (Middle) */}
+        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-lg lg:w-[50%]">
           {ep && id && (
             <Player
               id={id}
@@ -146,10 +109,34 @@ const WatchPage = () => {
             />
           )}
         </div>
+
+        {/* Poster + Details (Right) */}
+        <div className="bg-[#1a1a1f] rounded-xl p-4 lg:w-[25%] text-gray-300 space-y-4">
+          <img
+            src={details?.poster}
+            alt={details?.title}
+            className="w-full rounded-lg object-cover shadow-md"
+          />
+          <div>
+            <h1 className="text-xl font-bold text-white mb-1">{details?.title}</h1>
+            {details?.alternativeTitle && (
+              <h2 className="text-sm text-gray-400 italic mb-2">{details.alternativeTitle}</h2>
+            )}
+            <p className="text-sm text-gray-400">{details?.synopsis}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-1 text-xs">
+            <div><span className="text-gray-500">Type:</span> {details?.type}</div>
+            <div><span className="text-gray-500">Status:</span> {details?.status}</div>
+            <div><span className="text-gray-500">Premiered:</span> {details?.premiered}</div>
+            <div><span className="text-gray-500">Duration:</span> {details?.duration}</div>
+            <div><span className="text-gray-500">Genres:</span> {details?.genres?.join(", ")}</div>
+            <div><span className="text-gray-500">Rating:</span> {details?.rating}</div>
+          </div>
+        </div>
       </div>
 
-      {/* Optional: Recommended / More Section */}
-      {details.recommended && details.recommended.length > 0 && (
+      {/* Recommended Section */}
+      {details?.recommended && details.recommended.length > 0 && (
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">You might also like</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -170,7 +157,7 @@ const WatchPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
