@@ -15,8 +15,13 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const ep = searchParams.get("ep");
 
-  const { data, isError } = useApi(`/episodes/${id}`);
-  const episodes = data?.data;
+  // Fetch episodes
+  const { data: epData, isError: epError, isLoading: epLoading } = useApi(`/episodes/${id}`);
+  const episodes = epData?.data;
+
+  // Fetch anime details
+  const { data: detailsData, isError: detailsError, isLoading: detailsLoading } = useApi(`/anime/${id}`);
+  const details = detailsData?.data;
 
   const updateParams = (newParam) => {
     setSearchParams((prev) => {
@@ -26,22 +31,17 @@ const WatchPage = () => {
     });
   };
 
-  // auto-select first episode if none is selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
       updateParams(firstEp);
     }
-  }, [ep, episodes, setSearchParams]);
+  }, [ep, episodes]);
 
-  if (isError) return <PageNotFound />;
-  if (!episodes) return <Loader className="h-screen" />;
+  if (epError || detailsError) return <PageNotFound />;
+  if (epLoading || detailsLoading || !episodes || !details) return <Loader className="h-screen" />;
 
-  const currentEp =
-    episodes && ep
-      ? episodes.find((e) => e.id.split("ep=").pop() === ep)
-      : null;
-
+  const currentEp = episodes.find((e) => e.id.split("ep=").pop() === ep);
   if (!currentEp) return <Loader className="h-screen" />;
 
   const changeEpisode = (action) => {
@@ -57,10 +57,10 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="bg-backGround pt-16 max-w-screen-2xl mx-auto px-3 md:px-6 pb-6">
+    <div className="bg-backGround text-white pt-16 max-w-screen-2xl mx-auto px-3 md:px-6 pb-6">
       <Helmet>
         <title>
-          Watch {id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
+          Watch {details.title} – Episode {currentEp.episodeNumber} – AnimeRealm
         </title>
       </Helmet>
 
@@ -69,16 +69,35 @@ const WatchPage = () => {
         <Link to="/home" className="hover:text-primary">Home</Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
-          {id.split("-").slice(0, 2).join(" ")}
+          {details.title}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
+        <h4 className="text-gray-400">Episode {currentEp.episodeNumber}</h4>
+      </div>
+
+      {/* Hero / Details Section */}
+      <div className="flex flex-col lg:flex-row gap-6 mb-8">
+        <div className="lg:w-1/4">
+          <img src={details.poster} alt={details.title} className="w-full rounded-xl shadow-lg" />
+        </div>
+        <div className="lg:w-3/4 space-y-4">
+          <h1 className="text-3xl font-bold">{details.title}</h1>
+          <h2 className="text-xl text-gray-400">{details.alternativeTitle}</h2>
+          <p className="text-gray-300">{details.synopsis}</p>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div><strong>Type:</strong> {details.type}</div>
+            <div><strong>Status:</strong> {details.status}</div>
+            <div><strong>Premiered:</strong> {details.premiered}</div>
+            <div><strong>Duration:</strong> {details.duration}</div>
+            <div><strong>Genres:</strong> {details.genres.join(", ")}</div>
+            <div><strong>Rating:</strong> {details.rating}</div>
+          </div>
+        </div>
       </div>
 
       {/* Main layout */}
       <div className="flex flex-col-reverse lg:flex-row gap-5">
-        
-        {/* Left - Episode list */}
+        {/* Episodes Sidebar */}
         <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[25%] max-h-[70vh]">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-white text-sm font-semibold">Episodes</h3>
@@ -114,7 +133,7 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Player */}
+        {/* Video Player Container */}
         <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-lg">
           {ep && id && (
             <Player
@@ -128,6 +147,29 @@ const WatchPage = () => {
           )}
         </div>
       </div>
+
+      {/* Optional: Recommended / More Section */}
+      {details.recommended && details.recommended.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">You might also like</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {details.recommended.map((rec) => (
+              <Link
+                key={rec.id}
+                to={`/anime/${rec.id}`}
+                className="block hover:scale-105 transition transform"
+              >
+                <img
+                  src={rec.poster}
+                  alt={rec.title}
+                  className="w-full rounded-lg"
+                />
+                <p className="mt-2 text-sm text-gray-300">{rec.title}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
