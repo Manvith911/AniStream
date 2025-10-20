@@ -7,89 +7,83 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 
 const Root = () => {
-  const [value, setValue] = useState("");
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim()) navigate(`/search?keyword=${value}`);
+    const trimmed = query.trim();
+    if (trimmed) navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
   };
 
   return (
     <div
-      className="min-h-[100dvh] w-full flex flex-col text-white bg-cover bg-center relative"
+      className="min-h-[100dvh] w-full text-white flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10,10,15,0.85), rgba(5,5,10,0.95)), url(${background})`,
+        backgroundImage: `url(${background})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
-      {/* Navbar */}
       <Navbar />
 
-      {/* Hero Section */}
-      <main className="flex-grow container mx-auto flex flex-col items-center justify-center px-6 md:px-12 py-12 relative z-10">
-        {/* Center logo and heading */}
-        <div className="flex flex-col items-center text-center mb-10">
-          <Logo className="w-20 md:w-24 mb-3" />
-          <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(255,200,0,0.4)]">
-            AnimeRealm
+      <main className="flex-grow container mx-auto flex flex-col md:flex-row items-center justify-between px-6 md:px-12 py-12 gap-12">
+        {/* Left Section */}
+        <section className="max-w-xl text-center md:text-left animate-fadeIn">
+          <Logo className="mx-auto md:mx-0 mb-6" />
+
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-xl">
+            Your Gateway to <span className="text-yellow-400">Anime Worlds</span>
           </h1>
-          <p className="text-gray-300 mt-3 text-lg max-w-2xl">
-            Dive into your favorite anime worlds — search, explore, and watch seamlessly.
+
+          <p className="text-gray-300 mb-8 text-lg">
+            Search thousands of anime titles and dive deep into every story.
           </p>
-        </div>
 
-        {/* Search Bar */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center w-full max-w-xl bg-white/95 backdrop-blur-md rounded-full shadow-[0_0_25px_rgba(255,255,255,0.15)] overflow-hidden hover:shadow-[0_0_35px_rgba(255,200,0,0.4)] transition-all duration-300"
-        >
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="Search anime..."
-            className="flex-grow px-6 py-3 text-black text-lg focus:outline-none placeholder-gray-600"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold hover:opacity-90 transition-opacity"
+          <form
+            onSubmit={handleSubmit}
+            className="flex max-w-md mx-auto md:mx-0 bg-white/95 backdrop-blur-sm rounded-full shadow-lg overflow-hidden focus-within:ring-2 focus-within:ring-yellow-400 transition"
+            aria-label="Search anime"
           >
-            <FaSearch size={20} />
-          </button>
-        </form>
+            <input
+              type="text"
+              placeholder="Search anime..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-grow px-5 py-3 text-black text-lg placeholder-gray-500 focus:outline-none"
+              aria-label="Search input"
+            />
+            <button
+              type="submit"
+              aria-label="Search"
+              className="px-5 bg-yellow-400 hover:bg-yellow-500 active:scale-95 transition-transform flex items-center justify-center"
+            >
+              <FaSearch size={18} />
+            </button>
+          </form>
 
-        {/* Banner */}
-        <div className="mt-12 flex justify-center">
+          <Link
+            to="/home"
+            className="inline-flex items-center justify-center gap-2 mt-8 bg-yellow-400 hover:bg-yellow-500 active:scale-95 text-black font-semibold rounded-full px-6 py-3 shadow-lg transition-transform"
+          >
+            Explore Animes <FaArrowCircleRight size={20} />
+          </Link>
+        </section>
+
+        {/* Right Section */}
+        <section className="flex justify-center max-w-lg w-full animate-slideUp">
           <img
             src={banner}
-            alt="Anime banner"
-            className="w-[280px] md:w-[420px] lg:w-[480px] rounded-xl drop-shadow-[0_0_25px_rgba(255,255,255,0.2)] animate-float"
+            alt="Anime characters collage"
+            className="w-full max-w-md rounded-lg shadow-2xl transition-transform hover:scale-105 duration-300"
+            loading="lazy"
           />
-        </div>
-
-        {/* Explore Button */}
-        <Link
-          to="/home"
-          className="mt-10 inline-flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold rounded-full shadow-[0_0_20px_rgba(255,200,0,0.5)] hover:scale-105 transition-transform duration-300"
-        >
-          Explore Animes <FaArrowCircleRight />
-        </Link>
+        </section>
       </main>
 
-      {/* Glow Elements */}
-      <div className="absolute top-0 left-0 w-80 h-80 bg-yellow-500/10 blur-[120px]"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/10 blur-[150px]"></div>
-
-      {/* Floating Animation */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-float {
-          animation: float 5s ease-in-out infinite;
-        }
-      `}</style>
+      <footer className="text-center text-gray-400 text-sm py-6">
+        © {new Date().getFullYear()} AnimeVerse. All rights reserved.
+      </footer>
     </div>
   );
 };
