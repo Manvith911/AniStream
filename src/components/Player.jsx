@@ -1,9 +1,7 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useRef, useState } from "react";
-import {
-  TbPlayerTrackPrevFilled,
-  TbPlayerTrackNextFilled,
-} from "react-icons/tb";
+import { useEffect, useMemo, useState } from "react";
+import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb";
+import { Loader2 } from "lucide-react";
 
 const Player = ({
   episodeId,
@@ -13,99 +11,109 @@ const Player = ({
   hasPrevEp,
 }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("vidWish");
+  const [server, setServer] = useState("megaPlay"); // Default to megaplay
+  const [loading, setLoading] = useState(true);
 
-  const changeCategory = (newType) => {
-    if (newType !== category) {
-      setCategory(newType);
-    }
-  };
-  function changeServer(newServer) {
-    if (newServer !== server) setServer(newServer);
-  }
+  const iframeSrc = useMemo(() => {
+    const base = server === "vidWish" ? "vidwish.live" : "megaplay.buzz";
+    const epId = episodeId?.split("ep=").pop() || "";
+    return `https://${base}/stream/s-2/${epId}/${category}`;
+  }, [server, episodeId, category]);
+
+  const handleIframeLoad = () => setLoading(false);
+  useEffect(() => setLoading(true), [server, category, episodeId]);
 
   return (
-    <>
-      <div className="w-full bg-background aspect-video relative rounded-sm  max-w-screen-xl overflow-hidden">
+    <div className="w-full flex flex-col items-center text-white rounded-md overflow-hidden bg-[#16161a] border border-gray-800 shadow-xl">
+      {/* --- Video Player --- */}
+      <div className="relative w-full aspect-video bg-black rounded-t-md overflow-hidden">
+        {loading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10">
+            <Loader2 className="animate-spin w-8 h-8 text-pink-400" />
+            <p className="mt-2 text-gray-300 text-sm">Loading episode...</p>
+          </div>
+        )}
         <iframe
-          src={`https://${
-            server === "vidWish" ? "vidwish.live" : "megaplay.buzz"
-          }/stream/s-2/${episodeId.split("ep=").pop()}/${category}`}
+          src={iframeSrc}
           width="100%"
           height="100%"
           allowFullScreen
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+          onLoad={handleIframeLoad}
         ></iframe>
       </div>
-      <div className="category flex flex-wrap flex-col sm:flex-row items-center justify-center  sm:justify-between px-2 md:px-20 gap-3 bg-lightbg py-2">
-        <div className="servers flex gap-4">
-          <button
-            onClick={() => changeServer("vidWish")}
-            className={`${
-              server === "vidWish"
-                ? "bg-primary text-black"
-                : "bg-btnbg  text-white"
-            } px-2 py-1 rounded text-sm font-semibold`}
-          >
-            vidwish
-          </button>
-          <button
-            onClick={() => changeServer("megaPlay")}
-            className={`${
-              server === "megaPlay"
-                ? "bg-primary text-black"
-                : "bg-btnbg  text-white"
-            } px-2 py-1 rounded text-sm font-semibold`}
-          >
-            megaplay
-          </button>
+
+      {/* --- Info & Controls --- */}
+      <div className="w-full bg-[#1f1f25] p-4 flex flex-col gap-3 border-t border-gray-700">
+        {/* Episode Info Box */}
+        <div className="bg-[#2a2a31] rounded-md p-3 text-center text-sm">
+          <p className="text-gray-300">
+            You are watching <span className="text-pink-400 font-semibold">Episode {currentEp?.episodeNumber}</span>
+          </p>
+          {currentEp?.isFiller && (
+            <p className="text-red-400 mt-1">This is a filler episode 👻</p>
+          )}
+          <p className="text-xs text-gray-400 mt-1">
+            If current server doesn’t work, try another below.
+          </p>
         </div>
-        <div className="flex gap-5">
-          <div className="sound flex gap-3">
+
+        {/* Server + Category */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div className="flex gap-2">
+            {["vidWish", "megaPlay"].map((srv) => (
+              <button
+                key={srv}
+                onClick={() => setServer(srv)}
+                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                  server === srv
+                    ? "bg-pink-500 text-white"
+                    : "bg-[#2a2a31] hover:bg-[#3a3a42] text-gray-300"
+                }`}
+              >
+                {srv === "vidWish" ? "HD-1" : "HD-2"}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
             {["sub", "dub"].map((type) => (
               <button
                 key={type}
-                onClick={() => changeCategory(type)}
-                className={`${
+                onClick={() => setCategory(type)}
+                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
                   category === type
-                    ? "bg-primary text-black"
-                    : "bg-btnbg  text-white"
-                } px-2 py-1 rounded text-sm font-semibold`}
+                    ? "bg-pink-500 text-white"
+                    : "bg-[#2a2a31] hover:bg-[#3a3a42] text-gray-300"
+                }`}
               >
                 {type.toUpperCase()}
               </button>
             ))}
           </div>
-          <div className="btns flex gap-4">
-            {hasPrevEp && (
-              <button
-                title="prev"
-                className="prev bg-primary px-2 py-1 rounded-md text-black"
-                onClick={() => changeEpisode("prev")}
-              >
-                <TbPlayerTrackPrevFilled />
-              </button>
-            )}
-            {hasNextEp && (
-              <button
-                title="next"
-                className="next bg-primary px-2 py-1 rounded-md text-black"
-                onClick={() => changeEpisode("next")}
-              >
-                <TbPlayerTrackNextFilled />
-              </button>
-            )}
-          </div>
         </div>
-        <div className="flex flex-col">
-          <p className="text-gray-400">
-            you are watching Episode {currentEp.episodeNumber}
-          </p>
-          {currentEp.isFiller && (
-            <p className="text-red-400">your are watching filler Episode 👻</p>
+
+        {/* Next / Prev Buttons */}
+        <div className="flex justify-center gap-4 mt-2">
+          {hasPrevEp && (
+            <button
+              className="flex items-center gap-1 bg-pink-500 hover:bg-pink-400 text-black px-3 py-1 rounded-md text-sm font-semibold transition"
+              onClick={() => changeEpisode("prev")}
+            >
+              <TbPlayerTrackPrevFilled size={18} /> Prev
+            </button>
+          )}
+          {hasNextEp && (
+            <button
+              className="flex items-center gap-1 bg-pink-500 hover:bg-pink-400 text-black px-3 py-1 rounded-md text-sm font-semibold transition"
+              onClick={() => changeEpisode("next")}
+            >
+              Next <TbPlayerTrackNextFilled size={18} />
+            </button>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
