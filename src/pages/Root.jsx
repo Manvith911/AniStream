@@ -33,7 +33,9 @@ const Root = () => {
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat text-white"
-      style={{ backgroundImage: `url(${background})` }} // Use the imported background image
+      style={{
+        backgroundImage: `url(${background})`, // Use the imported background image
+      }}
     >
       <div className="bg-black bg-opacity-50 min-h-screen"> {/* Reduced opacity for better visibility */}
         <Navbar />
