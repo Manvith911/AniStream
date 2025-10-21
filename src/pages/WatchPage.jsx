@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import Loader from "../components/Loader";
 import Player from "../components/Player";
 import Episodes from "../layouts/Episodes";
-import { useApi } from "../services/useApi";
-import PageNotFound from "./PageNotFound";
-import { Helmet } from "react-helmet";
 import Recommended from "../layouts/Recommended";
+import PageNotFound from "./PageNotFound";
+import { useApi } from "../services/useApi";
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -14,18 +14,12 @@ const WatchPage = () => {
   const [layout, setLayout] = useState("row");
   const [animeDetails, setAnimeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
+
   const ep = searchParams.get("ep");
 
+  // Fetch episodes list
   const { data, isError } = useApi(`/episodes/${id}`);
   const episodes = data?.data;
-
-  const updateParams = (newParam) => {
-    setSearchParams((prev) => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set("ep", newParam);
-      return newParams;
-    });
-  };
 
   // Fetch anime details
   useEffect(() => {
@@ -35,7 +29,7 @@ const WatchPage = () => {
         const json = await res.json();
         if (json.success) setAnimeDetails(json.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching anime details:", err);
       } finally {
         setLoadingDetails(false);
       }
@@ -47,7 +41,7 @@ const WatchPage = () => {
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
-      updateParams(firstEp);
+      setSearchParams({ ep: firstEp });
     }
   }, [ep, episodes, setSearchParams]);
 
@@ -64,34 +58,35 @@ const WatchPage = () => {
   const changeEpisode = (action) => {
     const index = currentEp.episodeNumber - 1;
     if (action === "next" && episodes[index + 1]) {
-      updateParams(episodes[index + 1].id.split("ep=").pop());
+      setSearchParams({ ep: episodes[index + 1].id.split("ep=").pop() });
     } else if (action === "prev" && episodes[index - 1]) {
-      updateParams(episodes[index - 1].id.split("ep=").pop());
+      setSearchParams({ ep: episodes[index - 1].id.split("ep=").pop() });
     }
   };
 
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
-  // ✅ Save "Continue Watching" progress
+  // ✅ Save "Continue Watching" progress to localStorage
   useEffect(() => {
     if (animeDetails && currentEp) {
       const progressData =
         JSON.parse(localStorage.getItem("continueWatching")) || [];
 
-      // Remove old entry for same anime
       const updated = progressData.filter((item) => item.id !== id);
 
-      // Add new progress info
       updated.unshift({
         id: id,
         title: animeDetails.title,
-        poster: animeDetails.poster,
+        image: animeDetails.poster,
         episode: currentEp.episodeNumber,
         timestamp: Date.now(),
       });
 
       localStorage.setItem("continueWatching", JSON.stringify(updated));
+
+      // 🔄 Trigger update event for Home page
+      window.dispatchEvent(new Event("storage"));
     }
   }, [animeDetails, currentEp, id]);
 
@@ -99,7 +94,7 @@ const WatchPage = () => {
     <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
         <title>
-          Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
+          Watch {animeDetails?.title || id.split("-")[0]} Online - AnimeRealm
         </title>
       </Helmet>
 
@@ -110,15 +105,15 @@ const WatchPage = () => {
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
-          {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
+          {animeDetails?.title || id.split("-")[0]}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* Main Layout */}
+      {/* Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episodes List */}
+        {/* Episodes List */}
         <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
           <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
           <ul
@@ -137,7 +132,7 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Center - Player */}
+        {/* Player */}
         <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
@@ -151,7 +146,7 @@ const WatchPage = () => {
           )}
         </div>
 
-        {/* Right - Anime Info */}
+        {/* Anime Info */}
         <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
           {loadingDetails ? (
             <Loader className="h-40" />
