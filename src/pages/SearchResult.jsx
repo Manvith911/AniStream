@@ -19,20 +19,21 @@ const SearchResult = () => {
     return (
       <div className="flex justify-center items-center h-dvh">
         <h1 className="text-red-300">
-          search result not found with keyword - {keyword}
+          Search result not found with keyword - {keyword}
         </h1>
       </div>
     );
   }
+
   const pages = data?.pages;
-  console.log(data?.pages.length);
 
   return (
     <div className="list-page pt-20">
       <Helmet>
-        <title>search result of {keyword}</title>
+        <title>Search result of {keyword}</title>
         <meta property="og:title" content="search - AnimeRealm" />
       </Helmet>
+
       {pages && !isLoading ? (
         <InfiniteScroll
           dataLength={data?.pages.flat().length || 0}
@@ -43,10 +44,13 @@ const SearchResult = () => {
         >
           <Heading>Search results of {keyword}</Heading>
           <div className="flex flex-wrap justify-around items-center">
-            {pages?.map((page, pageIndex) => (
+            {pages.map((page, pageIndex) => (
               <React.Fragment key={pageIndex}>
                 {page.data.response.map((item, index) => (
-                  <div key={item.id + index} className="flw-item">
+                  <div
+                    key={item.id + index}
+                    className="flw-item rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:scale-105"
+                  >
                     <Image data={item} />
                   </div>
                 ))}
