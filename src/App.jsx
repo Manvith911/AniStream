@@ -14,6 +14,9 @@ import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 
+// ✅ Import from Vercel
+import { Analytics } from "@vercel/analytics/react";
+
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
   const togglesidebar = useSidebarStore((state) => state.toggleSidebar);
@@ -44,6 +47,9 @@ const App = () => {
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
+
+      {/* ✅ Add Analytics component at root */}
+      <Analytics />
     </>
   );
 };
