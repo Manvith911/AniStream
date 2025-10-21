@@ -42,6 +42,7 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
+  // Auto-select first episode
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -89,8 +90,8 @@ const WatchPage = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episode List */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[25%] max-h-[70vh] shadow-lg">
+        {/* Left - Episode List (smaller) */}
+        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
           <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
           <ul className={`grid gap-1 ${layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
             {episodes.map((episode) => (
@@ -104,8 +105,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Center - Player */}
-        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
+        {/* Center - Player (bigger) */}
+        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
               id={id}
@@ -128,7 +129,7 @@ const WatchPage = () => {
                 <img
                   src={animeDetails.poster}
                   alt={animeDetails.title}
-                  className="rounded-md w-40 h-auto mb-3 shadow-md"
+                  className="rounded-md w-36 h-auto mb-3 shadow-md"
                 />
                 <h2 className="text-lg font-semibold text-center">{animeDetails.title}</h2>
               </div>
