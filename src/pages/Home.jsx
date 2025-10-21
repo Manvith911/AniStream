@@ -1,5 +1,5 @@
-// React & Utilities
-import { useEffect, useState } from "react";
+Yes pls // React & Utilities
+import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 
 // Components
@@ -13,7 +13,6 @@ import DynamicLayout from "../layouts/DynamicLayout";
 import GenresLayout from "../layouts/GenresLayout";
 import Top10Layout from "../layouts/Top10Layout";
 import LatestEpisodesLayout from "../layouts/LatestEpisodesLayout";
-import ContinueWatching from "../layouts/ContinueWatching"; // ✅ NEW
 
 // Hooks & Stores
 import { useApi } from "../services/useApi";
@@ -38,9 +37,6 @@ const Home = () => {
   const setGenres = useGenresStore((state) => state.setGenres);
   const setTopTen = useTopTenStore((state) => state.setTopTen);
 
-  // ====== Local State ======
-  const [continueWatching, setContinueWatching] = useState([]);
-
   // ====== Effects ======
   useEffect(() => {
     setGenres(genres);
@@ -51,20 +47,6 @@ const Home = () => {
       setTopTen(data.data.top10);
     }
   }, [data, setTopTen]);
-
-  // ✅ Load Continue Watching
-  useEffect(() => {
-    const updateWatchList = () => {
-      const stored = JSON.parse(localStorage.getItem("continueWatching")) || [];
-      setContinueWatching(stored);
-    };
-
-    updateWatchList();
-
-    // ✅ Update instantly when user returns from WatchPage
-    window.addEventListener("storage", updateWatchList);
-    return () => window.removeEventListener("storage", updateWatchList);
-  }, []);
 
   // ====== Error Handling ======
   if (isError) {
@@ -96,37 +78,6 @@ const Home = () => {
       ) : (
         <>
           <HeroBanner slides={homeData?.spotlight} />
-
-          {/* ✅ Continue Watching Section */}
-          {continueWatching.length > 0 && (
-            <div className="mt-10 px-2">
-              <h2 className="text-2xl font-semibold mb-4">Continue Watching</h2>
-              <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-                {continueWatching.map((anime) => (
-                  <div
-                    key={anime.id}
-                    className="min-w-[130px] sm:min-w-[160px] flex-shrink-0"
-                  >
-                    <a href={`/watch/${anime.id}?ep=${anime.episode}`}>
-                      <div className="relative">
-                        <img
-                          src={anime.image}
-                          alt={anime.title}
-                          className="rounded-md object-cover w-full h-40"
-                        />
-                        <div className="absolute bottom-1 left-1 bg-black/70 px-2 py-[2px] text-xs rounded">
-                          Ep {anime.episode}
-                        </div>
-                      </div>
-                      <p className="text-gray-300 text-xs mt-2 line-clamp-2">
-                        {anime.title}
-                      </p>
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="xl:mx-10 mt-6">
             <MainLayout
@@ -174,8 +125,10 @@ const Home = () => {
                       title="Latest Episodes"
                       viewMoreUrl="/animes/recently-updated"
                       data={
-                        (latestEpisodes?.data?.response ||
-                          homeData?.latestEpisode)?.slice(0, 15)
+                        (latestEpisodes?.data?.response || homeData?.latestEpisode)?.slice(
+                          0,
+                          15
+                        )
                       }
                     />
                   </div>
