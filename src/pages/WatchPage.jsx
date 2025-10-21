@@ -105,7 +105,7 @@ const WatchPage = () => {
         </div>
 
         {/* Center - Player */}
-        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-2xl">
+        <div className="flex-1 bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
               id={id}
@@ -119,23 +119,25 @@ const WatchPage = () => {
         </div>
 
         {/* Right - Anime Info */}
-        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg">
+        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
           {loadingDetails ? (
             <Loader className="h-40" />
           ) : animeDetails ? (
             <>
-              <img
-                src={animeDetails.poster}
-                alt={animeDetails.title}
-                className="rounded-lg w-full mb-4"
-              />
-              <h2 className="text-lg font-semibold mb-2">{animeDetails.title}</h2>
-              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3">
+              <div className="flex flex-col items-center mb-4">
+                <img
+                  src={animeDetails.poster}
+                  alt={animeDetails.title}
+                  className="rounded-md w-40 h-auto mb-3 shadow-md"
+                />
+                <h2 className="text-lg font-semibold text-center">{animeDetails.title}</h2>
+              </div>
+              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
                 <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.rating}</span>
                 <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.type}</span>
                 <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.duration}</span>
               </div>
-              <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+              <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
                 {animeDetails.synopsis}
               </p>
               <div className="text-xs text-gray-400 mb-1">
