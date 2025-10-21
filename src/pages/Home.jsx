@@ -1,4 +1,4 @@
-Yes pls // React & Utilities
+// React & Utilities
 import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 
