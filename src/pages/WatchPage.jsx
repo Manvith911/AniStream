@@ -6,6 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
+import Recommended from "../layouts/Recommended"; // ✅ new import
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -54,7 +55,9 @@ const WatchPage = () => {
   if (!episodes) return <Loader className="h-screen" />;
 
   const currentEp =
-    episodes && ep ? episodes.find((e) => e.id.split("ep=").pop() === ep) : null;
+    episodes && ep
+      ? episodes.find((e) => e.id.split("ep=").pop() === ep)
+      : null;
 
   if (!currentEp) return <Loader className="h-screen" />;
 
@@ -80,20 +83,30 @@ const WatchPage = () => {
 
       {/* Breadcrumbs */}
       <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
-        <Link to="/home" className="hover:text-primary">Home</Link>
+        <Link to="/home" className="hover:text-primary">
+          Home
+        </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
+        <Link
+          to={`/anime/${id}`}
+          className="hover:text-primary capitalize"
+        >
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
+      {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episode List (smaller) */}
+        {/* Left - Episodes List */}
         <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
           <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
-          <ul className={`grid gap-1 ${layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"}`}>
+          <ul
+            className={`grid gap-1 ${
+              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
+            }`}
+          >
             {episodes.map((episode) => (
               <Episodes
                 key={episode.id}
@@ -105,7 +118,7 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Center - Player (bigger) */}
+        {/* Center - Player */}
         <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
@@ -131,18 +144,27 @@ const WatchPage = () => {
                   alt={animeDetails.title}
                   className="rounded-md w-36 h-auto mb-3 shadow-md"
                 />
-                <h2 className="text-lg font-semibold text-center">{animeDetails.title}</h2>
+                <h2 className="text-lg font-semibold text-center">
+                  {animeDetails.title}
+                </h2>
               </div>
               <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
-                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.rating}</span>
-                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.type}</span>
-                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.duration}</span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.rating}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.type}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.duration}
+                </span>
               </div>
               <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
                 {animeDetails.synopsis}
               </p>
               <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
+                <strong>Genres:</strong>{" "}
+                {animeDetails.genres?.join(", ")}
               </div>
               <div className="text-xs text-gray-400 mb-1">
                 <strong>Studio:</strong> {animeDetails.studios}
@@ -156,6 +178,11 @@ const WatchPage = () => {
           )}
         </div>
       </div>
+
+      {/* ✅ Recommended Section */}
+      {animeDetails?.recommended && (
+        <Recommended data={animeDetails.recommended} />
+      )}
     </div>
   );
 };
