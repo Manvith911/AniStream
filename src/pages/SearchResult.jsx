@@ -49,7 +49,7 @@ const SearchResult = () => {
                 {page.data.response.map((item, index) => (
                   <div
                     key={item.id + index}
-                    className="flw-item rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:scale-105"
+                    className="flw-item m-2 rounded-lg overflow-hidden shadow-md transition-transform duration-300 hover:scale-105"
                   >
                     <Image data={item} />
                   </div>
