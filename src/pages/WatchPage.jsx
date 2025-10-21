@@ -6,7 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
-import Recommended from "../layouts/Recommended"; // ✅ new import
+import Recommended from "../layouts/Recommended";
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -43,7 +43,7 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
-  // Auto-select first episode
+  // Auto-select first episode if none in URL
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -73,6 +73,28 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
+  // ✅ Save "Continue Watching" progress
+  useEffect(() => {
+    if (animeDetails && currentEp) {
+      const progressData =
+        JSON.parse(localStorage.getItem("continueWatching")) || [];
+
+      // Remove old entry for same anime
+      const updated = progressData.filter((item) => item.id !== id);
+
+      // Add new progress info
+      updated.unshift({
+        id: id,
+        title: animeDetails.title,
+        poster: animeDetails.poster,
+        episode: currentEp.episodeNumber,
+        timestamp: Date.now(),
+      });
+
+      localStorage.setItem("continueWatching", JSON.stringify(updated));
+    }
+  }, [animeDetails, currentEp, id]);
+
   return (
     <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
@@ -87,10 +109,7 @@ const WatchPage = () => {
           Home
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link
-          to={`/anime/${id}`}
-          className="hover:text-primary capitalize"
-        >
+        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
@@ -163,8 +182,7 @@ const WatchPage = () => {
                 {animeDetails.synopsis}
               </p>
               <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong>{" "}
-                {animeDetails.genres?.join(", ")}
+                <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
               </div>
               <div className="text-xs text-gray-400 mb-1">
                 <strong>Studio:</strong> {animeDetails.studios}
@@ -187,4 +205,4 @@ const WatchPage = () => {
   );
 };
 
-export default WatchPage; 
+export default WatchPage;
