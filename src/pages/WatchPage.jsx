@@ -87,7 +87,10 @@ const WatchPage = () => {
           Home
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
+        <Link
+          to={`/anime/${id}`}
+          className="hover:text-primary capitalize"
+        >
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
@@ -97,7 +100,7 @@ const WatchPage = () => {
       {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left - Episodes List */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[18%] max-h-[75vh] shadow-lg">
+        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
           <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
           <ul
             className={`grid gap-1 ${
@@ -115,8 +118,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Center - Player (bigger now) */}
-        <div className="flex-1 lg:w-[62%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[75vh]">
+        {/* Center - Player */}
+        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
               id={id}
@@ -129,8 +132,8 @@ const WatchPage = () => {
           )}
         </div>
 
-        {/* Right - Anime Info (smaller now) */}
-        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[20%] shadow-lg h-[75vh] overflow-y-auto">
+        {/* Right - Anime Info */}
+        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
           {loadingDetails ? (
             <Loader className="h-40" />
           ) : animeDetails ? (
@@ -139,9 +142,9 @@ const WatchPage = () => {
                 <img
                   src={animeDetails.poster}
                   alt={animeDetails.title}
-                  className="rounded-md w-32 h-auto mb-3 shadow-md"
+                  className="rounded-md w-36 h-auto mb-3 shadow-md"
                 />
-                <h2 className="text-base font-semibold text-center">
+                <h2 className="text-lg font-semibold text-center">
                   {animeDetails.title}
                 </h2>
               </div>
@@ -156,11 +159,12 @@ const WatchPage = () => {
                   {animeDetails.duration}
                 </span>
               </div>
-              <p className="text-gray-300 text-xs mb-3 leading-relaxed text-justify">
+              <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
                 {animeDetails.synopsis}
               </p>
               <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
+                <strong>Genres:</strong>{" "}
+                {animeDetails.genres?.join(", ")}
               </div>
               <div className="text-xs text-gray-400 mb-1">
                 <strong>Studio:</strong> {animeDetails.studios}
@@ -183,4 +187,4 @@ const WatchPage = () => {
   );
 };
 
-export default WatchPage;
+export default WatchPage; 
