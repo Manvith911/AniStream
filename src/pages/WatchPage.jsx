@@ -6,7 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
-import Recommended from "../layouts/Recommended";
+import Recommended from "../layouts/Recommended"; // ✅ new import
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -73,35 +73,6 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
-  // ✅ Save progress for Continue Watching
-  useEffect(() => {
-    if (animeDetails && currentEp) {
-      const stored = JSON.parse(localStorage.getItem("continueWatching")) || [];
-
-      const existingIndex = stored.findIndex(
-        (item) => item.id === animeDetails.id
-      );
-
-      const newEntry = {
-        id: animeDetails.id,
-        title: animeDetails.title,
-        episode: currentEp.episodeNumber,
-        poster: animeDetails.poster,
-      };
-
-      if (existingIndex >= 0) {
-        stored[existingIndex] = newEntry;
-      } else {
-        stored.unshift(newEntry);
-      }
-
-      localStorage.setItem(
-        "continueWatching",
-        JSON.stringify(stored.slice(0, 10)) // keep latest 10
-      );
-    }
-  }, [animeDetails, currentEp]);
-
   return (
     <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
@@ -116,7 +87,10 @@ const WatchPage = () => {
           Home
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
+        <Link
+          to={`/anime/${id}`}
+          className="hover:text-primary capitalize"
+        >
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
@@ -189,7 +163,8 @@ const WatchPage = () => {
                 {animeDetails.synopsis}
               </p>
               <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
+                <strong>Genres:</strong>{" "}
+                {animeDetails.genres?.join(", ")}
               </div>
               <div className="text-xs text-gray-400 mb-1">
                 <strong>Studio:</strong> {animeDetails.studios}
