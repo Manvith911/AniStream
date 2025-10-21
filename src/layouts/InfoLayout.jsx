@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import SoundsInfo from "../components/SoundsInfo";
 import { Link } from "react-router-dom";
 import { FaCirclePlay, FaArrowRight } from "react-icons/fa6";
+import SoundsInfo from "../components/SoundsInfo";
 import CircleRatting from "../components/CircleRatting";
 
 const InfoLayout = ({ data, showBigPoster }) => {
@@ -18,9 +18,35 @@ const InfoLayout = ({ data, showBigPoster }) => {
     "#86e3ce",
   ];
 
+  const toggleSynopsis = () => setShowFull((prev) => !prev);
+
+  const renderTags = (tags) =>
+    tags.map((tag, index) => (
+      <Link key={tag} to={`/animes/genre/${tag.toLowerCase()}`}>
+        <span
+          className="px-3 py-1 text-black text-sm font-semibold rounded-full hover:scale-105 transition-transform"
+          style={{ background: colors[index % colors.length] }}
+        >
+          {tag}
+        </span>
+      </Link>
+    ));
+
+  const renderProducers = (producers) =>
+    producers.map((producer, index) => (
+      <Link key={producer} to={`/producer/${producer}`}>
+        <span
+          className="px-3 py-1 rounded-full font-semibold text-sm cursor-pointer hover:scale-105 transition-transform"
+          style={{ background: colors[index % colors.length] }}
+        >
+          {producer}
+        </span>
+      </Link>
+    ));
+
   return (
     <section className="relative min-h-[700px] w-full text-white overflow-hidden bg-black">
-      {/* Background Image */}
+      {/* Background */}
       <div className="absolute inset-0">
         <img
           src={data.poster}
@@ -31,10 +57,10 @@ const InfoLayout = ({ data, showBigPoster }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black"></div>
       </div>
 
-      {/* Content Container */}
+      {/* Main content */}
       <div className="relative z-10 max-w-[1150px] mx-auto px-4 md:px-8 pt-6 md:pt-10 pb-12 md:pb-16 flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
-        
-        {/* Left: Poster */}
+
+        {/* Poster */}
         <div className="flex justify-center md:w-[30%]">
           <div
             onClick={() => showBigPoster(data.poster)}
@@ -48,13 +74,16 @@ const InfoLayout = ({ data, showBigPoster }) => {
           </div>
         </div>
 
-        {/* Right: Info */}
+        {/* Info */}
         <div className="flex-1 flex flex-col gap-5 md:gap-6">
           {/* Breadcrumb */}
           <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
             <Link to="/home" className="hover:text-primary">Home</Link>
             <span>•</span>
-            <Link to={`/animes/${data.type.toLowerCase()}`} className="hover:text-primary capitalize">
+            <Link
+              to={`/animes/${data.type.toLowerCase()}`}
+              className="hover:text-primary capitalize"
+            >
               {data.type}
             </Link>
             <span>•</span>
@@ -76,7 +105,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
             )}
           </div>
 
-          {/* Rating & Meta */}
+          {/* Rating & meta */}
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-300">
             <SoundsInfo episodes={{ rating: data.rating, ...data.episodes }} />
             <span>•</span>
@@ -85,7 +114,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
             <span>{data.duration}</span>
           </div>
 
-          {/* Circle Rating (smaller size) */}
+          {/* Circle Rating */}
           <div className="mt-2 w-[70px] h-[70px] flex items-center justify-center overflow-hidden">
             <CircleRatting rating={data.MAL_score} size={70} />
           </div>
@@ -100,20 +129,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
           )}
 
           {/* Genres */}
-          {data.genres && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {data.genres.map((genre, index) => (
-                <Link key={genre} to={`/animes/genre/${genre.toLowerCase()}`}>
-                  <span
-                    className="px-3 py-1 text-black text-sm font-semibold rounded-full hover:scale-105 transition-transform"
-                    style={{ background: colors[index % colors.length] }}
-                  >
-                    {genre}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
+          {data.genres && <div className="flex flex-wrap gap-2 mt-4">{renderTags(data.genres)}</div>}
 
           {/* Synopsis */}
           {data.synopsis && (
@@ -126,7 +142,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
                 {data.synopsis}
               </p>
               <button
-                onClick={() => setShowFull(!showFull)}
+                onClick={toggleSynopsis}
                 className="mt-2 text-primary font-bold hover:underline"
               >
                 {showFull ? "Show Less" : "Read More"}
@@ -137,19 +153,15 @@ const InfoLayout = ({ data, showBigPoster }) => {
           {/* Status & Aired */}
           <div className="mt-4 flex flex-wrap gap-6 text-gray-400 text-sm">
             <div>
-              Status:{" "}
-              <span className="text-white font-medium">{data.status}</span>
+              Status: <span className="text-white font-medium">{data.status}</span>
             </div>
             <div>
-              Aired:{" "}
-              <span className="text-white font-medium">{data.aired.from}</span>
+              Aired: <span className="text-white font-medium">{data.aired.from}</span>
               {data.aired.to && (
                 <>
                   {" "}
                   <FaArrowRight className="inline mx-1 text-xs" />{" "}
-                  <span className="text-white font-medium">
-                    {data.aired.to}
-                  </span>
+                  <span className="text-white font-medium">{data.aired.to}</span>
                 </>
               )}
             </div>
@@ -160,9 +172,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
             <div className="mt-3">
               <span className="text-gray-400">Studio:</span>{" "}
               <Link
-                to={`/producer/${data.studios
-                  .toLowerCase()
-                  .replace(" ", "-")}`}
+                to={`/producer/${data.studios.toLowerCase().replace(" ", "-")}`}
                 className="text-primary font-semibold hover:underline"
               >
                 {data.studios}
@@ -171,21 +181,10 @@ const InfoLayout = ({ data, showBigPoster }) => {
           )}
 
           {/* Producers */}
-          {data.producers && data.producers.length > 0 && (
+          {data.producers?.length > 0 && (
             <div className="mt-4">
               <h4 className="font-bold mb-2 text-gray-200">Producers</h4>
-              <div className="flex flex-wrap gap-2">
-                {data.producers.map((producer, index) => (
-                  <Link key={producer} to={`/producer/${producer}`}>
-                    <span
-                      className="px-3 py-1 rounded-full font-semibold text-sm cursor-pointer hover:scale-105 transition-transform"
-                      style={{ background: colors[index % colors.length] }}
-                    >
-                      {producer}
-                    </span>
-                  </Link>
-                ))}
-              </div>
+              <div className="flex flex-wrap gap-2">{renderProducers(data.producers)}</div>
             </div>
           )}
         </div>
