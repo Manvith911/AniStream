@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,13 +17,18 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        // ---- LOGIN ----
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        navigate("/");
+        if (data?.session) {
+          toast.success("Welcome back!");
+          navigate("/home");
+        }
       } else {
+        // ---- SIGNUP ----
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -31,20 +37,29 @@ const AuthPage = () => {
 
         const user = data.user;
         if (user) {
-          await supabase.from("profiles").insert([
-            {
-              id: user.id,
-              email,
-              username,
-            },
-          ]);
+          // Create profile if it doesn’t exist
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert([
+              {
+                id: user.id,
+                email,
+                username,
+              },
+            ])
+            .select()
+            .single();
+
+          if (insertError && !insertError.message.includes("duplicate")) {
+            throw insertError;
+          }
         }
 
-        alert("Signup successful! Please check your email for verification.");
-        setIsLogin(true);
+        toast.success("Signup successful! You are now logged in.");
+        navigate("/");
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -92,7 +107,7 @@ const AuthPage = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-primary text-black font-semibold py-2 rounded hover:bg-opacity-80"
+          className="w-full bg-primary text-black font-semibold py-2 rounded hover:bg-opacity-80 transition-all"
         >
           {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
         </button>
