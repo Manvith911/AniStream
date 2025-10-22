@@ -103,4 +103,4 @@ const HeroBanner = ({ slides }) => {
   );
 };
 
-export default HeroBanner; make the hero slider look good without ruining it
+export default HeroBanner;
