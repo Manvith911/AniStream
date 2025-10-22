@@ -18,7 +18,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { session, profile, logout } = useAuth();
 
-  // Debounced search
+  // Debounce search
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
@@ -67,7 +67,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+            {/* Sidebar + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -75,7 +75,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search */}
+            {/* Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -102,6 +102,7 @@ const Header = () => {
                 </button>
               </form>
 
+              {/* Search Suggestion Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full bg-card rounded-md overflow-hidden shadow-lg z-50">
                   {isLoading ? (
@@ -153,11 +154,12 @@ const Header = () => {
                   <img
                     onClick={() => setShowMenu((prev) => !prev)}
                     src={
-                      profile?.avatar_url ||
-                      "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                      profile?.avatar_url && profile.avatar_url.trim() !== ""
+                        ? profile.avatar_url
+                        : "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
                     }
                     alt="profile"
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer border border-primary"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer border border-primary bg-gray-700"
                   />
 
                   {showMenu && (
