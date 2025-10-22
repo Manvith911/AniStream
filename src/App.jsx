@@ -14,6 +14,7 @@ import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 import AuthPage from "./pages/AuthPage.jsx";
+import ProfilePage from "./pages/ProfilePage";
 
 // ✅ Import from Vercel
 import { Analytics } from "@vercel/analytics/react";
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/character/:id" element={<CharacterInfoPage />} />
           <Route path="*" element={<PageNotFound />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </main>
 
