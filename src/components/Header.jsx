@@ -12,6 +12,7 @@ const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
   const { session, profile, logout } = useAuth();
@@ -19,8 +20,12 @@ const Header = () => {
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
+
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
+
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(newValue);
+    }, 500);
   };
 
   const { data, isLoading } = useApi(
@@ -46,14 +51,12 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const emptyInput = () => resetSearch();
-
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left */}
+            {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -75,11 +78,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={resetSearch} type="button" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -88,21 +87,20 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
+                <div className="absolute top-full mt-1 left-0 w-full bg-card rounded-md overflow-hidden shadow-lg z-50">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data.length ? (
+                  ) : data?.data?.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
+                          key={item.id}
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
-                          key={item.id}
                         >
                           <img
-                            className="h-14 w-10 object-cover rounded-sm"
+                            className="w-10 h-14 object-cover rounded-sm"
                             src={item.poster}
                             alt={item.title}
                           />
@@ -110,11 +108,9 @@ const Header = () => {
                             <h4 className="text-sm font-semibold line-clamp-2">
                               {item.title}
                             </h4>
-                            <div className="flex items-center gap-2 text-xs gray">
-                              <h6>{item.type}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
-                              <h6>{item.duration}</h6>
-                            </div>
+                            <h6 className="text-xs gray line-clamp-1">
+                              {item.alternativeTitle}
+                            </h6>
                           </div>
                         </div>
                       ))}
@@ -127,51 +123,63 @@ const Header = () => {
                       </button>
                     </>
                   ) : (
-                    <h1 className="text-center text-sm text-primary py-3">
+                    <p className="text-center text-sm text-primary py-3">
                       Anime not found :(
-                    </h1>
+                    </p>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Right - Auth */}
-            {session ? (
-              <div className="relative group">
-                <img
-                  src={profile?.avatar_url || "/default-avatar.png"}
-                  alt="avatar"
-                  className="w-10 h-10 rounded-full cursor-pointer border border-primary"
-                />
-                <div className="absolute hidden group-hover:flex flex-col right-0 mt-2 bg-[#1a1a1f] rounded-md shadow-lg z-50 min-w-[150px]">
-                  <button
-                    onClick={() => navigate("/profile")}
-                    className="text-left px-4 py-2 hover:bg-primary/10"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={() => navigate("/watchlist")}
-                    className="text-left px-4 py-2 hover:bg-primary/10"
-                  >
-                    Watchlist
-                  </button>
-                  <button
-                    onClick={logout}
-                    className="text-left px-4 py-2 hover:bg-primary/10 text-red-400"
-                  >
-                    Logout
-                  </button>
+            {/* Profile / Login */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowMenu(true)}
+              onMouseLeave={() => setShowMenu(false)}
+            >
+              {session ? (
+                <div className="relative flex items-center">
+                  <img
+                    src={
+                      profile?.avatar_url ||
+                      "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                    }
+                    alt="profile"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer border border-primary"
+                  />
+
+                  {showMenu && (
+                    <div className="absolute right-0 top-12 bg-card border border-gray-700 shadow-md rounded-md w-40 p-2 z-[9999]">
+                      <button
+                        onClick={() => navigate("/profile")}
+                        className="w-full text-left px-3 py-2 hover:bg-lightBg rounded-md"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={() => navigate("/watchlist")}
+                        className="w-full text-left px-3 py-2 hover:bg-lightBg rounded-md"
+                      >
+                        Watchlist
+                      </button>
+                      <button
+                        onClick={logout}
+                        className="w-full text-left px-3 py-2 hover:bg-red-600 rounded-md"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => navigate("/auth")}
-                className="bg-primary text-black font-semibold px-4 py-2 rounded-md hover:bg-opacity-80"
-              >
-                Login
-              </button>
-            )}
+              ) : (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="px-4 py-2 bg-primary text-black font-semibold rounded-md hover:opacity-80"
+                >
+                  Login
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
