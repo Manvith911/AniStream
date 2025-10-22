@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,6 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { supabase } from "../services/supabaseClient";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -15,62 +14,13 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  // 🔹 Supabase Auth State
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-
-  // 🔸 Watch for auth session changes
-  useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-    };
-    getSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  // 🔸 Fetch profile when user logs in
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) {
-        setProfile(null);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (!error) setProfile(data);
-    };
-    fetchProfile();
-  }, [user]);
-
-  // 🔹 Logout
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    navigate("/");
-  };
-
-  // 🔹 Search Logic
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -97,16 +47,19 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
-  // 🔹 JSX UI
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
@@ -199,70 +152,6 @@ const Header = () => {
                     </h1>
                   )}
                 </div>
-              )}
-            </div>
-
-            {/* Right: Auth / Profile */}
-            <div className="ml-auto flex items-center gap-4">
-              {!user ? (
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="bg-primary text-black font-bold py-1 px-3 rounded-md"
-                >
-                  Login
-                </button>
-              ) : (
-                <Menu as="div" className="relative inline-block text-left">
-                  <Menu.Button>
-                    <img
-                      src={
-                        profile?.avatar_url ||
-                        `https://ui-avatars.com/api/?name=${profile?.username || "User"}`
-                      }
-                      alt="profile"
-                      className="w-8 h-8 rounded-full border-2 border-primary cursor-pointer"
-                    />
-                  </Menu.Button>
-
-                  <Menu.Items className="absolute right-0 mt-2 w-40 bg-card shadow-lg rounded-md py-2 z-50">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => navigate("/profile")}
-                          className={`block w-full text-left px-4 py-2 text-sm ${
-                            active ? "bg-lightBg" : ""
-                          }`}
-                        >
-                          Profile
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => navigate("/watchlist")}
-                          className={`block w-full text-left px-4 py-2 text-sm ${
-                            active ? "bg-lightBg" : ""
-                          }`}
-                        >
-                          Watchlist
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={handleLogout}
-                          className={`block w-full text-left px-4 py-2 text-sm text-red-500 ${
-                            active ? "bg-lightBg" : ""
-                          }`}
-                        >
-                          Logout
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Menu>
               )}
             </div>
           </div>
