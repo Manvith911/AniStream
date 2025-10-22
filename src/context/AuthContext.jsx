@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ---- Fetch the profile ----
+  // Fetch profile from Supabase or create if missing
   const fetchProfile = async (userId) => {
     try {
       const { data, error } = await supabase
@@ -26,12 +26,15 @@ export const AuthProvider = ({ children }) => {
         setProfile(data);
       } else {
         console.log("Profile missing, creating one...");
+        const defaultAvatar =
+          "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
-          .insert([{ id: userId }])
+          .insert([{ id: userId, avatar_url: defaultAvatar }])
           .select()
           .single();
-        if (insertError) console.error(insertError.message);
+
+        if (insertError) console.error("Profile insert error:", insertError.message);
         else setProfile(newProfile);
       }
     } catch (err) {
@@ -39,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ---- Initialize Session ----
+  // Initialize session on mount
   useEffect(() => {
     const getInitialSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -52,24 +55,20 @@ export const AuthProvider = ({ children }) => {
 
     getInitialSession();
 
-    // ---- Auth listener ----
+    // Auth state listener
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state:", event, session);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
+      if (session?.user) await fetchProfile(session.user.id);
+      else setProfile(null);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // ---- Logout ----
+  // Logout function
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -78,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     }
     setSession(null);
     setProfile(null);
-    window.location.replace("/auth"); // force reload
+    window.location.replace("/auth");
   };
 
   return (
