@@ -22,7 +22,9 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    if (!session?.user) return;
     setSaving(true);
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -34,14 +36,21 @@ const ProfilePage = () => {
       .eq("id", session.user.id);
 
     if (error) toast.error(error.message);
-    else toast.success("Profile updated successfully!");
+    else toast.success("Profile updated!");
     setSaving(false);
   };
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen text-white">
         <p>Loading...</p>
+      </div>
+    );
+
+  if (!profile)
+    return (
+      <div className="flex justify-center items-center h-screen text-white">
+        <p>No profile found. Please log in again.</p>
       </div>
     );
 
