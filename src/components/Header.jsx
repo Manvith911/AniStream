@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -14,15 +14,15 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const timeoutRef = useRef(null);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
   const { session, profile, logout } = useAuth();
 
+  // Debounced search
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
@@ -51,6 +51,17 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
@@ -78,7 +89,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={resetSearch} type="button" className="text-black">
+                  <button
+                    onClick={resetSearch}
+                    type="button"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -132,14 +147,11 @@ const Header = () => {
             </div>
 
             {/* Profile / Login */}
-            <div
-              className="relative"
-              onMouseEnter={() => setShowMenu(true)}
-              onMouseLeave={() => setShowMenu(false)}
-            >
+            <div className="relative" ref={menuRef}>
               {session ? (
                 <div className="relative flex items-center">
                   <img
+                    onClick={() => setShowMenu((prev) => !prev)}
                     src={
                       profile?.avatar_url ||
                       "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
@@ -151,19 +163,28 @@ const Header = () => {
                   {showMenu && (
                     <div className="absolute right-0 top-12 bg-card border border-gray-700 shadow-md rounded-md w-40 p-2 z-[9999]">
                       <button
-                        onClick={() => navigate("/profile")}
+                        onClick={() => {
+                          setShowMenu(false);
+                          navigate("/profile");
+                        }}
                         className="w-full text-left px-3 py-2 hover:bg-lightBg rounded-md"
                       >
                         Profile
                       </button>
                       <button
-                        onClick={() => navigate("/watchlist")}
+                        onClick={() => {
+                          setShowMenu(false);
+                          navigate("/watchlist");
+                        }}
                         className="w-full text-left px-3 py-2 hover:bg-lightBg rounded-md"
                       >
                         Watchlist
                       </button>
                       <button
-                        onClick={logout}
+                        onClick={async () => {
+                          setShowMenu(false);
+                          await logout();
+                        }}
                         className="w-full text-left px-3 py-2 hover:bg-red-600 rounded-md"
                       >
                         Logout
