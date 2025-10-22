@@ -7,7 +7,6 @@ import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
 import { supabase } from "../services/supabaseClient";
-import { Menu } from "@headlessui/react";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
