@@ -10,13 +10,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      if (data.session?.user) {
-        await fetchProfile(data.session.user.id);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setSession(session);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
       }
       setLoading(false);
     };
+
     getSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -42,13 +45,18 @@ export const AuthProvider = ({ children }) => {
       .eq("id", userId)
       .single();
 
-    if (!error) setProfile(data);
+    if (!error && data) {
+      setProfile(data);
+    } else {
+      console.error("Error fetching profile:", error?.message);
+    }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);
+    window.location.href = "/auth"; // Redirect to login
   };
 
   return (
