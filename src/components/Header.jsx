@@ -6,6 +6,7 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -13,18 +14,13 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
+  const { session, profile, logout } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(newValue);
-    }, 500);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
 
   const { data, isLoading } = useApi(
@@ -47,26 +43,17 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const emptyInput = () => {
-    setValue("");
-    setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
+  const emptyInput = () => resetSearch();
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Left */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -74,7 +61,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
+            {/* Search */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -101,7 +88,7 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
+              {/* Suggestions */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
@@ -111,26 +98,19 @@ const Header = () => {
                       {data?.data?.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
-                          className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
+                          className="flex items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
                           key={item.id}
                         >
-                          <div className="poster shrink-0 relative w-10 h-14">
-                            <img
-                              className="h-full w-full object-cover object-center rounded-sm"
-                              src={item.poster}
-                              alt={item.title}
-                            />
-                          </div>
-                          <div className="info">
-                            <h4 className="title text-sm font-semibold line-clamp-2">
+                          <img
+                            className="h-14 w-10 object-cover rounded-sm"
+                            src={item.poster}
+                            alt={item.title}
+                          />
+                          <div>
+                            <h4 className="text-sm font-semibold line-clamp-2">
                               {item.title}
                             </h4>
-                            <h6 className="gray text-xs line-clamp-1">
-                              {item.alternativeTitle}
-                            </h6>
                             <div className="flex items-center gap-2 text-xs gray">
-                              <h6>{item.aired}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
                               <h6>{item.type}</h6>
                               <span className="h-1 w-1 rounded-full bg-primary" />
                               <h6>{item.duration}</h6>
@@ -154,6 +134,44 @@ const Header = () => {
                 </div>
               )}
             </div>
+
+            {/* Right - Auth */}
+            {session ? (
+              <div className="relative group">
+                <img
+                  src={profile?.avatar_url || "/default-avatar.png"}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full cursor-pointer border border-primary"
+                />
+                <div className="absolute hidden group-hover:flex flex-col right-0 mt-2 bg-[#1a1a1f] rounded-md shadow-lg z-50 min-w-[150px]">
+                  <button
+                    onClick={() => navigate("/profile")}
+                    className="text-left px-4 py-2 hover:bg-primary/10"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => navigate("/watchlist")}
+                    className="text-left px-4 py-2 hover:bg-primary/10"
+                  >
+                    Watchlist
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="text-left px-4 py-2 hover:bg-primary/10 text-red-400"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="bg-primary text-black font-semibold px-4 py-2 rounded-md hover:bg-opacity-80"
+              >
+                Login
+              </button>
+            )}
           </div>
         </div>
       </div>
