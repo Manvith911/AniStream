@@ -28,10 +28,5 @@ createRoot(document.getElementById("root")).render(
         <App />
       </BrowserRouter>
     </StrictMode>
-  </QueryClientProvider> add import { AuthProvider } from "./context/AuthContext";
-
-<AuthProvider>
-  <App />
-</AuthProvider>
- 
-); 
+  </QueryClientProvider>
+);
