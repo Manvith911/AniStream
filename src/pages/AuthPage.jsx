@@ -16,6 +16,7 @@ const AuthPage = () => {
     setMessage("");
   };
 
+  // --- Email/Password Auth ---
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,20 +42,24 @@ const AuthPage = () => {
 
         if (error) throw error;
 
-        // Create profile immediately if possible
         if (data?.user) {
+          // Create profile record
           const { error: profileError } = await supabase
             .from("profiles")
             .upsert([
               {
                 id: data.user.id,
                 username,
+                email: data.user.email,
               },
             ]);
-          if (profileError) console.warn("Profile not created yet:", profileError.message);
+          if (profileError)
+            console.warn("Profile creation deferred:", profileError.message);
         }
 
-        setMessage("Confirmation email sent instantly! Check your inbox.");
+        setMessage(
+          "Confirmation email sent instantly! Please check your inbox to verify your account."
+        );
       }
     } catch (err) {
       setMessage(err.message);
@@ -63,12 +68,39 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  // --- Google OAuth Login ---
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
-    });
-    if (error) setMessage(error.message);
+    try {
+      setMessage("Redirecting to Google...");
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/home`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "select_account",
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.user) {
+        const user = data.user;
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .upsert([
+            {
+              id: user.id,
+              email: user.email,
+              username: user.user_metadata?.full_name || user.email.split("@")[0],
+              avatar_url: user.user_metadata?.avatar_url || null,
+            },
+          ]);
+        if (profileError)
+          console.warn("Profile creation deferred:", profileError.message);
+      }
+    } catch (err) {
+      setMessage(err.message);
+    }
   };
 
   return (
@@ -111,7 +143,7 @@ const AuthPage = () => {
           <button
             disabled={loading}
             type="submit"
-            className="bg-primary text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
+            className="bg-yellow-400 text-black font-semibold py-2 rounded hover:bg-yellow-300 transition"
           >
             {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
           </button>
