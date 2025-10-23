@@ -53,15 +53,27 @@ const ProfilePage = () => {
   const generateAnimeAvatar = async () => {
     try {
       setMessage("Generating anime avatar...");
-      const randomPage = Math.floor(Math.random() * 50) + 1;
+      const randomPage = Math.floor(Math.random() * 100) + 1;
       const randomIndex = Math.floor(Math.random() * 20);
 
+      // Determine gender filter for AniList
+      let genderFilter = "";
+      if (profile?.gender === "Male") genderFilter = "male";
+      else if (profile?.gender === "Female") genderFilter = "female";
+
+      // AniList GraphQL query
       const query = `
         query {
           Page(page: ${randomPage}, perPage: 20) {
-            characters {
+            characters(sort: FAVOURITES_DESC) {
+              gender
               image {
                 large
+              }
+              media(sort: POPULARITY_DESC, perPage: 1) {
+                edges {
+                  role
+                }
               }
             }
           }
@@ -75,15 +87,25 @@ const ProfilePage = () => {
       });
 
       const data = await res.json();
-      const characters = data.data.Page.characters;
-      const randomChar = characters[randomIndex];
+      const characters = data?.data?.Page?.characters || [];
 
-      if (randomChar?.image?.large) {
-        const avatarUrl = randomChar.image.large;
-        setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
+      // Filter by gender and main roles
+      const filtered = characters.filter(
+        (char) =>
+          char.image?.large &&
+          (!genderFilter || char.gender?.toLowerCase().includes(genderFilter)) &&
+          char.media?.[0]?.edges?.some((e) => e.role === "MAIN")
+      );
+
+      const finalList = filtered.length ? filtered : characters;
+      const chosenChar =
+        finalList[Math.floor(Math.random() * finalList.length)];
+
+      if (chosenChar?.image?.large) {
+        setProfile((p) => ({ ...p, avatar_url: chosenChar.image.large }));
         setMessage("New anime avatar generated!");
       } else {
-        setMessage("Failed to fetch character. Try again!");
+        setMessage("No suitable character found. Try again!");
       }
     } catch (err) {
       console.error(err);
