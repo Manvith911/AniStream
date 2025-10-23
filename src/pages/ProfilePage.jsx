@@ -9,7 +9,6 @@ const ProfilePage = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  // Fetch user + profile
   const fetchProfile = async () => {
     setLoading(true);
     const {
@@ -33,7 +32,6 @@ const ProfilePage = () => {
     setLoading(false);
   };
 
-  // Save profile
   const handleSave = async () => {
     if (!profile) return;
     setUpdating(true);
@@ -52,23 +50,16 @@ const ProfilePage = () => {
     else setMessage("Profile updated successfully!");
   };
 
-  // Generate anime avatar depending on gender
   const generateAnimeAvatar = async () => {
     try {
       setMessage("Generating anime avatar...");
-
-      let genderFilter = "";
-      if (profile?.gender === "Male") genderFilter = "MALE";
-      else if (profile?.gender === "Female") genderFilter = "FEMALE";
-      else genderFilter = ""; // For "Other" or "Prefer not to say"
-
       const randomPage = Math.floor(Math.random() * 50) + 1;
       const randomIndex = Math.floor(Math.random() * 20);
 
       const query = `
         query {
           Page(page: ${randomPage}, perPage: 20) {
-            characters${genderFilter ? `(gender: ${genderFilter})` : ""} {
+            characters {
               image {
                 large
               }
@@ -90,13 +81,6 @@ const ProfilePage = () => {
       if (randomChar?.image?.large) {
         const avatarUrl = randomChar.image.large;
         setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
-
-        // Optional: auto-update in Supabase immediately
-        await supabase
-          .from("profiles")
-          .update({ avatar_url: avatarUrl })
-          .eq("id", profile.id);
-
         setMessage("New anime avatar generated!");
       } else {
         setMessage("Failed to fetch character. Try again!");
