@@ -1,152 +1,202 @@
 import { useState } from "react";
-import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabaseClient";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [gender, setGender] = useState("Prefer not to say");
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    username: "",
+  });
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setMessage("");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAuth = async (e) => {
+  // --- Sign Up ---
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) setMessage(error.message);
-      else navigate("/home");
+    const { email, password, username } = formData;
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username },
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      setMessage(error.message);
     } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username, gender },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          shouldCreateUser: true,
-        },
-      });
-
-      if (error) setMessage(error.message);
-      else {
-        setMessage("Check your inbox for the confirmation email!");
-        if (data?.user) {
-          await supabase.from("profiles").insert([
-            {
-              id: data.user.id,
-              email: data.user.email,
-              username,
-              gender,
-            },
-          ]);
-        }
-      }
+      setMessage(
+        "✅ Check your email for a confirmation link before logging in."
+      );
     }
-
     setLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
+  // --- Login ---
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const { email, password } = formData;
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setMessage(error.message);
+    } else if (data.session) {
+      await ensureProfile(data.session.user);
+      navigate("/");
+    }
+    setLoading(false);
+  };
+
+  // --- Google Sign-In ---
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/home`,
       },
     });
+
     if (error) setMessage(error.message);
+    setLoading(false);
+  };
+
+  // --- Ensure Profile Exists ---
+  const ensureProfile = async (user) => {
+    if (!user) return;
+    const { id, email, user_metadata } = user;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", id)
+      .single();
+
+    if (!data) {
+      await supabase.from("profiles").insert([
+        {
+          id,
+          email,
+          username: user_metadata.username || email.split("@")[0],
+          avatar_url: user_metadata.avatar_url || "",
+        },
+      ]);
+    } else if (error && error.code !== "PGRST116") {
+      console.error(error);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white px-4">
-      <div className="bg-gray-800 rounded-xl p-8 shadow-xl w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-backGround">
+      <div className="bg-card p-8 rounded-lg shadow-lg w-[90%] max-w-md">
+        <h2 className="text-2xl font-bold text-center mb-4 text-primary">
           {isLogin ? "Login" : "Sign Up"}
         </h2>
 
-        <form onSubmit={handleAuth} className="flex flex-col gap-3">
+        <form
+          onSubmit={isLogin ? handleLogin : handleSignUp}
+          className="flex flex-col gap-4"
+        >
           {!isLogin && (
-            <>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="p-2 rounded bg-gray-700 outline-none"
-                required
-              />
-
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="p-2 rounded bg-gray-700 outline-none"
-              >
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-                <option>Prefer not to say</option>
-              </select>
-            </>
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              className="px-3 py-2 border rounded-md bg-backGround text-white"
+            />
           )}
-
           <input
             type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="p-2 rounded bg-gray-700 outline-none"
+            name="email"
+            placeholder="Email address"
+            value={formData.email}
+            onChange={handleChange}
             required
+            className="px-3 py-2 border rounded-md bg-backGround text-white"
           />
-
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="p-2 rounded bg-gray-700 outline-none"
+            value={formData.password}
+            onChange={handleChange}
             required
+            className="px-3 py-2 border rounded-md bg-backGround text-white"
           />
 
           <button
-            disabled={loading}
             type="submit"
-            className="bg-primary text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
+            disabled={loading}
+            className="bg-primary text-black font-semibold py-2 rounded-md hover:opacity-90"
           >
-            {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
+            {loading
+              ? isLogin
+                ? "Logging in..."
+                : "Creating account..."
+              : isLogin
+              ? "Login"
+              : "Sign Up"}
           </button>
         </form>
 
+        <div className="my-4 text-center text-gray-400">or</div>
+
         <button
-          onClick={handleGoogleLogin}
-          className="bg-white text-black font-semibold py-2 rounded mt-4 w-full hover:bg-gray-200 transition"
+          onClick={handleGoogleSignIn}
+          className="w-full bg-red-500 text-white font-semibold py-2 rounded-md hover:opacity-90"
         >
           Continue with Google
         </button>
 
         {message && (
-          <p className="text-center text-sm text-yellow-300 mt-4">{message}</p>
+          <p className="text-center text-sm text-primary mt-3">{message}</p>
         )}
 
-        <p
-          onClick={toggleMode}
-          className="text-center mt-4 text-sm text-gray-300 cursor-pointer hover:text-white"
-        >
-          {isLogin
-            ? "Don't have an account? Sign Up"
-            : "Already have an account? Login"}
-        </p>
+        <div className="text-center mt-4">
+          {isLogin ? (
+            <p>
+              Don’t have an account?{" "}
+              <button
+                onClick={() => setIsLogin(false)}
+                className="text-primary underline"
+              >
+                Sign Up
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{" "}
+              <button
+                onClick={() => setIsLogin(true)}
+                className="text-primary underline"
+              >
+                Login
+              </button>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
