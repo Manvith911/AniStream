@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -12,16 +12,16 @@ const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
-  const [session, setSession] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  // --- Debounced Search ---
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
+
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
@@ -49,57 +49,48 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  // --- Auth State Handling ---
-  useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-
-      if (data.session?.user) {
-        fetchProfile(data.session.user.id);
-      }
-    };
-    getSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user) fetchProfile(session.user.id);
-      else setProfile(null);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  // --- Fetch user profile ---
-  const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", userId)
-      .single();
-
-    if (error) console.error(error);
-    else setProfile(data);
+  const emptyInput = () => {
+    setValue("");
+    setDebouncedValue("");
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  // --- Logout ---
-  const handleLogout = async () => {
+  const logout = async () => {
     await supabase.auth.signOut();
-    setSession(null);
+    setUser(null);
     setProfile(null);
     setDropdownOpen(false);
-    navigate("/home");
+    navigate("/auth");
   };
 
-  const toggleDropdown = () => setDropdownOpen((prev) => !prev);
-
-  // --- Hide dropdown when clicking outside ---
   useEffect(() => {
-    const closeDropdown = (e) => {
-      if (!e.target.closest(".profile-dropdown")) setDropdownOpen(false);
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        setProfile(data);
+      }
     };
-    document.addEventListener("click", closeDropdown);
-    return () => document.removeEventListener("click", closeDropdown);
+
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -107,7 +98,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar + Logo */}
+            {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -129,7 +120,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={resetSearch} type="reset" className="text-black">
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -138,29 +129,30 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full bg-card rounded-md overflow-hidden shadow-lg z-50">
+                <div className="absolute top-full mt-1 left-0 w-full bg-card z-50 rounded-md shadow-lg overflow-hidden">
                   {isLoading ? (
                     <Loader />
-                  ) : data?.data?.length ? (
+                  ) : data && data?.data?.length ? (
                     <>
                       {data.data.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
+                          className="flex w-full items-start bg-backGround hover:bg-lightBg px-3 py-3 gap-4 cursor-pointer"
                           key={item.id}
-                          className="flex items-start bg-backGround hover:bg-lightBg px-3 py-3 gap-4 cursor-pointer"
                         >
                           <img
-                            className="h-14 w-10 object-cover rounded-sm"
+                            className="h-14 w-10 object-cover rounded"
                             src={item.poster}
                             alt={item.title}
                           />
-                          <div className="info">
+                          <div>
                             <h4 className="text-sm font-semibold line-clamp-2">
                               {item.title}
                             </h4>
-                            <p className="text-xs text-gray-400">{item.type}</p>
+                            <p className="text-xs text-gray-400 line-clamp-1">
+                              {item.alternativeTitle}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -173,33 +165,42 @@ const Header = () => {
                       </button>
                     </>
                   ) : (
-                    <p className="text-center text-sm text-primary py-3">
-                      No results found
-                    </p>
+                    <h1 className="text-center text-sm text-primary py-3">
+                      Anime not found :(
+                    </h1>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Right: Auth/Profile */}
-            <div className="relative profile-dropdown">
-              {session ? (
-                <div>
+            {/* User Section */}
+            <div className="relative">
+              {!user ? (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="bg-primary text-black px-4 py-1 rounded font-semibold hover:bg-yellow-400 transition"
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="relative">
                   <img
-                    src={profile?.avatar_url || "/default-avatar.png"}
+                    src={
+                      profile?.avatar_url ||
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                    }
                     alt="profile"
-                    onClick={toggleDropdown}
-                    className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer object-cover"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="w-10 h-10 rounded-full cursor-pointer object-cover border-2 border-yellow-400"
                   />
-
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-card rounded-md shadow-lg border border-gray-700">
+                    <div className="absolute right-0 mt-2 w-40 bg-gray-800 text-white rounded shadow-lg">
                       <button
                         onClick={() => {
                           navigate("/profile");
                           setDropdownOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-700"
                       >
                         Profile
                       </button>
@@ -208,26 +209,19 @@ const Header = () => {
                           navigate("/watchlist");
                           setDropdownOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-700"
                       >
                         Watchlist
                       </button>
                       <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-red-500 hover:bg-lightBg"
+                        onClick={logout}
+                        className="block w-full text-left px-4 py-2 hover:bg-red-600"
                       >
                         Logout
                       </button>
                     </div>
                   )}
                 </div>
-              ) : (
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="bg-primary px-4 py-1.5 rounded-md text-black font-semibold"
-                >
-                  Login
-                </button>
               )}
             </div>
           </div>
