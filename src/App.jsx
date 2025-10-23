@@ -17,7 +17,7 @@ import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 import AuthPage from "./pages/AuthPage";
-import ProfilePage from "./pages/ProfilePage"; // ✅ New profile page
+import ProfilePage from "./pages/ProfilePage";
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
@@ -29,7 +29,6 @@ const App = () => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Supabase Auth Session
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
@@ -51,7 +50,7 @@ const App = () => {
 
   if (loading) return null;
 
-  // ✅ Protected route wrapper
+  // ✅ Only profile or private features are protected
   const ProtectedRoute = ({ children }) => {
     if (!session) return <Navigate to="/auth" replace />;
     return children;
@@ -67,81 +66,25 @@ const App = () => {
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
 
-        {!path && <Header session={session} />} {/* ✅ Pass session */}
+        {!path && <Header session={session} />}
 
         <ScrollToTop />
         <Routes>
-          {/* Public Routes */}
-          <Route path="/auth" element={<AuthPage />} />
+          {/* Public Pages */}
           <Route path="/" element={<Root />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/anime/:id" element={<DetailPage />} />
+          <Route path="/animes/:category/:query?" element={<ListPage />} />
+          <Route path="/search" element={<SearchResult />} />
+          <Route path="/watch/:id" element={<WatchPage />} />
+          <Route path="/characters/:id" element={<CharactersPage />} />
+          <Route path="/people/:id" element={<PeopleInfoPage />} />
+          <Route path="/character/:id" element={<CharacterInfoPage />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/anime/:id"
-            element={
-              <ProtectedRoute>
-                <DetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/animes/:category/:query?"
-            element={
-              <ProtectedRoute>
-                <ListPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <ProtectedRoute>
-                <SearchResult />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/watch/:id"
-            element={
-              <ProtectedRoute>
-                <WatchPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/characters/:id"
-            element={
-              <ProtectedRoute>
-                <CharactersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/people/:id"
-            element={
-              <ProtectedRoute>
-                <PeopleInfoPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/character/:id"
-            element={
-              <ProtectedRoute>
-                <CharacterInfoPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Auth */}
+          <Route path="/auth" element={<AuthPage />} />
 
-          {/* ✅ New Profile Page */}
+          {/* Protected: Profile */}
           <Route
             path="/profile"
             element={
