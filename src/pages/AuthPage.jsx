@@ -7,7 +7,6 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [gender, setGender] = useState("Prefer not to say");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -34,7 +33,7 @@ const AuthPage = () => {
         email,
         password,
         options: {
-          data: { username, gender },
+          data: { username },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           shouldCreateUser: true,
         },
@@ -49,7 +48,6 @@ const AuthPage = () => {
               id: data.user.id,
               email: data.user.email,
               username,
-              gender,
             },
           ]);
         }
@@ -78,27 +76,14 @@ const AuthPage = () => {
 
         <form onSubmit={handleAuth} className="flex flex-col gap-3">
           {!isLogin && (
-            <>
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="p-2 rounded bg-gray-700 outline-none"
-                required
-              />
-
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="p-2 rounded bg-gray-700 outline-none"
-              >
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-                <option>Prefer not to say</option>
-              </select>
-            </>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="p-2 rounded bg-gray-700 outline-none"
+              required
+            />
           )}
 
           <input
