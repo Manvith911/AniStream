@@ -44,6 +44,7 @@ const ProfilePage = () => {
         username: profile.username,
         gender: profile.gender,
         avatar_url: profile.avatar_url,
+        bio: profile.bio, // ✅ include bio in updates
       })
       .eq("id", profile.id);
 
@@ -52,7 +53,7 @@ const ProfilePage = () => {
     else setMessage("Profile updated successfully!");
   };
 
-  // Generate a random anime avatar from AniList
+  // ✅ Fixed Anime Avatar Generator (Gender filter improved)
   const generateAnimeAvatar = async () => {
     try {
       setMessage("Generating anime avatar...");
@@ -78,9 +79,7 @@ const ProfilePage = () => {
         body: JSON.stringify({ query }),
       });
 
-      if (!res.ok) {
-        throw new Error(`AniList API error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`AniList API error: ${res.status}`);
 
       const data = await res.json();
       const characters = data?.data?.Page?.characters || [];
@@ -92,19 +91,29 @@ const ProfilePage = () => {
 
       console.log("AniList characters:", characters);
 
-      const genderFilter = (profile?.gender || "").toLowerCase().trim();
-      const filtered = characters.filter((char) => {
-        const g = (char.gender || "").toLowerCase().trim();
-        return char.image?.large && (!genderFilter || g.includes(genderFilter));
+      // Normalize gender
+      const userGender = (profile?.gender || "").toLowerCase().trim();
+      let targetGender = "";
+      if (userGender === "male") targetGender = "male";
+      else if (userGender === "female") targetGender = "female";
+      // "Other" or "Prefer not to say" → no filter
+
+      // Filter characters by gender & image availability
+      let filtered = characters.filter((char) => {
+        const charGender = (char.gender || "").toLowerCase().trim();
+        return char.image?.large && (!targetGender || charGender === targetGender);
       });
 
-      const finalList = filtered.length ? filtered : characters;
-      const chosen =
-        finalList[Math.floor(Math.random() * finalList.length)];
+      // Fallback to all with images if gender filter fails
+      if (!filtered.length) {
+        filtered = characters.filter((char) => char.image?.large);
+      }
+
+      const chosen = filtered[Math.floor(Math.random() * filtered.length)];
 
       if (chosen?.image?.large) {
         setProfile((p) => ({ ...p, avatar_url: chosen.image.large }));
-        setMessage("New anime avatar generated!");
+        setMessage(`New ${chosen.gender || ""} anime avatar generated!`);
       } else {
         setMessage("No suitable character found. Try again!");
       }
@@ -130,6 +139,7 @@ const ProfilePage = () => {
       <div className="bg-gray-800 p-8 rounded-xl w-full max-w-md shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Your Profile</h2>
 
+        {/* Avatar + Generator */}
         <div className="flex flex-col items-center mb-6">
           <img
             src={
@@ -147,6 +157,7 @@ const ProfilePage = () => {
           </button>
         </div>
 
+        {/* Profile Fields */}
         <div className="flex flex-col gap-3">
           <label className="text-sm text-gray-300">Username</label>
           <input
@@ -171,6 +182,16 @@ const ProfilePage = () => {
             <option>Other</option>
             <option>Prefer not to say</option>
           </select>
+
+          {/* ✅ Bio Field */}
+          <label className="text-sm text-gray-300">Bio</label>
+          <textarea
+            value={profile?.bio || ""}
+            onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
+            placeholder="Tell us something about yourself..."
+            rows={3}
+            className="p-2 rounded bg-gray-700 text-white outline-none resize-none"
+          />
 
           <button
             onClick={handleSave}
