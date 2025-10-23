@@ -22,10 +22,7 @@ const Header = () => {
     const newValue = e.target.value;
     setValue(newValue);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(newValue);
-    }, 500);
+    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
 
   const { data, isLoading } = useApi(
@@ -57,11 +54,16 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // ✅ FIXED LOGOUT
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setShowMenu(false);
-    navigate("/auth");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setProfile(null);          // Clear profile from context
+      navigate("/auth");          // Navigate to login page
+    } catch (err) {
+      console.error("Logout error:", err.message);
+    }
   };
 
   return (
@@ -91,11 +93,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -170,10 +168,7 @@ const Header = () => {
               ) : (
                 <div className="relative">
                   <img
-                    src={
-                      profile?.avatar_url ||
-                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                    }
+                    src={profile?.avatar_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
                     alt="User Avatar"
                     onClick={() => setShowMenu(!showMenu)}
                     className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-primary"
