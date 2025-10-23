@@ -9,19 +9,54 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  const createEmptyProfile = async (userId, email) => {
+    try {
+      await supabase.from("profiles").insert([
+        {
+          id: userId,
+          email,
+          username: "",
+          gender: "",
+          avatar_url: "",
+          bio: "",
+        },
+      ]);
+    } catch (err) {
+      console.error("Error creating profile:", err.message);
+    }
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
+
+        // Create empty profile
+        if (data?.user?.id) {
+          await createEmptyProfile(data.user.id, email);
+        }
+
         toast.success("Account created! Please check your email.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+
+        // Create empty profile if not exists
+        const { user } = data;
+        const { data: existing } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (!existing) {
+          await createEmptyProfile(user.id, email);
+        }
+
         toast.success("Logged in successfully!");
         navigate("/home");
       }
@@ -32,10 +67,13 @@ const AuthPage = () => {
 
   const handleGoogleAuth = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
       });
       if (error) throw error;
+
+      // Wait for redirect flow to finish
+      // You can also handle profile creation after redirect
     } catch (err) {
       toast.error("Failed to sign in with Google");
     }
