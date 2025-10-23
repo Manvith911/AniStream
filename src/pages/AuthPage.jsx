@@ -61,7 +61,7 @@ const AuthPage = () => {
       setMessage(error.message);
     } else if (data.session) {
       await ensureProfile(data.session.user);
-      navigate("/");
+      navigate("/home");
     }
     setLoading(false);
   };
