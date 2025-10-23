@@ -1,133 +1,175 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
-
-const genderOptions = [
-  "Male",
-  "Female",
-  "Other",
-  "Prefer not to say",
-];
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    username: "",
-    bio: "",
-    gender: "",
-  });
+  const [updating, setUpdating] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const getProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+  const fetchProfile = async () => {
+    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-        setProfile(data);
-        setFormData({
-          username: data?.username || "",
-          bio: data?.bio || "",
-          gender: data?.gender || "",
-        });
-      }
-      setLoading(false);
-    };
-    getProfile();
-  }, []);
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-  const handleUpdate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) console.error(error);
+    else setProfile(data);
+
+    setLoading(false);
+  };
+
+  const handleSave = async () => {
+    if (!profile) return;
+    setUpdating(true);
+
     const { error } = await supabase
       .from("profiles")
       .update({
-        username: formData.username,
-        bio: formData.bio,
-        gender: formData.gender,
-        updated_at: new Date(),
+        username: profile.username,
+        gender: profile.gender,
+        avatar_url: profile.avatar_url,
       })
-      .eq("id", user.id);
-    if (!error) {
-      alert("Profile updated!");
-      setEditing(false);
+      .eq("id", profile.id);
+
+    setUpdating(false);
+    if (error) setMessage(error.message);
+    else setMessage("Profile updated successfully!");
+  };
+
+  const generateAnimeAvatar = async () => {
+    try {
+      setMessage("Generating anime avatar...");
+      const randomPage = Math.floor(Math.random() * 50) + 1;
+      const randomIndex = Math.floor(Math.random() * 20);
+
+      const query = `
+        query {
+          Page(page: ${randomPage}, perPage: 20) {
+            characters {
+              image {
+                large
+              }
+            }
+          }
+        }
+      `;
+
+      const res = await fetch("https://graphql.anilist.co", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+
+      const data = await res.json();
+      const characters = data.data.Page.characters;
+      const randomChar = characters[randomIndex];
+
+      if (randomChar?.image?.large) {
+        const avatarUrl = randomChar.image.large;
+        setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
+        setMessage("New anime avatar generated!");
+      } else {
+        setMessage("Failed to fetch character. Try again!");
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("Error fetching anime avatar!");
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-white">
+        Loading profile...
+      </div>
+    );
 
   return (
-    <div className="p-6 max-w-lg mx-auto mt-10 bg-gray-900 rounded-xl shadow-lg text-white">
-      <h2 className="text-2xl font-bold mb-4">My Profile</h2>
+    <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center px-4">
+      <div className="bg-gray-800 p-8 rounded-xl w-full max-w-md shadow-lg">
+        <h2 className="text-2xl font-bold text-center mb-6">Your Profile</h2>
 
-      {!editing ? (
-        <>
-          <p><strong>Username:</strong> {profile?.username || "N/A"}</p>
-          <p><strong>Email:</strong> {profile?.email || "N/A"}</p>
-          <p><strong>Gender:</strong> {profile?.gender || "N/A"}</p>
-          <p><strong>Bio:</strong> {profile?.bio || "No bio yet"}</p>
-
-          <button
-            onClick={() => setEditing(true)}
-            className="mt-4 px-4 py-2 bg-blue-500 text-black rounded"
-          >
-            Edit Profile
-          </button>
-        </>
-      ) : (
-        <>
-          <input
-            value={formData.username}
-            onChange={(e) =>
-              setFormData({ ...formData, username: e.target.value })
+        <div className="flex flex-col items-center mb-6">
+          <img
+            src={
+              profile?.avatar_url ||
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
             }
-            placeholder="Username"
-            className="w-full mb-2 p-2 rounded bg-gray-800 text-white"
+            alt="avatar"
+            className="w-28 h-28 rounded-full object-cover border-4 border-yellow-400 shadow-lg"
+          />
+          <button
+            onClick={generateAnimeAvatar}
+            className="mt-4 bg-yellow-400 text-black px-4 py-2 rounded font-semibold hover:bg-yellow-300 transition"
+          >
+            Generate Anime Avatar
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <label className="text-sm text-gray-300">Username</label>
+          <input
+            type="text"
+            value={profile?.username || ""}
+            onChange={(e) =>
+              setProfile((p) => ({ ...p, username: e.target.value }))
+            }
+            className="p-2 rounded bg-gray-700 text-white outline-none"
           />
 
+          <label className="text-sm text-gray-300">Gender</label>
           <select
-            value={formData.gender}
+            value={profile?.gender || "Prefer not to say"}
             onChange={(e) =>
-              setFormData({ ...formData, gender: e.target.value })
+              setProfile((p) => ({ ...p, gender: e.target.value }))
             }
-            className="w-full mb-2 p-2 rounded bg-gray-800 text-white"
+            className="p-2 rounded bg-gray-700 text-white outline-none"
           >
-            <option value="">Select Gender</option>
-            {genderOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+            <option>Prefer not to say</option>
           </select>
 
-          <textarea
-            value={formData.bio}
-            onChange={(e) =>
-              setFormData({ ...formData, bio: e.target.value })
-            }
-            placeholder="Bio"
-            className="w-full mb-2 p-2 rounded bg-gray-800 text-white"
+          <label className="text-sm text-gray-300">Email</label>
+          <input
+            type="text"
+            value={profile?.email || ""}
+            readOnly
+            className="p-2 rounded bg-gray-700 text-gray-400 outline-none cursor-not-allowed"
           />
 
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleUpdate}
-              className="px-4 py-2 bg-green-500 text-black rounded"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => setEditing(false)}
-              className="px-4 py-2 bg-gray-600 text-white rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      )}
+          <button
+            onClick={handleSave}
+            disabled={updating}
+            className="mt-4 bg-primary text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
+          >
+            {updating ? "Saving..." : "Save Changes"}
+          </button>
+
+          {message && (
+            <p className="text-center text-sm text-yellow-300 mt-3">{message}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
