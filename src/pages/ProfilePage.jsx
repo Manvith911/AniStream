@@ -1,82 +1,108 @@
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
 const ProfilePage = () => {
-  const { profile } = useAuth();
-  const [form, setForm] = useState({
-    username: profile?.username || "",
-    bio: profile?.bio || "",
-    gender: profile?.gender || "",
-    avatar_url: profile?.avatar_url || "",
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    bio: "",
+    gender: "",
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        setProfile(data);
+        setFormData({
+          username: data?.username || "",
+          bio: data?.bio || "",
+          gender: data?.gender || "",
+        });
+      }
+      setLoading(false);
+    };
+    getProfile();
+  }, []);
+
+  const handleUpdate = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("profiles")
       .update({
-        username: form.username,
-        bio: form.bio,
-        gender: form.gender,
-        avatar_url: form.avatar_url,
+        username: formData.username,
+        bio: formData.bio,
+        gender: formData.gender,
+        updated_at: new Date(),
       })
-      .eq("id", profile.id);
-
-    setLoading(false);
-    if (error) alert(error.message);
-    else alert("Profile updated successfully!");
+      .eq("id", user.id);
+    if (!error) {
+      alert("Profile updated!");
+      setEditing(false);
+    }
   };
 
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+
   return (
-    <div className="min-h-screen bg-[#0f0f13] flex items-center justify-center text-white">
-      <form
-        onSubmit={handleUpdate}
-        className="bg-[#1a1a1f] p-8 rounded-xl shadow-lg w-[90%] max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">Edit Profile</h2>
+    <div className="p-6 max-w-lg mx-auto mt-10 bg-card rounded-xl shadow-lg">
+      <h2 className="text-xl font-bold mb-4">Profile</h2>
 
-        <input
-          type="text"
-          placeholder="Username"
-          className="w-full p-2 mb-3 bg-[#222] rounded focus:outline-none"
-          value={form.username}
-          onChange={(e) => setForm({ ...form, username: e.target.value })}
-        />
-
-        <input
-          type="text"
-          placeholder="Avatar URL"
-          className="w-full p-2 mb-3 bg-[#222] rounded focus:outline-none"
-          value={form.avatar_url}
-          onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
-        />
-
-        <input
-          type="text"
-          placeholder="Gender"
-          className="w-full p-2 mb-3 bg-[#222] rounded focus:outline-none"
-          value={form.gender}
-          onChange={(e) => setForm({ ...form, gender: e.target.value })}
-        />
-
-        <textarea
-          placeholder="Bio"
-          className="w-full p-2 mb-4 bg-[#222] rounded focus:outline-none"
-          value={form.bio}
-          onChange={(e) => setForm({ ...form, bio: e.target.value })}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-primary text-black font-semibold py-2 rounded hover:bg-opacity-80"
-        >
-          {loading ? "Updating..." : "Save Changes"}
-        </button>
-      </form>
+      {!editing ? (
+        <>
+          <p><strong>Username:</strong> {profile?.username}</p>
+          <p><strong>Email:</strong> {profile?.email}</p>
+          <p><strong>Gender:</strong> {profile?.gender}</p>
+          <p><strong>Bio:</strong> {profile?.bio}</p>
+          <button
+            onClick={() => setEditing(true)}
+            className="mt-4 px-4 py-2 bg-primary text-black rounded"
+          >
+            Edit Profile
+          </button>
+        </>
+      ) : (
+        <>
+          <input
+            value={formData.username}
+            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            placeholder="Username"
+            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
+          />
+          <input
+            value={formData.gender}
+            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+            placeholder="Gender"
+            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
+          />
+          <textarea
+            value={formData.bio}
+            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+            placeholder="Bio"
+            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
+          />
+          <button
+            onClick={handleUpdate}
+            className="px-4 py-2 bg-green-500 text-black rounded mr-2"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            className="px-4 py-2 bg-gray-500 text-white rounded"
+          >
+            Cancel
+          </button>
+        </>
+      )}
     </div>
   );
 };
