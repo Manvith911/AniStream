@@ -13,10 +13,8 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
-import ProfilePage from "./pages/ProfilePage"; // ✅ new
-import AuthPage from "./pages/AuthPage"; // ✅ new
-
-// ✅ Import from Vercel
+import ProfilePage from "./pages/ProfilePage";
+import AuthPage from "./pages/AuthPage";
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
@@ -30,33 +28,22 @@ const App = () => {
       {!isRootPath && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
-        {/* Overlay when sidebar is open */}
         <div
           onClick={toggleSidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
 
-        {/* Header (hidden on root page) */}
         {!isRootPath && <Header />}
 
         <ScrollToTop />
 
         <Routes>
-          {/* Root */}
           <Route path="/" element={<Root />} />
-
-          {/* Home + Lists */}
           <Route path="/home" element={<Home />} />
           <Route path="/animes/:category/:query?" element={<ListPage />} />
-
-          {/* Anime Details + Watching */}
           <Route path="/anime/:id" element={<DetailPage />} />
           <Route path="/watch/:id" element={<WatchPage />} />
-
-          {/* Search */}
           <Route path="/search" element={<SearchResult />} />
-
-          {/* Characters & People */}
           <Route path="/characters/:id" element={<CharactersPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
@@ -65,12 +52,10 @@ const App = () => {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
-          {/* 404 */}
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
 
-      {/* ✅ Analytics (Vercel) */}
       <Analytics />
     </>
   );
