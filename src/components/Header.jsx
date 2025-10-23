@@ -13,10 +13,10 @@ const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { session, profile } = useAuth();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { session, profile, setProfile } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -51,25 +51,30 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
-  const logout = async () => {
+  const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/");
+    setProfile(null);
+    setShowMenu(false);
+    navigate("/auth");
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
@@ -108,7 +113,7 @@ const Header = () => {
 
               {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
+                <div className="absolute top-full mt-1 left-0 w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
@@ -160,12 +165,12 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right Side - Auth/Profile */}
-            <div className="relative flex items-center gap-4">
+            {/* ✅ User Section */}
+            <div className="relative">
               {!session ? (
                 <button
                   onClick={() => navigate("/auth")}
-                  className="bg-primary text-black font-semibold px-4 py-1 rounded-md"
+                  className="bg-primary text-black px-4 py-2 rounded-md font-semibold hover:opacity-80"
                 >
                   Login
                 </button>
@@ -174,35 +179,36 @@ const Header = () => {
                   <img
                     src={
                       profile?.avatar_url ||
-                      "https://i.pinimg.com/736x/8c/2b/20/8c2b2094a8d48d5a63f468ba83d95a09.jpg"
+                      "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                     }
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    alt="User Avatar"
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-primary"
                   />
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-card shadow-lg rounded-md overflow-hidden">
+
+                  {showMenu && (
+                    <div className="absolute right-0 mt-2 w-40 bg-card shadow-lg rounded-md overflow-hidden z-50">
                       <button
                         onClick={() => {
                           navigate("/profile");
-                          setDropdownOpen(false);
+                          setShowMenu(false);
                         }}
-                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-lightBg"
                       >
                         Profile
                       </button>
                       <button
                         onClick={() => {
                           navigate("/watchlist");
-                          setDropdownOpen(false);
+                          setShowMenu(false);
                         }}
-                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-lightBg"
                       >
                         Watchlist
                       </button>
                       <button
-                        onClick={logout}
-                        className="block w-full text-left px-4 py-2 hover:bg-lightBg text-red-500"
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-lightBg"
                       >
                         Logout
                       </button>
