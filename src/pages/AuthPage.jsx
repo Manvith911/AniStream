@@ -21,37 +21,46 @@ const AuthPage = () => {
     setLoading(true);
     setMessage("");
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) setMessage(error.message);
-      else navigate("/home");
-    } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          shouldCreateUser: true,
-        },
-      });
+    try {
+      if (isLogin) {
+        // Login
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        navigate("/home");
+      } else {
+        // Sign Up
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username },
+            emailRedirectTo: `${window.location.origin}/home`,
+          },
+        });
 
-      if (error) setMessage(error.message);
-      else {
-        setMessage("Check your inbox for the confirmation email!");
-        if (data?.user) {
+        if (error) throw error;
+
+        // Try to create profile immediately if session is available
+        const userId = data?.user?.id || data?.session?.user?.id;
+        if (userId) {
           await supabase.from("profiles").insert([
             {
-              id: data.user.id,
-              email: data.user.email,
+              id: userId,
+              email,
               username,
+              created_at: new Date().toISOString(),
             },
           ]);
         }
+
+        setMessage("Signup successful! Please check your email to confirm your account.");
       }
+    } catch (err) {
+      console.error(err);
+      setMessage(err.message || "Something went wrong!");
     }
 
     setLoading(false);
