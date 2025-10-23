@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../services/supabaseClient";
 import { toast } from "react-toastify";
-import { useApi } from "../services/useApi";
 
 const ProfilePage = () => {
   const { session, profile, setProfile } = useAuth();
@@ -11,13 +10,6 @@ const ProfilePage = () => {
   const [bio, setBio] = useState(profile?.bio || "");
   const [gender, setGender] = useState(profile?.gender || "");
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
-  const [avatarQuery, setAvatarQuery] = useState("");
-  const [generatedAvatar, setGeneratedAvatar] = useState(profile?.avatar_url || "");
-
-  // Use useApi to fetch characters
-  const { data: characterData, isLoading } = useApi(
-    avatarQuery.length > 2 ? `/characters?search=${avatarQuery}` : null
-  );
 
   // Fetch profile from Supabase
   useEffect(() => {
@@ -36,7 +28,6 @@ const ProfilePage = () => {
         setBio(data.bio || "");
         setGender(data.gender || "");
         setAvatarUrl(data.avatar_url || "");
-        setGeneratedAvatar(data.avatar_url || "");
       }
     };
     fetchProfile();
@@ -54,7 +45,7 @@ const ProfilePage = () => {
             username,
             bio,
             gender,
-            avatar_url: generatedAvatar,
+            avatar_url: avatarUrl,
             updated_at: new Date(),
           },
           { onConflict: "id" }
@@ -62,7 +53,7 @@ const ProfilePage = () => {
 
       if (error) throw error;
       toast.success("Profile updated!");
-      setProfile({ ...profile, username, bio, gender, avatar_url: generatedAvatar });
+      setProfile({ ...profile, username, bio, gender, avatar_url: avatarUrl });
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -70,19 +61,17 @@ const ProfilePage = () => {
     }
   };
 
-  // Generate random main character
+  // Generate random main character avatar
   const generateRandomAvatar = async () => {
     setLoading(true);
     try {
-      // Fetch random character (replace with your actual /random-character API endpoint)
-      const res = await fetch(`/random-character`);
+      const res = await fetch("https://api.consumet.org/anilist/random"); // Example endpoint
       const json = await res.json();
-      if (json?.data?.length) {
-        const randomChar = json.data[Math.floor(Math.random() * json.data.length)];
-        setGeneratedAvatar(randomChar.image_url);
-        toast.success(`Avatar set as ${randomChar.name}`);
+      if (json?.data?.image) {
+        setAvatarUrl(json.data.image);
+        toast.success("Random avatar generated!");
       } else {
-        toast.error("Failed to fetch character");
+        toast.error("Failed to fetch avatar");
       }
     } catch (err) {
       toast.error("Failed to generate avatar");
@@ -102,7 +91,7 @@ const ProfilePage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-backGround text-white px-4">
       <div className="bg-card p-6 rounded-lg shadow-lg w-full max-w-md text-center">
         <img
-          src={generatedAvatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+          src={avatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
           alt="avatar"
           className="w-24 h-24 rounded-full mx-auto mb-2 border border-primary object-cover"
         />
@@ -149,29 +138,6 @@ const ProfilePage = () => {
         >
           {loading ? "Updating..." : "Update Profile"}
         </button>
-
-        {/* Character Search for Avatar */}
-        <input
-          type="text"
-          placeholder="Search main character for avatar"
-          value={avatarQuery}
-          onChange={(e) => setAvatarQuery(e.target.value)}
-          className="w-full bg-lightBg text-black rounded p-2 mt-3"
-        />
-        {isLoading && <p className="text-sm text-gray-400">Searching characters...</p>}
-        {characterData?.data?.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto mt-2">
-            {characterData.data.map((char) => (
-              <img
-                key={char.id}
-                src={char.image_url}
-                alt={char.name}
-                className="w-full h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-primary"
-                onClick={() => setGeneratedAvatar(char.image_url)}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
