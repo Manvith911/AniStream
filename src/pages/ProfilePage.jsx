@@ -6,34 +6,41 @@ import { toast } from "react-toastify";
 const ProfilePage = () => {
   const { session, profile, setProfile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState(profile?.username || "");
-  const [bio, setBio] = useState(profile?.bio || "");
-  const [gender, setGender] = useState(profile?.gender || "");
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
+  const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [gender, setGender] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
-  // Fetch profile from Supabase
+  // Fetch profile from Supabase on mount
   useEffect(() => {
     if (!session) return;
+
     const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-      if (error) {
-        toast.error("Failed to fetch profile");
-      } else {
-        setProfile(data);
-        setUsername(data.username || "");
-        setBio(data.bio || "");
-        setGender(data.gender || "");
-        setAvatarUrl(data.avatar_url || "");
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        if (error && error.code !== "PGRST116") {
+          toast.error("Failed to fetch profile");
+        } else {
+          setUsername(data?.username || "");
+          setBio(data?.bio || "");
+          setGender(data?.gender || "");
+          setAvatarUrl(data?.avatar_url || "");
+          setProfile(data || { id: session.user.id });
+        }
+      } catch (err) {
+        toast.error("Error fetching profile");
       }
     };
+
     fetchProfile();
   }, [session]);
 
-  // Update profile in Supabase
+  // Update profile
   const updateProfile = async () => {
     setLoading(true);
     try {
@@ -52,8 +59,9 @@ const ProfilePage = () => {
         );
 
       if (error) throw error;
+
       toast.success("Profile updated!");
-      setProfile({ ...profile, username, bio, gender, avatar_url: avatarUrl });
+      setProfile({ id: session.user.id, username, bio, gender, avatar_url: avatarUrl });
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -61,20 +69,56 @@ const ProfilePage = () => {
     }
   };
 
-  // Generate random main character avatar
+  // Generate random main character avatar from AniList GraphQL
   const generateRandomAvatar = async () => {
     setLoading(true);
     try {
-      const res = await fetch("https://api.consumet.org/anilist/random"); // Example endpoint
+      const page = Math.floor(Math.random() * 50) + 1; // random page
+      const query = `
+        query ($page: Int, $perPage: Int) {
+          Page(page: $page, perPage: $perPage) {
+            media(type: ANIME, sort: POPULARITY_DESC) {
+              id
+              title { romaji }
+              characters(sort: ROLE) {
+                edges {
+                  node { id name { full } image { large } }
+                  role
+                }
+              }
+            }
+          }
+        }
+      `;
+      const variables = { page, perPage: 5 };
+
+      const res = await fetch("https://graphql.anilist.co", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, variables }),
+      });
+
       const json = await res.json();
-      if (json?.data?.image) {
-        setAvatarUrl(json.data.image);
-        toast.success("Random avatar generated!");
+      const allMedia = json.data.Page.media;
+      const mainChars = [];
+
+      allMedia.forEach((media) => {
+        media.characters.edges.forEach((edge) => {
+          if (edge.role === "MAIN" && edge.node.image?.large) {
+            mainChars.push(edge.node.image.large);
+          }
+        });
+      });
+
+      if (mainChars.length > 0) {
+        const randomAvatar = mainChars[Math.floor(Math.random() * mainChars.length)];
+        setAvatarUrl(randomAvatar);
+        toast.success("Random main character avatar generated!");
       } else {
-        toast.error("Failed to fetch avatar");
+        toast.error("No main character found, try again!");
       }
     } catch (err) {
-      toast.error("Failed to generate avatar");
+      toast.error("Error generating avatar");
     } finally {
       setLoading(false);
     }
@@ -90,12 +134,14 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-backGround text-white px-4">
       <div className="bg-card p-6 rounded-lg shadow-lg w-full max-w-md text-center">
+        {/* Avatar */}
         <img
           src={avatarUrl || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
           alt="avatar"
           className="w-24 h-24 rounded-full mx-auto mb-2 border border-primary object-cover"
         />
 
+        {/* Generate Random Avatar Button */}
         <button
           onClick={generateRandomAvatar}
           disabled={loading}
@@ -104,6 +150,7 @@ const ProfilePage = () => {
           {loading ? "Generating..." : "Generate Avatar"}
         </button>
 
+        {/* Username Input */}
         <input
           type="text"
           placeholder="Username"
@@ -112,6 +159,7 @@ const ProfilePage = () => {
           className="w-full bg-lightBg text-black rounded p-2 mb-2"
         />
 
+        {/* Gender Dropdown */}
         <select
           value={gender}
           onChange={(e) => setGender(e.target.value)}
@@ -123,6 +171,7 @@ const ProfilePage = () => {
           <option value="Other">Other</option>
         </select>
 
+        {/* Bio */}
         <textarea
           className="w-full bg-lightBg text-black rounded p-2 mb-2"
           placeholder="Write something about yourself..."
@@ -131,6 +180,7 @@ const ProfilePage = () => {
           onChange={(e) => setBio(e.target.value)}
         />
 
+        {/* Update Profile Button */}
         <button
           onClick={updateProfile}
           disabled={loading}
