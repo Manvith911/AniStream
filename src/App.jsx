@@ -13,52 +13,70 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
-import ProfilePage from "./pages/ProfilePage";
-import AuthPage from "./pages/AuthPage";
+
+// ✅ Import from Vercel
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
-  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar);
+  const togglesidebar = useSidebarStore((state) => state.toggleSidebar);
   const location = useLocation();
-  const isRootPath = location.pathname === "/";
+  const path = location.pathname === "/";
 
   return (
     <>
-      {!isRootPath && <Sidebar />}
+      {!path && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
         <div
-          onClick={toggleSidebar}
+          onClick={togglesidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
-
-        {!isRootPath && <Header />}
-
+        {!path && <Header />}
         <ScrollToTop />
-
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/animes/:category/:query?" element={<ListPage />} />
           <Route path="/anime/:id" element={<DetailPage />} />
-          <Route path="/watch/:id" element={<WatchPage />} />
+          <Route path="/animes/:category/:query?" element={<ListPage />} />
           <Route path="/search" element={<SearchResult />} />
+          <Route path="/watch/:id" element={<WatchPage />} />
           <Route path="/characters/:id" element={<CharactersPage />} />
-          <Route path="/character/:id" element={<CharacterInfoPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
-
-          {/* ✅ Auth + Profile Pages */}
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-
+          <Route path="/character/:id" element={<CharacterInfoPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
 
+      {/* ✅ Add Analytics component at root */}
       <Analytics />
     </>
   );
 };
+
+// pages
+// /
+// /home
+// /:id
+// top-rated
+// most-popular
+// most-favotite
+// completed
+// recently-added
+// recently-updated
+// top-upcoming
+// subbed-anime
+// dubbed-anime
+// movie
+// tv
+// ova
+// ona
+// special
+// events
+// /genre/:genre
+//  /watch/:id?ep=${number}
+//  /character/:id
+//  /people/:id
+// filter
 
 export default App;
