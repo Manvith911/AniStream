@@ -6,54 +6,55 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (user) => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error && error.code === "PGRST116") {
-        // No profile exists yet, create empty
-        await supabase.from("profiles").insert([
-          {
-            id: user.id,
-            email: user.email,
-            username: "",
-            gender: "",
-            avatar_url: "",
-            bio: "",
-          },
-        ]);
-        setProfile({
-          id: user.id,
-          email: user.email,
-          username: "",
-          gender: "",
-          avatar_url: "",
-          bio: "",
-        });
-      } else if (data) {
-        setProfile(data);
-      }
-    } catch (err) {
-      console.error("Failed to fetch profile:", err.message);
-    }
-  };
-
+  // Fetch user session and profile on load
   useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      fetchProfile(data.session?.user);
-    });
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session || null);
 
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        setProfile(profileData || null);
+      }
+
+      setLoading(false);
+    };
+
+    initAuth();
+
+    // Listen for auth state changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        fetchProfile(session?.user);
+      async (event, session) => {
+        setSession(session || null);
+
+        if (session?.user) {
+          // Create profile if not exists
+          const { data: existing } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+          if (!existing) {
+            await supabase.from("profiles").insert([
+              { id: session.user.id, email: session.user.email, username: "", gender: "", avatar_url: "", bio: "" },
+            ]);
+          }
+
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
+          setProfile(profileData || null);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
@@ -69,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, profile, setProfile, logout }}>
+    <AuthContext.Provider value={{ session, profile, setProfile, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );
