@@ -21,10 +21,7 @@ const Header = () => {
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -51,17 +48,13 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const handleLogout = async () => {
@@ -165,7 +158,7 @@ const Header = () => {
               )}
             </div>
 
-            {/* ✅ User Section */}
+            {/* User Section */}
             <div className="relative">
               {!session ? (
                 <button
