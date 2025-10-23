@@ -6,6 +6,8 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../services/supabaseClient";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -13,6 +15,8 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
+  const { session, profile } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -47,17 +51,18 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
   };
 
   return (
@@ -65,7 +70,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -150,6 +155,58 @@ const Header = () => {
                     <h1 className="text-center text-sm text-primary py-3">
                       Anime not found :(
                     </h1>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right Side - Auth/Profile */}
+            <div className="relative flex items-center gap-4">
+              {!session ? (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="bg-primary text-black font-semibold px-4 py-1 rounded-md"
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="relative">
+                  <img
+                    src={
+                      profile?.avatar_url ||
+                      "https://i.pinimg.com/736x/8c/2b/20/8c2b2094a8d48d5a63f468ba83d95a09.jpg"
+                    }
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                  />
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-card shadow-lg rounded-md overflow-hidden">
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/watchlist");
+                          setDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                      >
+                        Watchlist
+                      </button>
+                      <button
+                        onClick={logout}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg text-red-500"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
