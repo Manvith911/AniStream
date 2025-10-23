@@ -1,221 +1,86 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../services/supabaseClient";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../services/supabaseClient";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
 
 const ProfilePage = () => {
   const { session, profile, setProfile } = useAuth();
-  const [formData, setFormData] = useState({
-    username: "",
-    bio: "",
-    gender: "",
-    avatar_url: "",
-  });
-  const [uploading, setUploading] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [bio, setBio] = useState(profile?.bio || "");
 
   useEffect(() => {
-    if (profile) {
-      setFormData({
-        username: profile.username || "",
-        bio: profile.bio || "",
-        gender: profile.gender || "",
-        avatar_url: profile.avatar_url || "",
-      });
-    }
-  }, [profile]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // ✅ Upload Avatar
-  const handleUpload = async (e) => {
-    try {
-      setUploading(true);
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${session.user.id}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
-
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const publicUrl = urlData.publicUrl;
-
-      setFormData((prev) => ({ ...prev, avatar_url: publicUrl }));
-      toast.success("Avatar uploaded!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to upload avatar.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // ✅ Generate avatar from AniList
-  const generateAvatar = async () => {
-    try {
-      setGenerating(true);
-      const query = `
-        query ($perPage: Int) {
-          Page(page: 1, perPage: $perPage) {
-            characters(sort: FAVOURITES_DESC) {
-              image {
-                large
-              }
-            }
-          }
-        }
-      `;
-      const res = await fetch("https://graphql.anilist.co", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, variables: { perPage: 1 } }),
-      });
-
-      const result = await res.json();
-      const imageUrl =
-        result?.data?.Page?.characters?.[0]?.image?.large || null;
-
-      if (imageUrl) {
-        setFormData((prev) => ({ ...prev, avatar_url: imageUrl }));
-        toast.success("Generated avatar from AniList!");
+    if (!session) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+      if (error) {
+        toast.error("Failed to fetch profile");
       } else {
-        toast.error("Failed to generate avatar.");
+        setProfile(data);
+        setBio(data.bio || "");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("AniList avatar generation failed.");
-    } finally {
-      setGenerating(false);
-    }
-  };
+    };
+    fetchProfile();
+  }, [session]);
 
-  // ✅ Save profile
-  const handleSave = async (e) => {
-    e.preventDefault();
+  const updateProfile = async () => {
+    setLoading(true);
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({
-          username: formData.username,
-          bio: formData.bio,
-          gender: formData.gender,
-          avatar_url: formData.avatar_url,
-          updated_at: new Date(),
-        })
+        .update({ bio, updated_at: new Date() })
         .eq("id", session.user.id);
-
       if (error) throw error;
-
-      setProfile((prev) => ({ ...prev, ...formData }));
       toast.success("Profile updated!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update profile.");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (!session)
     return (
-      <div className="flex items-center justify-center min-h-screen text-white">
-        <h2 className="text-xl">Please log in to view your profile.</h2>
+      <div className="flex justify-center items-center h-screen text-white">
+        Please log in to view your profile.
       </div>
     );
 
   return (
-    <motion.div
-      className="flex flex-col items-center justify-center min-h-screen bg-backGround text-white px-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      <div className="bg-card p-6 rounded-lg shadow-md w-full max-w-md space-y-4">
-        <h2 className="text-2xl font-bold text-center mb-4">Your Profile</h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-backGround text-white px-4">
+      <div className="bg-card p-6 rounded-lg shadow-lg w-full max-w-md text-center">
+        <img
+          src={
+            profile?.avatar_url ||
+            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          }
+          alt="avatar"
+          className="w-24 h-24 rounded-full mx-auto mb-4 border border-primary object-cover"
+        />
+        <h2 className="text-2xl font-bold">{profile?.username}</h2>
+        <p className="text-sm text-gray-400 mb-2">{profile?.email}</p>
+        <p className="text-sm text-gray-400 mb-4">{profile?.gender}</p>
 
-        {/* Avatar */}
-        <div className="flex flex-col items-center gap-2">
-          <img
-            src={
-              formData.avatar_url ||
-              "https://i.pinimg.com/736x/8c/2b/20/8c2b2094a8d48d5a63f468ba83d95a09.jpg"
-            }
-            alt="Avatar"
-            className="w-24 h-24 rounded-full object-cover"
-          />
-          <label
-            htmlFor="avatar"
-            className="text-sm cursor-pointer bg-primary text-black px-3 py-1 rounded-md"
-          >
-            {uploading ? "Uploading..." : "Upload Image"}
-          </label>
-          <input
-            id="avatar"
-            type="file"
-            accept="image/*"
-            onChange={handleUpload}
-            className="hidden"
-          />
-          <button
-            onClick={generateAvatar}
-            disabled={generating}
-            className="text-sm bg-lightBg px-3 py-1 rounded-md hover:bg-primary/70"
-          >
-            {generating ? "Generating..." : "Generate Avatar from AniList"}
-          </button>
-        </div>
+        <textarea
+          className="w-full bg-lightBg text-black rounded p-2"
+          placeholder="Write something about yourself..."
+          rows="4"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+        />
 
-        {/* Form */}
-        <form onSubmit={handleSave} className="flex flex-col gap-3 mt-4">
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            placeholder="Username"
-            onChange={handleChange}
-            className="p-2 rounded bg-lightBg text-black focus:outline-none"
-            required
-          />
-          <textarea
-            name="bio"
-            value={formData.bio}
-            placeholder="Your bio"
-            onChange={handleChange}
-            className="p-2 rounded bg-lightBg text-black focus:outline-none"
-          />
-          <select
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            className="p-2 rounded bg-lightBg text-black focus:outline-none"
-          >
-            <option value="">Select gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-
-          <button
-            type="submit"
-            className="bg-primary text-black font-semibold py-2 rounded-md hover:bg-primary/70"
-          >
-            Save Changes
-          </button>
-        </form>
+        <button
+          onClick={updateProfile}
+          disabled={loading}
+          className="bg-primary text-black font-semibold py-2 px-6 rounded mt-3 hover:opacity-90 disabled:opacity-50"
+        >
+          {loading ? "Updating..." : "Update Profile"}
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
