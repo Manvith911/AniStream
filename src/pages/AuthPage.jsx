@@ -33,29 +33,19 @@ const AuthPage = () => {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
 
-        // Create empty profile
-        if (data?.user?.id) {
-          await createEmptyProfile(data.user.id, email);
-        }
-
-        toast.success("Account created! Please check your email.");
+        if (data?.user?.id) await createEmptyProfile(data.user.id, email);
+        toast.success("Account created! Check your email to verify.");
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Create empty profile if not exists
-        const { user } = data;
-        const { data: existing } = await supabase
+        // ensure profile exists
+        const { data: profileExists } = await supabase
           .from("profiles")
           .select("*")
-          .eq("id", user.id)
+          .eq("id", data.user.id)
           .single();
-        if (!existing) {
-          await createEmptyProfile(user.id, email);
-        }
+        if (!profileExists) await createEmptyProfile(data.user.id, email);
 
         toast.success("Logged in successfully!");
         navigate("/home");
@@ -67,14 +57,9 @@ const AuthPage = () => {
 
   const handleGoogleAuth = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-      });
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
       if (error) throw error;
-
-      // Wait for redirect flow to finish
-      // You can also handle profile creation after redirect
-    } catch (err) {
+    } catch {
       toast.error("Failed to sign in with Google");
     }
   };
