@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     };
-
     loadSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -40,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       .select("*")
       .eq("id", userId)
       .single();
-    if (!error) setProfile(data);
+    if (!error && data) setProfile(data);
   };
 
   const logout = async () => {
