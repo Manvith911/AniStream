@@ -23,7 +23,6 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // Login
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -31,36 +30,34 @@ const AuthPage = () => {
         if (error) throw error;
         navigate("/home");
       } else {
-        // Sign Up
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { username },
-            emailRedirectTo: `${window.location.origin}/home`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
 
         if (error) throw error;
 
-        // Try to create profile immediately if session is available
-        const userId = data?.user?.id || data?.session?.user?.id;
-        if (userId) {
-          await supabase.from("profiles").insert([
-            {
-              id: userId,
-              email,
-              username,
-              created_at: new Date().toISOString(),
-            },
-          ]);
+        // Create profile immediately if possible
+        if (data?.user) {
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .upsert([
+              {
+                id: data.user.id,
+                username,
+              },
+            ]);
+          if (profileError) console.warn("Profile not created yet:", profileError.message);
         }
 
-        setMessage("Signup successful! Please check your email to confirm your account.");
+        setMessage("Confirmation email sent instantly! Check your inbox.");
       }
     } catch (err) {
-      console.error(err);
-      setMessage(err.message || "Something went wrong!");
+      setMessage(err.message);
     }
 
     setLoading(false);
@@ -69,9 +66,7 @@ const AuthPage = () => {
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/home`,
-      },
+      options: { redirectTo: `${window.location.origin}/home` },
     });
     if (error) setMessage(error.message);
   };
