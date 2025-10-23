@@ -88,7 +88,7 @@ const Header = () => {
     setSession(null);
     setProfile(null);
     setDropdownOpen(false);
-    navigate("/");
+    navigate("/home");
   };
 
   const toggleDropdown = () => setDropdownOpen((prev) => !prev);
