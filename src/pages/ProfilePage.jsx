@@ -9,6 +9,7 @@ const ProfilePage = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  // Fetch user + profile
   const fetchProfile = async () => {
     setLoading(true);
     const {
@@ -32,6 +33,7 @@ const ProfilePage = () => {
     setLoading(false);
   };
 
+  // Save profile
   const handleSave = async () => {
     if (!profile) return;
     setUpdating(true);
@@ -50,16 +52,23 @@ const ProfilePage = () => {
     else setMessage("Profile updated successfully!");
   };
 
+  // Generate anime avatar depending on gender
   const generateAnimeAvatar = async () => {
     try {
       setMessage("Generating anime avatar...");
+
+      let genderFilter = "";
+      if (profile?.gender === "Male") genderFilter = "MALE";
+      else if (profile?.gender === "Female") genderFilter = "FEMALE";
+      else genderFilter = ""; // For "Other" or "Prefer not to say"
+
       const randomPage = Math.floor(Math.random() * 50) + 1;
       const randomIndex = Math.floor(Math.random() * 20);
 
       const query = `
         query {
           Page(page: ${randomPage}, perPage: 20) {
-            characters {
+            characters${genderFilter ? `(gender: ${genderFilter})` : ""} {
               image {
                 large
               }
@@ -81,6 +90,13 @@ const ProfilePage = () => {
       if (randomChar?.image?.large) {
         const avatarUrl = randomChar.image.large;
         setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
+
+        // Optional: auto-update in Supabase immediately
+        await supabase
+          .from("profiles")
+          .update({ avatar_url: avatarUrl })
+          .eq("id", profile.id);
+
         setMessage("New anime avatar generated!");
       } else {
         setMessage("Failed to fetch character. Try again!");
@@ -148,14 +164,6 @@ const ProfilePage = () => {
             <option>Other</option>
             <option>Prefer not to say</option>
           </select>
-
-          <label className="text-sm text-gray-300">Email</label>
-          <input
-            type="text"
-            value={profile?.email || ""}
-            readOnly
-            className="p-2 rounded bg-gray-700 text-gray-400 outline-none cursor-not-allowed"
-          />
 
           <button
             onClick={handleSave}
