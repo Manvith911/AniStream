@@ -61,8 +61,8 @@ const ProfilePage = () => {
     return <p className="text-center mt-10 text-gray-500">Loading profile...</p>;
 
   return (
-    <div className="p-8 max-w-2xl mx-auto mt-16 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-700 transition-all">
-      {/* 👇 Make sure heading is visible */}
+    <div className="pt-24 px-8 max-w-2xl mx-auto bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-700 transition-all">
+      {/* Heading */}
       <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">
         My Profile
       </h2>
