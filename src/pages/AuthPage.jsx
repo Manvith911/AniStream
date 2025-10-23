@@ -25,7 +25,7 @@ const AuthPage = () => {
 
     const { email, password, username } = formData;
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -37,9 +37,7 @@ const AuthPage = () => {
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage(
-        "✅ Check your email for a confirmation link before logging in."
-      );
+      setMessage("✅ Check your email for a confirmation link before logging in.");
     }
     setLoading(false);
   };
@@ -60,16 +58,16 @@ const AuthPage = () => {
     if (error) {
       setMessage(error.message);
     } else if (data.session) {
-      await ensureProfile(data.session.user);
       navigate("/");
     }
+
     setLoading(false);
   };
 
   // --- Google Sign-In ---
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/home`,
@@ -78,31 +76,6 @@ const AuthPage = () => {
 
     if (error) setMessage(error.message);
     setLoading(false);
-  };
-
-  // --- Ensure Profile Exists ---
-  const ensureProfile = async (user) => {
-    if (!user) return;
-    const { id, email, user_metadata } = user;
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", id)
-      .single();
-
-    if (!data) {
-      await supabase.from("profiles").insert([
-        {
-          id,
-          email,
-          username: user_metadata.username || email.split("@")[0],
-          avatar_url: user_metadata.avatar_url || "",
-        },
-      ]);
-    } else if (error && error.code !== "PGRST116") {
-      console.error(error);
-    }
   };
 
   return (
