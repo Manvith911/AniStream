@@ -7,6 +7,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [gender, setGender] = useState("Prefer not to say");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -16,91 +17,56 @@ const AuthPage = () => {
     setMessage("");
   };
 
-  // --- Email/Password Auth ---
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        navigate("/home");
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { username },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) setMessage(error.message);
+      else navigate("/home");
+    } else {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username, gender },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          shouldCreateUser: true,
+        },
+      });
 
-        if (error) throw error;
-
+      if (error) setMessage(error.message);
+      else {
+        setMessage("Check your inbox for the confirmation email!");
         if (data?.user) {
-          // Create profile record
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .upsert([
-              {
-                id: data.user.id,
-                username,
-                email: data.user.email,
-              },
-            ]);
-          if (profileError)
-            console.warn("Profile creation deferred:", profileError.message);
+          await supabase.from("profiles").insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              username,
+              gender,
+            },
+          ]);
         }
-
-        setMessage(
-          "Confirmation email sent instantly! Please check your inbox to verify your account."
-        );
       }
-    } catch (err) {
-      setMessage(err.message);
     }
 
     setLoading(false);
   };
 
-  // --- Google OAuth Login ---
   const handleGoogleLogin = async () => {
-    try {
-      setMessage("Redirecting to Google...");
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/home`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "select_account",
-          },
-        },
-      });
-      if (error) throw error;
-      if (data?.user) {
-        const user = data.user;
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .upsert([
-            {
-              id: user.id,
-              email: user.email,
-              username: user.user_metadata?.full_name || user.email.split("@")[0],
-              avatar_url: user.user_metadata?.avatar_url || null,
-            },
-          ]);
-        if (profileError)
-          console.warn("Profile creation deferred:", profileError.message);
-      }
-    } catch (err) {
-      setMessage(err.message);
-    }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/home`,
+      },
+    });
+    if (error) setMessage(error.message);
   };
 
   return (
@@ -112,14 +78,27 @@ const AuthPage = () => {
 
         <form onSubmit={handleAuth} className="flex flex-col gap-3">
           {!isLogin && (
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="p-2 rounded bg-gray-700 outline-none"
-              required
-            />
+            <>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="p-2 rounded bg-gray-700 outline-none"
+                required
+              />
+
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="p-2 rounded bg-gray-700 outline-none"
+              >
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+                <option>Prefer not to say</option>
+              </select>
+            </>
           )}
 
           <input
@@ -143,7 +122,7 @@ const AuthPage = () => {
           <button
             disabled={loading}
             type="submit"
-            className="bg-yellow-400 text-black font-semibold py-2 rounded hover:bg-yellow-300 transition"
+            className="bg-primary text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
           >
             {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
           </button>
