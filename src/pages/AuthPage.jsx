@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabaseClient";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,11 +11,13 @@ const AuthPage = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  // Toggle between Login and Signup modes
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setMessage("");
   };
 
+  // Handle Email/Password Login or Signup
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -23,6 +25,7 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
+        // ---- LOGIN ----
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -30,6 +33,7 @@ const AuthPage = () => {
         if (error) throw error;
         navigate("/home");
       } else {
+        // ---- SIGN UP ----
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -39,8 +43,9 @@ const AuthPage = () => {
           },
         });
         if (error) throw error;
+
         setMessage(
-          "Signup successful! Please check your email for confirmation."
+          "Signup successful! Please check your email to confirm your account."
         );
       }
     } catch (err) {
@@ -50,6 +55,7 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  // Handle Google OAuth Login
   const handleGoogleLogin = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -59,6 +65,7 @@ const AuthPage = () => {
         },
       });
       if (error) throw error;
+      // Supabase will redirect automatically after OAuth
     } catch (err) {
       setMessage(err.message);
     }
@@ -78,7 +85,7 @@ const AuthPage = () => {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="p-2 rounded bg-gray-700 outline-none"
+              className="p-2 rounded bg-gray-700 outline-none text-white placeholder-gray-400"
               required
             />
           )}
@@ -88,7 +95,7 @@ const AuthPage = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="p-2 rounded bg-gray-700 outline-none"
+            className="p-2 rounded bg-gray-700 outline-none text-white placeholder-gray-400"
             required
           />
 
@@ -97,16 +104,20 @@ const AuthPage = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="p-2 rounded bg-gray-700 outline-none"
+            className="p-2 rounded bg-gray-700 outline-none text-white placeholder-gray-400"
             required
           />
 
           <button
             disabled={loading}
             type="submit"
-            className="bg-yellow-400 text-black font-semibold py-2 rounded hover:bg-yellow-300 transition"
+            className="bg-yellow-400 text-black font-semibold py-2 rounded hover:bg-yellow-300 transition disabled:opacity-50"
           >
-            {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
+            {loading
+              ? "Please wait..."
+              : isLogin
+              ? "Login"
+              : "Create Account"}
           </button>
         </form>
 
