@@ -16,6 +16,7 @@ const ProfilePage = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (user) {
         const { data } = await supabase
           .from("profiles")
@@ -32,6 +33,7 @@ const ProfilePage = () => {
       }
       setLoading(false);
     };
+
     getProfile();
   }, []);
 
@@ -48,6 +50,7 @@ const ProfilePage = () => {
         updated_at: new Date(),
       })
       .eq("id", user.id);
+
     if (!error) {
       alert("Profile updated!");
       setEditing(false);
@@ -55,16 +58,17 @@ const ProfilePage = () => {
   };
 
   if (loading)
-    return <p className="text-center mt-10 text-gray-400">Loading profile...</p>;
+    return <p className="text-center mt-10 text-gray-500">Loading profile...</p>;
 
   return (
-    <div className="p-8 max-w-2xl mx-auto mt-12 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-700 transition-all">
-      <h2 className="text-3xl font-semibold mb-6 text-center text-gray-900 dark:text-gray-100">
+    <div className="p-8 max-w-2xl mx-auto mt-16 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-700 transition-all">
+      {/* 👇 Make sure heading is visible */}
+      <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">
         My Profile
       </h2>
 
       {!editing ? (
-        <div className="space-y-4 text-gray-700 dark:text-gray-300">
+        <div className="space-y-5 text-gray-700 dark:text-gray-300">
           <div>
             <p className="text-sm text-gray-500">Username</p>
             <p className="font-medium text-lg">{profile?.username}</p>
