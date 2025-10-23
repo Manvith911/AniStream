@@ -9,6 +9,7 @@ const ProfilePage = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  // Fetch current user + profile
   const fetchProfile = async () => {
     setLoading(true);
     const {
@@ -26,12 +27,13 @@ const ProfilePage = () => {
       .eq("id", user.id)
       .single();
 
-    if (error) console.error(error);
+    if (error) console.error("Profile fetch error:", error);
     else setProfile(data);
 
     setLoading(false);
   };
 
+  // Save updated profile
   const handleSave = async () => {
     if (!profile) return;
     setUpdating(true);
@@ -50,31 +52,21 @@ const ProfilePage = () => {
     else setMessage("Profile updated successfully!");
   };
 
+  // Generate a random anime avatar from AniList
   const generateAnimeAvatar = async () => {
     try {
       setMessage("Generating anime avatar...");
+
       const randomPage = Math.floor(Math.random() * 100) + 1;
-      const randomIndex = Math.floor(Math.random() * 20);
 
-      // Determine gender filter for AniList
-      let genderFilter = "";
-      if (profile?.gender === "Male") genderFilter = "male";
-      else if (profile?.gender === "Female") genderFilter = "female";
-
-      // AniList GraphQL query
       const query = `
         query {
           Page(page: ${randomPage}, perPage: 20) {
             characters(sort: FAVOURITES_DESC) {
+              id
+              name { full }
               gender
-              image {
-                large
-              }
-              media(sort: POPULARITY_DESC, perPage: 1) {
-                edges {
-                  role
-                }
-              }
+              image { large }
             }
           }
         }
@@ -86,29 +78,38 @@ const ProfilePage = () => {
         body: JSON.stringify({ query }),
       });
 
+      if (!res.ok) {
+        throw new Error(`AniList API error: ${res.status}`);
+      }
+
       const data = await res.json();
       const characters = data?.data?.Page?.characters || [];
 
-      // Filter by gender and main roles
-      const filtered = characters.filter(
-        (char) =>
-          char.image?.large &&
-          (!genderFilter || char.gender?.toLowerCase().includes(genderFilter)) &&
-          char.media?.[0]?.edges?.some((e) => e.role === "MAIN")
-      );
+      if (!characters.length) {
+        setMessage("No characters found from AniList.");
+        return;
+      }
+
+      console.log("AniList characters:", characters);
+
+      const genderFilter = (profile?.gender || "").toLowerCase().trim();
+      const filtered = characters.filter((char) => {
+        const g = (char.gender || "").toLowerCase().trim();
+        return char.image?.large && (!genderFilter || g.includes(genderFilter));
+      });
 
       const finalList = filtered.length ? filtered : characters;
-      const chosenChar =
+      const chosen =
         finalList[Math.floor(Math.random() * finalList.length)];
 
-      if (chosenChar?.image?.large) {
-        setProfile((p) => ({ ...p, avatar_url: chosenChar.image.large }));
+      if (chosen?.image?.large) {
+        setProfile((p) => ({ ...p, avatar_url: chosen.image.large }));
         setMessage("New anime avatar generated!");
       } else {
         setMessage("No suitable character found. Try again!");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching avatar:", err);
       setMessage("Error fetching anime avatar!");
     }
   };
@@ -174,7 +175,7 @@ const ProfilePage = () => {
           <button
             onClick={handleSave}
             disabled={updating}
-            className="mt-4 bg-primary text-black font-semibold py-2 rounded hover:bg-yellow-400 transition"
+            className="mt-4 bg-yellow-400 text-black font-semibold py-2 rounded hover:bg-yellow-300 transition"
           >
             {updating ? "Saving..." : "Save Changes"}
           </button>
