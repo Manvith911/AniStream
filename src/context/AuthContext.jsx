@@ -6,42 +6,73 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session) fetchProfile(session.user.id);
-      setLoading(false);
-    };
+  const fetchProfile = async (user) => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-    loadSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      if (session) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
+      if (error && error.code === "PGRST116") {
+        // No profile exists yet, create empty
+        await supabase.from("profiles").insert([
+          {
+            id: user.id,
+            email: user.email,
+            username: "",
+            gender: "",
+            avatar_url: "",
+            bio: "",
+          },
+        ]);
+        setProfile({
+          id: user.id,
+          email: user.email,
+          username: "",
+          gender: "",
+          avatar_url: "",
+          bio: "",
+        });
+      } else if (data) {
+        setProfile(data);
       }
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (!error && data) setProfile(data);
+    } catch (err) {
+      console.error("Failed to fetch profile:", err.message);
+    }
   };
 
-  const value = { session, profile, loading, setProfile };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  useEffect(() => {
+    const session = supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      fetchProfile(data.session?.user);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        fetchProfile(session?.user);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setProfile(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ session, profile, setProfile, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);
