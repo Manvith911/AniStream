@@ -13,7 +13,9 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const getProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
           .from("profiles")
@@ -34,7 +36,9 @@ const ProfilePage = () => {
   }, []);
 
   const handleUpdate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -50,58 +54,103 @@ const ProfilePage = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading)
+    return <p className="text-center mt-10 text-gray-400">Loading profile...</p>;
 
   return (
-    <div className="p-6 max-w-lg mx-auto mt-10 bg-card rounded-xl shadow-lg">
-      <h2 className="text-xl font-bold mb-4">Profile</h2>
+    <div className="p-8 max-w-2xl mx-auto mt-12 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-neutral-700 transition-all">
+      <h2 className="text-3xl font-semibold mb-6 text-center text-gray-900 dark:text-gray-100">
+        My Profile
+      </h2>
 
       {!editing ? (
-        <>
-          <p><strong>Username:</strong> {profile?.username}</p>
-          <p><strong>Email:</strong> {profile?.email}</p>
-          <p><strong>Gender:</strong> {profile?.gender}</p>
-          <p><strong>Bio:</strong> {profile?.bio}</p>
-          <button
-            onClick={() => setEditing(true)}
-            className="mt-4 px-4 py-2 bg-primary text-black rounded"
-          >
-            Edit Profile
-          </button>
-        </>
+        <div className="space-y-4 text-gray-700 dark:text-gray-300">
+          <div>
+            <p className="text-sm text-gray-500">Username</p>
+            <p className="font-medium text-lg">{profile?.username}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Email</p>
+            <p className="font-medium text-lg">{profile?.email}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Gender</p>
+            <p className="font-medium text-lg">{profile?.gender}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Bio</p>
+            <p className="font-medium">{profile?.bio || "No bio yet."}</p>
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => setEditing(true)}
+              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+            >
+              Edit Profile
+            </button>
+          </div>
+        </div>
       ) : (
-        <>
-          <input
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            placeholder="Username"
-            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
-          />
-          <input
-            value={formData.gender}
-            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-            placeholder="Gender"
-            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
-          />
-          <textarea
-            value={formData.bio}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            placeholder="Bio"
-            className="w-full mb-2 p-2 rounded bg-lightBg text-black"
-          />
-          <button
-            onClick={handleUpdate}
-            className="px-4 py-2 bg-green-500 text-black rounded mr-2"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => setEditing(false)}
-            className="px-4 py-2 bg-gray-500 text-white rounded"
-          >
-            Cancel
-          </button>
-        </>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Username
+            </label>
+            <input
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
+              placeholder="Enter your username"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Gender
+            </label>
+            <input
+              value={formData.gender}
+              onChange={(e) =>
+                setFormData({ ...formData, gender: e.target.value })
+              }
+              placeholder="Gender"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Bio
+            </label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) =>
+                setFormData({ ...formData, bio: e.target.value })
+              }
+              placeholder="Tell us about yourself..."
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={handleUpdate}
+              className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
