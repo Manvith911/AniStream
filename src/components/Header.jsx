@@ -6,6 +6,7 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -14,13 +15,15 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
+  // Auth context
+  const { session, profile, logout, loading } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -47,26 +50,21 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Left: Sidebar + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -88,11 +86,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -101,7 +95,6 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
@@ -150,6 +143,64 @@ const Header = () => {
                     <h1 className="text-center text-sm text-primary py-3">
                       Anime not found :(
                     </h1>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Auth / Profile */}
+            <div className="ml-auto flex items-center gap-3">
+              {loading ? (
+                <div className="text-sm text-gray-400">Loading...</div>
+              ) : !session ? (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="bg-primary text-black font-bold px-3 py-1 rounded hover:opacity-90"
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="relative">
+                  <img
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                    src={
+                      profile?.avatar_url ||
+                      "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+                    }
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full cursor-pointer border border-primary"
+                  />
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 bg-card shadow-md rounded-md overflow-hidden w-40 z-50">
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/watchlist");
+                          setDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                      >
+                        Watchlist
+                      </button>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setDropdownOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg text-red-500"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
