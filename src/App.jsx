@@ -13,6 +13,10 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
+import AuthPage from "./pages/AuthPage"; // ✅ Auth page
+
+// Supabase Auth Context
+import { AuthProvider } from "./context/AuthContext";
 
 // ✅ Import from Vercel
 import { Analytics } from "@vercel/analytics/react";
@@ -24,7 +28,7 @@ const App = () => {
   const path = location.pathname === "/";
 
   return (
-    <>
+    <AuthProvider>
       {!path && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
@@ -35,6 +39,10 @@ const App = () => {
         {!path && <Header />}
         <ScrollToTop />
         <Routes>
+          {/* Auth */}
+          <Route path="/auth" element={<AuthPage />} />
+
+          {/* Main App */}
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
           <Route path="/anime/:id" element={<DetailPage />} />
@@ -50,33 +58,8 @@ const App = () => {
 
       {/* ✅ Add Analytics component at root */}
       <Analytics />
-    </>
+    </AuthProvider>
   );
 };
-
-// pages
-// /
-// /home
-// /:id
-// top-rated
-// most-popular
-// most-favotite
-// completed
-// recently-added
-// recently-updated
-// top-upcoming
-// subbed-anime
-// dubbed-anime
-// movie
-// tv
-// ova
-// ona
-// special
-// events
-// /genre/:genre
-//  /watch/:id?ep=${number}
-//  /character/:id
-//  /people/:id
-// filter
 
 export default App;
