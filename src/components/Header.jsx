@@ -1,36 +1,38 @@
 import { useRef, useState } from "react";
-import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
+import { FaArrowCircleRight, FaBars, FaSearch, FaUserCircle } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
+  const { user, profile, logout } = useAuth();
 
+  // --- Search Input Change Handler with Debounce ---
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
   };
 
+  // --- Fetch search suggestions ---
   const { data, isLoading } = useApi(
     debouncedValue.length > 2 ? `/suggestion?keyword=${debouncedValue}` : null
   );
 
+  // --- Search Submit ---
   const handleSubmit = (e) => {
     e.preventDefault();
     if (value.trim().length > 0) {
@@ -39,25 +41,34 @@ const Header = () => {
     }
   };
 
+  // --- Navigate to Anime Page ---
   const navigateToAnimePage = (id) => {
     navigate(`/anime/${id}`);
     resetSearch();
   };
 
+  // --- Reset search input ---
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // --- Clear input field ---
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
+  // --- Dropdown handler ---
+  const toggleMenu = () => setShowMenu((prev) => !prev);
+
+  // --- Handle logout ---
+  const handleLogout = async () => {
+    await logout();
+    setShowMenu(false);
+    navigate("/");
   };
 
   return (
@@ -65,7 +76,8 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -74,7 +86,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
+            {/* Center: Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -88,11 +100,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -101,14 +109,14 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
+              {/* --- Suggestions Dropdown --- */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data.length ? (
+                  ) : data && data?.data?.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
@@ -154,6 +162,66 @@ const Header = () => {
                 </div>
               )}
             </div>
+
+            {/* Right: Auth / Profile Section */}
+            <div className="flex items-center gap-4">
+              {!user ? (
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="bg-primary text-black font-semibold px-4 py-1 rounded-full"
+                >
+                  Login
+                </button>
+              ) : (
+                <div className="relative">
+                  {/* Profile Avatar */}
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Profile"
+                      onClick={toggleMenu}
+                      className="w-10 h-10 rounded-full cursor-pointer border-2 border-primary object-cover"
+                    />
+                  ) : (
+                    <FaUserCircle
+                      size={35}
+                      className="cursor-pointer text-primary"
+                      onClick={toggleMenu}
+                    />
+                  )}
+
+                  {/* Dropdown Menu */}
+                  {showMenu && (
+                    <div className="absolute right-0 mt-2 w-44 bg-card rounded-md shadow-lg overflow-hidden z-50">
+                      <button
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        onClick={() => {
+                          navigate("/profile");
+                          setShowMenu(false);
+                        }}
+                      >
+                        Profile
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
+                        onClick={() => {
+                          navigate("/watchlist");
+                          setShowMenu(false);
+                        }}
+                      >
+                        Watchlist
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-red-500 hover:bg-lightBg"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -161,4 +229,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
