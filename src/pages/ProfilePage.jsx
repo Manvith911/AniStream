@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { FaSyncAlt } from "react-icons/fa";
