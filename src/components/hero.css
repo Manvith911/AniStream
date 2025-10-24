@@ -19,16 +19,16 @@
 .hero-bg {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 .hero-bg-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.6);
+  filter: brightness(0.6) contrast(1.1);
   transition: transform 0.8s ease;
 }
 
@@ -36,22 +36,41 @@
   transform: scale(1.05);
 }
 
+/* Gradient overlay for readability */
 .hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     90deg,
     rgba(0, 0, 0, 0.85) 0%,
-    rgba(0, 0, 0, 0.6) 40%,
-    rgba(0, 0, 0, 0.4) 80%,
-    transparent 100%
+    rgba(0, 0, 0, 0.65) 40%,
+    rgba(0, 0, 0, 0.45) 70%,
+    rgba(0, 0, 0, 0.2) 100%
   );
   z-index: 1;
 }
 
+/* Soft light center highlight */
+.hero-light {
+  position: absolute;
+  top: 0;
+  left: 35%;
+  width: 30%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.05) 40%,
+    transparent 80%
+  );
+  mix-blend-mode: screen;
+  z-index: 2;
+}
+
+/* Text Content */
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   color: #fff;
   padding: 0 2rem 4rem 2rem;
   max-width: 700px;
@@ -90,7 +109,7 @@
 }
 
 .hero-btn {
-  padding: 10px 20px;
+  padding: 10px 22px;
   border-radius: 30px;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -119,7 +138,27 @@
   color: #a855f7;
 }
 
-/* Pagination dots */
+/* Right-side blurred image section */
+.hero-blur-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 35%;
+  height: 100%;
+  overflow: hidden;
+  filter: blur(12px) brightness(0.8);
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.hero-blur-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.1);
+}
+
+/* Swiper elements */
 .swiper-pagination-bullet {
   background: #a855f7;
   opacity: 0.5;
@@ -134,7 +173,6 @@
   transform: scale(1.3);
 }
 
-/* Nav arrows */
 .swiper-button-prev,
 .swiper-button-next {
   color: #a855f7;
@@ -162,5 +200,9 @@
 
   .hero-content {
     padding: 0 1rem 2rem 1rem;
+  }
+
+  .hero-blur-right {
+    display: none;
   }
 }
