@@ -79,4 +79,4 @@ const App = () => {
 //  /people/:id
 // filter
 
-export default App; update this too
+export default App;
