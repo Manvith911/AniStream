@@ -32,7 +32,7 @@ const HeroBanner = ({ slides }) => {
       {slides &&
         slides.map((item) => (
           <SwiperSlide key={item.id} className="hero-slide">
-            {/* Background */}
+            {/* Background image */}
             <div className="hero-bg">
               <img
                 src={item.poster}
@@ -41,7 +41,6 @@ const HeroBanner = ({ slides }) => {
                 className="hero-bg-img"
               />
               <div className="hero-overlay"></div>
-              <div className="hero-light"></div>
             </div>
 
             {/* Content */}
@@ -83,11 +82,6 @@ const HeroBanner = ({ slides }) => {
                   <FaAngleRight />
                 </Link>
               </div>
-            </div>
-
-            {/* Right blurred background panel */}
-            <div className="hero-blur-right">
-              <img src={item.poster} alt="" className="hero-blur-img" />
             </div>
           </SwiperSlide>
         ))}
