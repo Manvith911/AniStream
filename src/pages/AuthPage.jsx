@@ -11,7 +11,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
 
   const toggleMode = () => {
-    setIsLogin(!isLogin);
+    setIsLogin((prev) => !prev);
     setMessage("");
   };
 
@@ -20,27 +20,40 @@ const AuthPage = () => {
     setLoading(true);
     setMessage("");
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) setMessage(error.message);
-      else navigate("/home");
-    } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+    try {
+      if (isLogin) {
+        // ---- LOGIN ----
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
 
-      if (error) {
-        setMessage(error.message);
+        // Check if email is verified
+        if (!data.user?.email_confirmed_at) {
+          setMessage("⚠️ Please verify your email before logging in.");
+          return;
+        }
+
+        navigate("/home");
       } else {
-        setMessage("Check your inbox for the confirmation email!");
+        // ---- SIGN UP with verification email ----
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+
+        if (error) throw error;
+
+        setMessage(
+          "✅ Sign up successful! Check your email to verify your account."
+        );
+
         if (data?.user) {
+          // Create a profile row in Supabase
           await supabase.from("profiles").insert([
             {
               id: data.user.id,
@@ -53,19 +66,27 @@ const AuthPage = () => {
           ]);
         }
       }
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/home`,
-      },
-    });
-    if (error) setMessage(error.message);
+    setLoading(true);
+    setMessage("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/home` },
+      });
+      if (error) throw error;
+    } catch (err) {
+      setMessage(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,7 +105,6 @@ const AuthPage = () => {
             className="p-2 rounded bg-gray-700 outline-none"
             required
           />
-
           <input
             type="password"
             placeholder="Password"
@@ -93,7 +113,6 @@ const AuthPage = () => {
             className="p-2 rounded bg-gray-700 outline-none"
             required
           />
-
           <button
             disabled={loading}
             type="submit"
@@ -105,14 +124,13 @@ const AuthPage = () => {
 
         <button
           onClick={handleGoogleLogin}
+          disabled={loading}
           className="bg-white text-black font-semibold py-2 rounded mt-4 w-full hover:bg-gray-200 transition"
         >
           Continue with Google
         </button>
 
-        {message && (
-          <p className="text-center text-sm text-yellow-300 mt-4">{message}</p>
-        )}
+        {message && <p className="text-center text-sm text-yellow-300 mt-4">{message}</p>}
 
         <p
           onClick={toggleMode}
