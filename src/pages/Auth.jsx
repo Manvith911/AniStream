@@ -19,7 +19,7 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        // Sign Up
+        // SIGN UP
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -31,7 +31,6 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.user) {
-          // Insert profile in DB
           await supabase.from("profiles").insert({
             id: data.user.id,
             email,
@@ -41,7 +40,7 @@ const Auth = () => {
 
         notify("success", "Check your email to confirm your account!");
       } else {
-        // Sign In
+        // SIGN IN
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
