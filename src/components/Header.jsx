@@ -1,5 +1,4 @@
-// src/components/Header.jsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -15,9 +14,27 @@ const Header = () => {
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [profile, setProfile] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+
+  // Fetch user profile from Supabase
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!error) setProfile(data);
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -56,13 +73,23 @@ const Header = () => {
     window.location.reload();
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".profile-dropdown") && !e.target.closest(".profile-img")) {
+        setShowDropdown(false);
+      }
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+            {/* Left: Sidebar + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -74,25 +101,21 @@ const Header = () => {
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
-                className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
+                className="flex items-center gap-2 bg-[#1f1f1f] px-3 py-1 rounded-md w-full"
               >
                 <input
                   value={value}
                   onChange={changeInput}
                   placeholder="Search anime"
                   type="text"
-                  className="bg-transparent flex-1 text-black text-sm focus:outline-none"
+                  className="bg-transparent flex-1 text-white text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-white">
                     <FaXmark />
                   </button>
                 )}
-                <button type="submit" className="text-black">
+                <button type="submit" className="text-white">
                   <FaSearch />
                 </button>
               </form>
@@ -104,17 +127,17 @@ const Header = () => {
                     <Loader />
                   ) : data && data?.data.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
+                          key={item.id}
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
-                          key={item.id}
                         >
                           <div className="poster shrink-0 relative w-10 h-14">
                             <img
-                              className="h-full w-full object-cover object-center rounded-sm"
                               src={item.poster}
                               alt={item.title}
+                              className="h-full w-full object-cover object-center rounded-sm"
                             />
                           </div>
                           <div className="info">
@@ -168,12 +191,12 @@ const Header = () => {
                       "https://ui-avatars.com/api/?name=U&background=0D8ABC&color=fff"
                     }
                     alt="Profile"
-                    className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
+                    className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer profile-img"
                     onClick={() => setShowDropdown((p) => !p)}
                   />
 
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-40 bg-card border rounded-lg shadow-md z-50">
+                    <div className="absolute right-0 mt-2 w-40 bg-card border rounded-lg shadow-md z-50 profile-dropdown">
                       <button
                         onClick={() => navigate("/profile")}
                         className="block w-full text-left px-4 py-2 hover:bg-lightBg"
