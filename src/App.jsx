@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
@@ -19,8 +18,10 @@ import { AuthProvider } from "./context/AuthContext";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Watchlist from "./pages/Watchlist";
+import { supabase } from "./services/supabaseClient";
 import { Analytics } from "@vercel/analytics/react";
-import { supabase } from "./services/supabaseClient"; // ✅ import supabase client
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
@@ -28,7 +29,7 @@ const App = () => {
   const location = useLocation();
   const path = location.pathname === "/";
 
-  // ✅ Sync Supabase profile (creates row if missing for Google / OAuth users)
+  // Sync profile for logged-in user
   useEffect(() => {
     const syncProfile = async () => {
       const {
@@ -88,6 +89,19 @@ const App = () => {
       </main>
 
       <Analytics />
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </AuthProvider>
   );
 };
