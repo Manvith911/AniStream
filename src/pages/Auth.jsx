@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify"; // 👈 import directly here
+import notify from "../utils/Toast";
 
 const Auth = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -20,45 +19,45 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        // 🔹 SIGN UP
+        // SIGN UP
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/home`,
-            data: { full_name: username.trim() },
+            data: { full_name: username },
           },
         });
 
         if (error) throw error;
 
         if (data.user) {
+          // Create empty profile in Supabase
           const { error: profileError } = await supabase.from("profiles").insert({
             id: data.user.id,
-            email: email.trim(),
-            username: username.trim() || email.split("@")[0],
+            email,
+            username: username || email.split("@")[0],
           });
           if (profileError) throw profileError;
         }
 
-        toast.success("Check your email to confirm your account!");
+        notify("success", "Check your email to confirm your account!");
       } else {
-        // 🔹 SIGN IN
+        // SIGN IN
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email,
           password,
         });
 
         if (error) throw error;
 
         setUser(data.user);
-
-        // ✅ Navigate first (React-safe), toast after a small delay
+        notify("success", "Logged in successfully!");
         navigate("/home");
-        setTimeout(() => toast.success("Logged in successfully!"), 100);
       }
     } catch (err) {
-      toast.error(err?.message || "Something went wrong!");
+      // Ensure err.message exists
+      notify("error", err?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -68,11 +67,13 @@ const Auth = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/home` },
+        options: {
+          redirectTo: `${window.location.origin}/home`,
+        },
       });
       if (error) throw error;
     } catch (err) {
-      toast.error(err?.message || "Google login failed!");
+      notify("error", err?.message || "Google login failed!");
     }
   };
 
