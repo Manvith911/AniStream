@@ -19,21 +19,16 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
-  // Fetch profile data when user changes (including after refresh)
+  // Fetch profile on mount / user change
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (error) throw error;
-        setProfileData(data);
-      } catch (err) {
-        console.error("Failed to fetch profile:", err);
-      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      if (!error) setProfileData(data);
     };
     fetchProfile();
   }, [user]);
@@ -53,19 +48,15 @@ const Header = () => {
     e.preventDefault();
     if (value.trim().length > 0) {
       navigate(`/search?keyword=${value}`);
-      resetSearch();
+      setValue("");
+      setDebouncedValue("");
     }
   };
 
   const navigateToAnimePage = (id) => {
     navigate(`/anime/${id}`);
-    resetSearch();
-  };
-
-  const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const handleLogout = async () => {
@@ -86,39 +77,39 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search */}
+            {/* Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
-                className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
+                className="flex items-center gap-2 bg-dark px-3 py-1 rounded-md w-full"
               >
                 <input
                   value={value}
                   onChange={changeInput}
                   placeholder="Search anime"
                   type="text"
-                  className="bg-transparent flex-1 text-black text-sm focus:outline-none"
+                  className="bg-transparent flex-1 text-white text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
                   <button
-                    onClick={resetSearch}
+                    onClick={() => { setValue(""); setDebouncedValue(""); }}
                     type="reset"
-                    className="text-black"
+                    className="text-white"
                   >
                     <FaXmark />
                   </button>
                 )}
-                <button type="submit" className="text-black">
+                <button type="submit" className="text-white">
                   <FaSearch />
                 </button>
               </form>
 
-              {/* Suggestions */}
+              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data?.data?.length ? (
+                  ) : data && data?.data?.length ? (
                     <>
                       {data.data.map((item) => (
                         <div
@@ -140,6 +131,13 @@ const Header = () => {
                             <h6 className="gray text-xs line-clamp-1">
                               {item.alternativeTitle}
                             </h6>
+                            <div className="flex items-center gap-2 text-xs gray">
+                              <h6>{item.aired}</h6>
+                              <span className="h-1 w-1 rounded-full bg-primary" />
+                              <h6>{item.type}</h6>
+                              <span className="h-1 w-1 rounded-full bg-primary" />
+                              <h6>{item.duration}</h6>
+                            </div>
                           </div>
                         </div>
                       ))}
