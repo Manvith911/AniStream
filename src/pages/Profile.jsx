@@ -1,8 +1,8 @@
-// src/pages/Profile.jsx
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
 import { generateAnimeAvatar } from "../utils/generateAnimeAvatar";
+import notify from "../utils/Toast";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Load profile from Supabase
+  // Load profile
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
@@ -25,7 +25,7 @@ const Profile = () => {
         .select("*")
         .eq("id", user.id)
         .single();
-      if (error) console.error(error);
+      if (error) notify("error", error.message);
       else if (data) setProfile(data);
       setLoading(false);
     };
@@ -38,7 +38,10 @@ const Profile = () => {
 
   const handleGenerateAvatar = async () => {
     const img = await generateAnimeAvatar();
-    if (img) setProfile((prev) => ({ ...prev, avatar_url: img }));
+    if (img) {
+      setProfile((prev) => ({ ...prev, avatar_url: img }));
+      notify("info", "New anime avatar generated!");
+    } else notify("error", "Failed to generate avatar.");
   };
 
   const handleSave = async () => {
@@ -54,7 +57,9 @@ const Profile = () => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);
-    if (error) alert("Failed to save profile");
+
+    if (error) notify("error", "Failed to save profile.");
+    else notify("success", "Profile saved successfully!");
     setSaving(false);
   };
 
@@ -73,7 +78,6 @@ const Profile = () => {
           My Profile
         </h1>
 
-        {/* Profile Avatar */}
         <div className="flex flex-col items-center">
           <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-primary shadow-[0_0_20px_rgba(255,255,255,0.1)]">
             <img
@@ -94,12 +98,9 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* Editable Fields */}
         <div className="mt-10 space-y-6">
           <div>
-            <label className="block text-sm text-gray-300 mb-2">
-              Username
-            </label>
+            <label className="block text-sm text-gray-300 mb-2">Username</label>
             <input
               type="text"
               name="username"
