@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
@@ -9,9 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user on mount
+  // Load session on mount
   useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null);
     });
 
@@ -24,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Fetch user profile
+  // Fetch profile when user changes
   useEffect(() => {
     if (!user) {
       setProfile(null);
@@ -38,6 +37,7 @@ export const AuthProvider = ({ children }) => {
         .select("*")
         .eq("id", user.id)
         .single();
+
       if (!error) setProfile(data);
       setLoading(false);
     };
@@ -45,7 +45,6 @@ export const AuthProvider = ({ children }) => {
     fetchProfile();
   }, [user]);
 
-  // Update context after profile update (manual re-fetch)
   const refreshProfile = async () => {
     if (!user) return;
     const { data } = await supabase
@@ -56,7 +55,8 @@ export const AuthProvider = ({ children }) => {
     setProfile(data);
   };
 
-  const value = { user, profile, setProfile, refreshProfile, loading };
+  const value = { user, setUser, profile, setProfile, refreshProfile, loading };
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
