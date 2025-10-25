@@ -1,52 +1,55 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import notify from "../utils/Toast";
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // supabase user object
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Helper: ensure profile exists (insert or upsert)
   const ensureProfile = async (sbUser) => {
     if (!sbUser) return;
     try {
+      // upsert ensures a row exists for new users
       await supabase.from("profiles").upsert(
         {
           id: sbUser.id,
           email: sbUser.email,
-          username: sbUser.user_metadata?.full_name || sbUser.email.split("@")[0],
-          avatar_url: sbUser.user_metadata?.avatar_url || null,
           created_at: new Date().toISOString(),
         },
-        { returning: "minimal" }
+        { returning: "minimal" } // smaller response
       );
     } catch (err) {
       console.error("ensureProfile error:", err);
     }
   };
 
+  // Sign up (send confirmation email automatically handled by Supabase)
   const signUp = async ({ email, password }) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      if (data?.user) await ensureProfile(data.user);
-      notify("success", "Sign up successful! Please confirm your email.");
+      // If user object is returned immediately, create profile row
+      const sbUser = data?.user ?? null;
+      if (sbUser) await ensureProfile(sbUser);
+      // If email confirmation is enabled, user will need to confirm via email
       return { data, error: null };
     } catch (error) {
-      notify("error", error.message || "Sign up failed");
       return { data: null, error };
     } finally {
       setLoading(false);
     }
   };
 
+  // Sign in with email & password
   const signIn = async ({ email, password }) => {
     setLoading(true);
     try {
@@ -55,56 +58,71 @@ export const AuthProvider = ({ children }) => {
         password,
       });
       if (error) throw error;
-      if (data?.user) await ensureProfile(data.user);
-      setUser(data.user);
-      notify("success", "Logged in successfully!");
-      navigate("/home");
+      // ensure profile exists
+      const sbUser = data?.user ?? null;
+      if (sbUser) await ensureProfile(sbUser);
       return { data, error: null };
     } catch (error) {
-      notify("error", error.message || "Sign in failed");
       return { data: null, error };
     } finally {
       setLoading(false);
     }
   };
 
+  // Sign out
   const signOut = async () => {
     setLoading(true);
     try {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
-      notify("success", "Logged out successfully!");
-      navigate("/");
+      navigate("/"); // optional: redirect home
     } catch (err) {
-      notify("error", err.message || "Logout failed");
+      console.error("Sign out error", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // On mount: get current session/user and subscribe to auth changes
   useEffect(() => {
     let mounted = true;
-
-    const initAuth = async () => {
+    (async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (mounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          if (currentSession?.user) await ensureProfile(currentSession.user);
+        const {
+          data: { user: currentUser, session: currentSession },
+        } = await supabase.auth.getUser()
+          .then(async (res) => {
+            // supabase.auth.getUser returns { data: { user } } in v2; falling back:
+            return { data: { user: res.data?.user ?? null } };
+          })
+          .catch(() => ({ data: { user: null } }));
+
+        // Better approach using getSession to fetch session + user
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (mounted) {
+            setSession(data?.session ?? null);
+            setUser(data?.session?.user ?? currentUser ?? null);
+            if (data?.session?.user) await ensureProfile(data.session.user);
+          }
+        } catch {
+          // fallback: set user if available
+          if (mounted) {
+            setUser(currentUser);
+            if (currentUser) await ensureProfile(currentUser);
+          }
         }
       } catch (err) {
         console.error("auth init error", err);
       } finally {
         if (mounted) setLoading(false);
       }
-    };
-
-    initAuth();
+    })();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, sessionObj) => {
+      async (event, sessionObj) => {
+        // event examples: "SIGNED_IN", "SIGNED_OUT", "PASSWORD_RECOVERY", etc.
         const sbUser = sessionObj?.user ?? null;
         if (sbUser) await ensureProfile(sbUser);
         setUser(sbUser);
@@ -114,13 +132,19 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       mounted = false;
-      listener.subscription.unsubscribe();
+      if (listener?.subscription) listener.subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = {
+    user,
+    session,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
