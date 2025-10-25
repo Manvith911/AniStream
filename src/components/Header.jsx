@@ -1,5 +1,4 @@
-// src/components/Header.jsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -15,9 +14,29 @@ const Header = () => {
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, signOut } = useAuth();
+
+  // Fetch profile data when user changes (including after refresh)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (error) throw error;
+        setProfileData(data);
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -49,20 +68,17 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const emptyInput = () => resetSearch();
-
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
+    await signOut();
+    setShowDropdown(false);
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+            {/* Sidebar + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -70,7 +86,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
+            {/* Search */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -85,7 +101,7 @@ const Header = () => {
                 />
                 {value.length > 1 && (
                   <button
-                    onClick={emptyInput}
+                    onClick={resetSearch}
                     type="reset"
                     className="text-black"
                   >
@@ -97,14 +113,14 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
+              {/* Suggestions */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data.length ? (
+                  ) : data?.data?.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
@@ -124,13 +140,6 @@ const Header = () => {
                             <h6 className="gray text-xs line-clamp-1">
                               {item.alternativeTitle}
                             </h6>
-                            <div className="flex items-center gap-2 text-xs gray">
-                              <h6>{item.aired}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
-                              <h6>{item.type}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
-                              <h6>{item.duration}</h6>
-                            </div>
                           </div>
                         </div>
                       ))}
@@ -151,7 +160,7 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right: Auth/Profile */}
+            {/* Profile / Login */}
             <div className="flex items-center gap-3 relative">
               {!user ? (
                 <button
@@ -164,7 +173,7 @@ const Header = () => {
                 <div className="relative">
                   <img
                     src={
-                      profile?.avatar_url ||
+                      profileData?.avatar_url ||
                       "https://ui-avatars.com/api/?name=U&background=0D8ABC&color=fff"
                     }
                     alt="Profile"
