@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Root from "./pages/Root";
@@ -13,8 +14,10 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
-
-// ✅ Import from Vercel
+import { AuthProvider } from "./context/AuthContext";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Watchlist from "./pages/Watchlist";
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
@@ -24,7 +27,7 @@ const App = () => {
   const path = location.pathname === "/";
 
   return (
-    <>
+    <AuthProvider>
       {!path && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
@@ -34,6 +37,7 @@ const App = () => {
         ></div>
         {!path && <Header />}
         <ScrollToTop />
+
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
@@ -44,39 +48,16 @@ const App = () => {
           <Route path="/characters/:id" element={<CharactersPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/watchlist" element={<Watchlist />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
 
-      {/* ✅ Add Analytics component at root */}
       <Analytics />
-    </>
+    </AuthProvider>
   );
 };
-
-// pages
-// /
-// /home
-// /:id
-// top-rated
-// most-popular
-// most-favotite
-// completed
-// recently-added
-// recently-updated
-// top-upcoming
-// subbed-anime
-// dubbed-anime
-// movie
-// tv
-// ova
-// ona
-// special
-// events
-// /genre/:genre
-//  /watch/:id?ep=${number}
-//  /character/:id
-//  /people/:id
-// filter
 
 export default App;
