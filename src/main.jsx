@@ -11,26 +11,28 @@ import { AuthProvider } from "./context/AuthContext"; // ✅ import AuthProvider
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
-  <QueryClientProvider client={queryClient}>
-    <StrictMode>
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-      {/* ✅ Wrap your entire app inside AuthProvider */}
-      <AuthProvider>
-        <BrowserRouter>
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        {/* ✅ AuthProvider must be inside BrowserRouter */}
+        <AuthProvider>
           <App />
-        </BrowserRouter>
-      </AuthProvider>
-    </StrictMode>
-  </QueryClientProvider>
+        </AuthProvider>
+
+        {/* ✅ Toast Notifications */}
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
+      </BrowserRouter>
+    </QueryClientProvider>
+  </StrictMode>
 );
