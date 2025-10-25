@@ -1,4 +1,5 @@
 // src/App.jsx
+import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Root from "./pages/Root";
@@ -19,12 +20,42 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Watchlist from "./pages/Watchlist";
 import { Analytics } from "@vercel/analytics/react";
+import { supabase } from "./services/supabaseClient"; // ✅ import supabase client
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
   const togglesidebar = useSidebarStore((state) => state.toggleSidebar);
   const location = useLocation();
   const path = location.pathname === "/";
+
+  // ✅ Sync Supabase profile (creates row if missing for Google / OAuth users)
+  useEffect(() => {
+    const syncProfile = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: existing } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (!existing) {
+          await supabase.from("profiles").insert({
+            id: user.id,
+            email: user.email,
+            username:
+              user.user_metadata.full_name || user.email.split("@")[0],
+            avatar_url: user.user_metadata.avatar_url,
+          });
+        }
+      }
+    };
+
+    syncProfile();
+  }, []);
 
   return (
     <AuthProvider>
@@ -35,6 +66,7 @@ const App = () => {
           onClick={togglesidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
+
         {!path && <Header />}
         <ScrollToTop />
 
