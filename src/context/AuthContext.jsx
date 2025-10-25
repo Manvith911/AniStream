@@ -1,89 +1,131 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
+import { toast } from "react-toastify";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load session on mount
+  // ✅ Fetch user session on mount
   useEffect(() => {
-    const getSession = async () => {
+    const fetchSession = async () => {
       const { data } = await supabase.auth.getSession();
-      setSession(data.session);
+      const sessionUser = data?.session?.user || null;
+      setUser(sessionUser);
+      if (sessionUser) {
+        await loadProfile(sessionUser.id);
+      }
       setLoading(false);
     };
-    getSession();
+    fetchSession();
 
-    // Listen to auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    // ✅ Listen to auth state changes (login / logout / signup)
+    const { data: subscription } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        if (session?.user) await fetchProfile(session.user.id);
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          await ensureProfileExists(currentUser);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.subscription.unsubscribe();
     };
   }, []);
 
-  // Fetch profile data
-  const fetchProfile = async (userId) => {
+  // ✅ Load profile for user
+  const loadProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
-    if (!error) setProfile(data);
-  };
 
-  // Sign up
-  const signUp = async (email, password, username) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    if (error) throw error;
-
-    // Insert empty profile row
-    if (data?.user) {
-      await supabase.from("profiles").insert([
-        { id: data.user.id, email, username, avatar_url: "" },
-      ]);
+    if (error && error.code !== "PGRST116") {
+      console.error("Error loading profile:", error.message);
+    } else {
+      setProfile(data);
     }
-
-    return data;
   };
 
-  // Sign in
+  // ✅ Ensure profile exists for new user
+  const ensureProfileExists = async (user) => {
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      const { error } = await supabase.from("profiles").insert([
+        {
+          id: user.id,
+          email: user.email,
+          username: user.email?.split("@")[0],
+          avatar_url: "",
+          gender: null,
+          bio: "",
+        },
+      ]);
+
+      if (error) {
+        console.error("Error creating profile:", error.message);
+        toast.error("Failed to create profile.");
+      } else {
+        toast.success("Profile created successfully!");
+        await loadProfile(user.id);
+      }
+    } else {
+      await loadProfile(user.id);
+    }
+  };
+
+  // ✅ Sign in
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) toast.error(error.message);
+  };
+
+  // ✅ Sign up
+  const signUp = async (email, password) => {
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth`,
+      },
     });
-    if (error) throw error;
-    return data;
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.info("Check your email to confirm your account.");
+    }
   };
 
-  // Logout
+  // ✅ Logout
   const signOut = async () => {
     await supabase.auth.signOut();
-    setSession(null);
+    setUser(null);
     setProfile(null);
   };
 
   const value = {
-    session,
+    user,
     profile,
+    loading,
     signIn,
     signUp,
     signOut,
-    fetchProfile,
-    loading,
   };
 
   return (
