@@ -28,14 +28,17 @@ const Auth = () => {
             data: { full_name: username },
           },
         });
+
         if (error) throw error;
 
         if (data.user) {
-          await supabase.from("profiles").insert({
+          // Create empty profile in Supabase
+          const { error: profileError } = await supabase.from("profiles").insert({
             id: data.user.id,
             email,
             username: username || email.split("@")[0],
           });
+          if (profileError) throw profileError;
         }
 
         notify("success", "Check your email to confirm your account!");
@@ -45,6 +48,7 @@ const Auth = () => {
           email,
           password,
         });
+
         if (error) throw error;
 
         setUser(data.user);
@@ -52,7 +56,8 @@ const Auth = () => {
         navigate("/home");
       }
     } catch (err) {
-      notify("error", err.message);
+      // Ensure err.message exists
+      notify("error", err?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -68,7 +73,7 @@ const Auth = () => {
       });
       if (error) throw error;
     } catch (err) {
-      notify("error", err.message);
+      notify("error", err?.message || "Google login failed!");
     }
   };
 
