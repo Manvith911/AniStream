@@ -1,4 +1,3 @@
-// src/components/Header.jsx
 import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
@@ -53,16 +52,14 @@ const Header = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.reload();
+    // Supabase listener will update context; no reload needed
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -70,7 +67,6 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -84,11 +80,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -97,14 +89,13 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
@@ -151,7 +142,6 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right: Auth/Profile */}
             <div className="flex items-center gap-3 relative">
               {!user ? (
                 <button
@@ -171,7 +161,6 @@ const Header = () => {
                     className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
                     onClick={() => setShowDropdown((p) => !p)}
                   />
-
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 w-40 bg-card border rounded-lg shadow-md z-50">
                       <button
