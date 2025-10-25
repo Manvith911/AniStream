@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect } from "react";
+// src/components/Header.jsx
+import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -14,24 +15,9 @@ const Header = () => {
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [profileData, setProfileData] = useState(null);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-
-  // Fetch profile on mount / user change
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      if (!error) setProfileData(data);
-    };
-    fetchProfile();
-  }, [user]);
+  const { user, profile } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -48,28 +34,35 @@ const Header = () => {
     e.preventDefault();
     if (value.trim().length > 0) {
       navigate(`/search?keyword=${value}`);
-      setValue("");
-      setDebouncedValue("");
+      resetSearch();
     }
   };
 
   const navigateToAnimePage = (id) => {
     navigate(`/anime/${id}`);
-    setValue("");
-    setDebouncedValue("");
+    resetSearch();
   };
 
+  const resetSearch = () => {
+    setValue("");
+    setDebouncedValue("");
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
+
+  const emptyInput = () => resetSearch();
+
   const handleLogout = async () => {
-    await signOut();
-    setShowDropdown(false);
+    await supabase.auth.signOut();
+    window.location.reload();
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
+          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Sidebar + Logo */}
+            {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -81,25 +74,25 @@ const Header = () => {
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
-                className="flex items-center gap-2 bg-dark px-3 py-1 rounded-md w-full"
+                className="flex items-center gap-2 bg-[#FBF8EF] px-3 py-1 rounded-md w-full"
               >
                 <input
                   value={value}
                   onChange={changeInput}
                   placeholder="Search anime"
                   type="text"
-                  className="bg-transparent flex-1 text-white text-sm focus:outline-none"
+                  className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
                   <button
-                    onClick={() => { setValue(""); setDebouncedValue(""); }}
+                    onClick={emptyInput}
                     type="reset"
-                    className="text-white"
+                    className="text-black"
                   >
                     <FaXmark />
                   </button>
                 )}
-                <button type="submit" className="text-white">
+                <button type="submit" className="text-black">
                   <FaSearch />
                 </button>
               </form>
@@ -109,9 +102,9 @@ const Header = () => {
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data?.length ? (
+                  ) : data && data?.data.length ? (
                     <>
-                      {data.data.map((item) => (
+                      {data?.data?.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
@@ -158,7 +151,7 @@ const Header = () => {
               )}
             </div>
 
-            {/* Profile / Login */}
+            {/* Right: Auth/Profile */}
             <div className="flex items-center gap-3 relative">
               {!user ? (
                 <button
@@ -171,7 +164,7 @@ const Header = () => {
                 <div className="relative">
                   <img
                     src={
-                      profileData?.avatar_url ||
+                      profile?.avatar_url ||
                       "https://ui-avatars.com/api/?name=U&background=0D8ABC&color=fff"
                     }
                     alt="Profile"
