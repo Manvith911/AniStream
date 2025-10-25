@@ -1,61 +1,67 @@
-// src/pages/Auth.jsx
 import React, { useState } from "react";
-import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import { FaGoogle } from "react-icons/fa";
+import { supabase } from "../services/supabaseClient";
+import { useAuth } from "../context/AuthContext";
+import notify from "../utils/Toast";
 
 const Auth = () => {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const navigate = useNavigate();
 
-  // ✅ Email sign in / sign up
   const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isSignUp) {
+        // Sign Up
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/home` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/home`,
+            data: { full_name: username },
+          },
         });
-
         if (error) throw error;
 
-        // create empty profile
         if (data.user) {
+          // Insert profile in DB
           await supabase.from("profiles").insert({
             id: data.user.id,
             email,
-            username,
+            username: username || email.split("@")[0],
           });
         }
 
-        alert("Check your email to confirm your account!");
+        notify("success", "Check your email to confirm your account!");
       } else {
+        // Sign In
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+
+        setUser(data.user);
+        notify("success", "Logged in successfully!");
         navigate("/home");
       }
     } catch (err) {
-      alert(err.message);
+      notify("error", err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Google login
   const handleGoogleLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/home`,
@@ -63,84 +69,82 @@ const Auth = () => {
       });
       if (error) throw error;
     } catch (err) {
-      console.error("Google login error:", err.message);
+      notify("error", err.message);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#0b0c10] text-white">
-      <div className="bg-[#1f1f1f] p-8 rounded-2xl shadow-lg w-[90%] max-w-md border border-gray-700">
-        <h2 className="text-3xl font-bold text-center mb-6 text-primary">
-          {isSignUp ? "Create Account" : "Welcome Back"}
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-backGround px-4">
+      <div className="w-full max-w-md bg-card rounded-2xl p-8 shadow-xl border border-gray-700/40">
+        <h1 className="text-3xl font-bold text-primary text-center mb-8">
+          {isSignUp ? "Sign Up" : "Sign In"}
+        </h1>
 
-        <form onSubmit={handleAuth} className="flex flex-col space-y-4">
+        <form onSubmit={handleAuth} className="space-y-5">
           {isSignUp && (
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="bg-[#121212] border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div>
+              <label className="block text-sm text-gray-300 mb-1">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+                className="w-full bg-[#1f1f1f] text-white border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              />
+            </div>
           )}
 
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="bg-[#121212] border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+          <div>
+            <label className="block text-sm text-gray-300 mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full bg-[#1f1f1f] text-white border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            />
+          </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="bg-[#121212] border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+          <div>
+            <label className="block text-sm text-gray-300 mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="w-full bg-[#1f1f1f] text-white border border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="bg-primary text-black py-2 rounded-lg font-semibold hover:opacity-80 transition duration-300"
+            className="w-full py-3 bg-primary text-black rounded-lg font-semibold hover:opacity-90 transition-all duration-300 shadow-md"
           >
-            {loading
-              ? "Loading..."
-              : isSignUp
-              ? "Sign Up"
-              : "Sign In"}
+            {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center my-4">
-          <div className="flex-1 h-px bg-gray-700"></div>
-          <p className="px-3 text-sm text-gray-400">or</p>
-          <div className="flex-1 h-px bg-gray-700"></div>
+        <div className="mt-5 text-center">
+          <p className="text-gray-400 text-sm">
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <span
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-primary font-semibold cursor-pointer hover:underline"
+            >
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </span>
+          </p>
         </div>
 
-        {/* Google Login */}
-        <button
-          onClick={handleGoogleLogin}
-          className="flex items-center justify-center w-full bg-[#202020] hover:bg-[#2a2a2a] text-white font-semibold py-2 rounded-lg border border-gray-700 transition duration-300"
-        >
-          <FaGoogle className="mr-2 text-red-500" /> Continue with Google
-        </button>
-
-        <p className="text-sm text-center mt-6 text-gray-400">
-          {isSignUp ? "Already have an account?" : "Don’t have an account?"}{" "}
+        <div className="mt-6">
           <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-primary font-semibold hover:underline"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#4285F4] text-white rounded-lg font-semibold hover:opacity-90 transition-all duration-300"
           >
-            {isSignUp ? "Sign In" : "Sign Up"}
+            Sign {isSignUp ? "Up" : "In"} with Google
           </button>
-        </p>
+        </div>
       </div>
     </div>
   );
