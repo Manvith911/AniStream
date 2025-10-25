@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
-import notify from "../utils/Toast";
+import { toast } from "react-toastify"; // 👈 import directly here
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -33,7 +33,6 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.user) {
-          // Create profile in Supabase
           const { error: profileError } = await supabase.from("profiles").insert({
             id: data.user.id,
             email: email.trim(),
@@ -42,7 +41,7 @@ const Auth = () => {
           if (profileError) throw profileError;
         }
 
-        notify("success", "Check your email to confirm your account!");
+        toast.success("Check your email to confirm your account!");
       } else {
         // 🔹 SIGN IN
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -54,14 +53,12 @@ const Auth = () => {
 
         setUser(data.user);
 
-        // ✅ Fix: navigate first, then toast
+        // ✅ Navigate first (React-safe), toast after a small delay
         navigate("/home");
-        setTimeout(() => {
-          notify("success", "Logged in successfully!");
-        }, 100);
+        setTimeout(() => toast.success("Logged in successfully!"), 100);
       }
     } catch (err) {
-      notify("error", err?.message || "Something went wrong!");
+      toast.error(err?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -75,7 +72,7 @@ const Auth = () => {
       });
       if (error) throw error;
     } catch (err) {
-      notify("error", err?.message || "Google login failed!");
+      toast.error(err?.message || "Google login failed!");
     }
   };
 
