@@ -6,33 +6,27 @@ import "./index.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext"; // ✅ import AuthProvider
 
-const queryClient = new QueryClient();
+const queryCLient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryCLient}>
+    <StrictMode>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <BrowserRouter>
-        {/* ✅ AuthProvider must be inside BrowserRouter */}
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-
-        {/* ✅ Toast Notifications */}
-        <ToastContainer
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
+        <App />
       </BrowserRouter>
-    </QueryClientProvider>
-  </StrictMode>
+    </StrictMode>
+  </QueryClientProvider>
 );
