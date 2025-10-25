@@ -1,4 +1,4 @@
-// components/Header.jsx (updated)
+// src/components/Header.jsx
 import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
@@ -8,27 +8,22 @@ import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../services/supabaseClient";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const [openProfileMenu, setOpenProfileMenu] = useState(false);
+  const { user, profile } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(newValue);
-    }, 500);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setDebouncedValue(newValue), 500);
   };
 
   const { data, isLoading } = useApi(
@@ -51,56 +46,14 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const emptyInput = () => {
-    setValue("");
-    setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
-
-  const onProfileClick = () => {
-    setOpenProfileMenu((s) => !s);
-  };
-
-  const goToProfile = () => {
-    navigate("/profile");
-    setOpenProfileMenu(false);
-  };
-
-  const goToWatchlist = () => {
-    navigate("/watchlist");
-    setOpenProfileMenu(false);
-  };
+  const emptyInput = () => resetSearch();
 
   const handleLogout = async () => {
-    await signOut();
-    setOpenProfileMenu(false);
-  };
-
-  // Helper to show avatar or initials
-  const Avatar = ({ url, email }) => {
-    if (url) {
-      return (
-        <img
-          src={url}
-          alt="avatar"
-          className="w-9 h-9 rounded-full object-cover"
-        />
-      );
-    }
-    // fallback initials from email
-    const initials = email ? email.charAt(0).toUpperCase() : "U";
-    return (
-      <div className="w-9 h-9 rounded-full flex items-center justify-center bg-primary text-black font-semibold">
-        {initials}
-      </div>
-    );
+    await supabase.auth.signOut();
+    window.location.reload();
   };
 
   return (
@@ -108,7 +61,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -198,42 +151,44 @@ const Header = () => {
               )}
             </div>
 
-            {/* Right side: login / avatar */}
-            <div className="ml-auto flex items-center gap-3">
+            {/* Right: Auth/Profile */}
+            <div className="flex items-center gap-3 relative">
               {!user ? (
                 <button
                   onClick={() => navigate("/auth")}
-                  className="bg-primary px-3 py-1 rounded text-black font-semibold"
+                  className="px-4 py-1 bg-primary text-black rounded-lg font-semibold hover:opacity-80"
                 >
                   Login
                 </button>
               ) : (
                 <div className="relative">
-                  <button
-                    onClick={onProfileClick}
-                    className="flex items-center gap-2 focus:outline-none"
-                  >
-                    <Avatar url={user?.user_metadata?.avatar_url || user?.avatar_url} email={user?.email} />
-                  </button>
+                  <img
+                    src={
+                      profile?.avatar_url ||
+                      "https://ui-avatars.com/api/?name=U&background=0D8ABC&color=fff"
+                    }
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full border-2 border-primary cursor-pointer"
+                    onClick={() => setShowDropdown((p) => !p)}
+                  />
 
-                  {openProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white rounded shadow p-2 z-50">
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-40 bg-card border rounded-lg shadow-md z-50">
                       <button
-                        onClick={goToProfile}
-                        className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded"
+                        onClick={() => navigate("/profile")}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
                       >
                         Profile
                       </button>
                       <button
-                        onClick={goToWatchlist}
-                        className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded"
+                        onClick={() => navigate("/watchlist")}
+                        className="block w-full text-left px-4 py-2 hover:bg-lightBg"
                       >
                         Watchlist
                       </button>
-                      <hr className="my-1" />
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded text-red-600"
+                        className="block w-full text-left px-4 py-2 text-red-500 hover:bg-lightBg"
                       >
                         Logout
                       </button>
