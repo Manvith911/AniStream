@@ -16,6 +16,7 @@ const WatchPage = () => {
   const [loadingDetails, setLoadingDetails] = useState(true);
   const ep = searchParams.get("ep");
 
+  // Fetch episodes
   const { data, isError } = useApi(`/episodes/${id}`);
   const episodes = data?.data;
 
@@ -35,7 +36,7 @@ const WatchPage = () => {
         const json = await res.json();
         if (json.success) setAnimeDetails(json.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching anime details:", err);
       } finally {
         setLoadingDetails(false);
       }
@@ -43,13 +44,13 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
-  // Auto-select first episode
+  // Auto-select first episode if none selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
       updateParams(firstEp);
     }
-  }, [ep, episodes, setSearchParams]);
+  }, [ep, episodes]);
 
   if (isError) return <PageNotFound />;
   if (!episodes) return <Loader className="h-screen" />;
@@ -98,12 +99,22 @@ const WatchPage = () => {
       </div>
 
       {/* Main Layout */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col-reverse lg:flex-row gap-6">
         {/* Left - Episodes List */}
         <div className="bg-[#18181f] rounded-xl p-4 overflow-y-auto lg:w-[22%] max-h-[75vh] shadow-lg">
-          <h3 className="text-white font-semibold mb-3 text-sm tracking-wide">
-            Episodes
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-white font-semibold text-sm tracking-wide">
+              Episodes
+            </h3>
+            <button
+              onClick={() =>
+                setLayout((prev) => (prev === "row" ? "grid" : "row"))
+              }
+              className="text-xs bg-[#222] hover:bg-[#2b2b33] px-2 py-1 rounded transition-colors"
+            >
+              {layout === "row" ? "Grid" : "List"}
+            </button>
+          </div>
           <ul
             className={`grid gap-1 ${
               layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
@@ -120,8 +131,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Right - Big Player */}
-        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-24">
+        {/* Right - Big Player (Responsive Full-width on Mobile) */}
+        <div className="flex-1 -mx-2 md:-mx-4 rounded-xl overflow-hidden shadow-2xl h-[40vh] sm:h-[55vh] lg:h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-6 lg:mb-24">
           {ep && id && (
             <div className="flex-1 relative">
               <Player
