@@ -1,24 +1,10 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb";
 
 const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("megaPlay"); // Default to MegaPlay
-
-  // Load last watched episode on mount
-  useEffect(() => {
-    const lastEpisodeId = localStorage.getItem("lastEpisode");
-    if (lastEpisodeId && lastEpisodeId !== episodeId) {
-      // Trigger your parent episode change function
-      changeEpisode("goTo", lastEpisodeId); 
-    }
-  }, [episodeId, changeEpisode]);
-
-  // Save last watched episode whenever episodeId changes
-  useEffect(() => {
-    localStorage.setItem("lastEpisode", episodeId);
-  }, [episodeId]);
+  const [server, setServer] = useState("megaPlay"); // 🔹 Default to megaplay
 
   const changeCategory = (newType) => {
     if (newType !== category) setCategory(newType);
@@ -28,23 +14,18 @@ const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) =
     if (newServer !== server) setServer(newServer);
   };
 
-  const getIframeSrc = () => {
-    const baseUrl = server === "vidWish" ? "https://vidwish.live" : "https://megaplay.buzz";
-    const epNum = episodeId.split("ep=").pop();
-    return `${baseUrl}/stream/s-2/${epNum}/${category}`;
-  };
-
   return (
     <div className="w-full flex flex-col items-center bg-[#181818] rounded-xl shadow-lg overflow-hidden border border-[#242424]">
       {/* Player Frame */}
       <div className="w-full max-w-screen-xl aspect-video bg-black relative rounded-t-xl overflow-hidden">
         <iframe
-          src={getIframeSrc()}
+          src={`https://${
+            server === "vidWish" ? "vidwish.live" : "megaplay.buzz"
+          }/stream/s-2/${episodeId.split("ep=").pop()}/${category}`}
           width="100%"
           height="100%"
           allowFullScreen
           className="w-full h-full"
-          title="Anime Player"
         ></iframe>
       </div>
 
