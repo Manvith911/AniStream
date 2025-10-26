@@ -27,6 +27,7 @@ const WatchPage = () => {
     });
   };
 
+  // Fetch anime details
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -42,6 +43,7 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
+  // Auto-select first episode
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -95,9 +97,9 @@ const WatchPage = () => {
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* Main layout */}
+      {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episodes list */}
+        {/* Left - Episodes List */}
         <div className="bg-[#18181f] rounded-xl p-4 overflow-y-auto lg:w-[22%] max-h-[75vh] shadow-lg">
           <h3 className="text-white font-semibold mb-3 text-sm tracking-wide">
             Episodes
@@ -119,21 +121,23 @@ const WatchPage = () => {
         </div>
 
         {/* Right - Big Player */}
-        <div className="flex-1 bg-[#101014] rounded-xl overflow-hidden shadow-2xl h-[75vh]">
+        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014]">
           {ep && id && (
-            <Player
-              id={id}
-              episodeId={`${id}?ep=${ep}`}
-              currentEp={currentEp}
-              changeEpisode={changeEpisode}
-              hasNextEp={hasNextEp}
-              hasPrevEp={hasPrevEp}
-            />
+            <div className="flex-1 relative">
+              <Player
+                id={id}
+                episodeId={`${id}?ep=${ep}`}
+                currentEp={currentEp}
+                changeEpisode={changeEpisode}
+                hasNextEp={hasNextEp}
+                hasPrevEp={hasPrevEp}
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Anime details section */}
+      {/* Anime Details Section */}
       <div className="bg-[#18181f] mt-8 rounded-xl p-6 shadow-xl">
         {loadingDetails ? (
           <Loader className="h-40" />
@@ -182,7 +186,7 @@ const WatchPage = () => {
         )}
       </div>
 
-      {/* Recommended section */}
+      {/* Recommended Section */}
       {animeDetails?.recommended && (
         <div className="mt-10">
           <Recommended data={animeDetails.recommended} />
