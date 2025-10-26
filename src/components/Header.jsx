@@ -1,5 +1,4 @@
-// src/components/Header.jsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -17,14 +16,24 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -51,17 +60,13 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   return (
@@ -92,11 +97,7 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button
-                    onClick={emptyInput}
-                    type="reset"
-                    className="text-black"
-                  >
+                  <button onClick={emptyInput} type="reset" className="text-black">
                     <FaXmark />
                   </button>
                 )}
@@ -160,7 +161,7 @@ const Header = () => {
             </div>
 
             {/* Right side - Auth */}
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex items-center gap-3" ref={dropdownRef}>
               {!user ? (
                 <button
                   onClick={() => navigate("/auth")}
