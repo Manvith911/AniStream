@@ -1,10 +1,28 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb";
 
 const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) => {
   const [category, setCategory] = useState("sub");
   const [server, setServer] = useState("megaPlay"); // 🔹 Default to megaplay
+  const [resumeTime, setResumeTime] = useState(0);
+
+  // Load saved position for this episode
+  useEffect(() => {
+    const savedProgress = JSON.parse(localStorage.getItem("playerProgress")) || {};
+    if (savedProgress[episodeId]) {
+      setResumeTime(savedProgress[episodeId]);
+    } else {
+      setResumeTime(0);
+    }
+  }, [episodeId]);
+
+  // Save current timestamp periodically
+  const saveProgress = (time) => {
+    const savedProgress = JSON.parse(localStorage.getItem("playerProgress")) || {};
+    savedProgress[episodeId] = time;
+    localStorage.setItem("playerProgress", JSON.stringify(savedProgress));
+  };
 
   const changeCategory = (newType) => {
     if (newType !== category) setCategory(newType);
@@ -14,18 +32,25 @@ const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) =
     if (newServer !== server) setServer(newServer);
   };
 
+  // Optional: simulate "resuming" by adding a `t=` query param (if supported by your player)
+  const getIframeSrc = () => {
+    const baseUrl =
+      server === "vidWish" ? "https://vidwish.live" : "https://megaplay.buzz";
+    const epNum = episodeId.split("ep=").pop();
+    return `${baseUrl}/stream/s-2/${epNum}/${category}${resumeTime ? `?t=${resumeTime}` : ""}`;
+  };
+
   return (
     <div className="w-full flex flex-col items-center bg-[#181818] rounded-xl shadow-lg overflow-hidden border border-[#242424]">
       {/* Player Frame */}
       <div className="w-full max-w-screen-xl aspect-video bg-black relative rounded-t-xl overflow-hidden">
         <iframe
-          src={`https://${
-            server === "vidWish" ? "vidwish.live" : "megaplay.buzz"
-          }/stream/s-2/${episodeId.split("ep=").pop()}/${category}`}
+          src={getIframeSrc()}
           width="100%"
           height="100%"
           allowFullScreen
           className="w-full h-full"
+          title="Anime Player"
         ></iframe>
       </div>
 
