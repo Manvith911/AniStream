@@ -127,7 +127,7 @@ const Home = () => {
                       data={
                         (latestEpisodes?.data?.response || homeData?.latestEpisode)?.slice(
                           0,
-                          15
+                          12
                         )
                       }
                     />
