@@ -1,5 +1,4 @@
-// src/context/AuthContext.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
@@ -11,11 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Ensure profile exists (create empty row on first sign-in)
   const ensureProfile = async (userObj) => {
     if (!userObj) return;
     try {
-      // Check if a profile exists
       const { data: existing, error: selectError } = await supabase
         .from("profiles")
         .select("id")
@@ -28,9 +25,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (!existing) {
-        // create a new profile row. Since auth.uid() will equal user.id on client,
-        // RLS insert will be allowed.
-        const { data, error } = await supabase.from("profiles").insert({
+        const { error } = await supabase.from("profiles").insert({
           id: userObj.id,
           email: userObj.email,
           username:
@@ -42,12 +37,7 @@ export const AuthProvider = ({ children }) => {
             null,
         });
 
-        if (error) {
-          // if unique violated or other race, log but continue
-          console.warn("Error creating profile:", error);
-        } else {
-          // created
-        }
+        if (error) console.warn("Error creating profile:", error);
       }
     } catch (err) {
       console.error("ensureProfile error:", err);
@@ -55,14 +45,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
     (async () => {
-      // initial session fetch
       const {
         data: { session: initialSession },
       } = await supabase.auth.getSession();
 
-      if (!mounted) return;
+      if (!active) return;
       setSession(initialSession ?? null);
       setUser(initialSession?.user ?? null);
       setLoading(false);
@@ -71,7 +60,6 @@ export const AuthProvider = ({ children }) => {
         ensureProfile(initialSession.user);
       }
 
-      // subscribe to auth changes
       const { data: listener } = supabase.auth.onAuthStateChange(
         async (event, newSession) => {
           setSession(newSession ?? null);
@@ -79,19 +67,17 @@ export const AuthProvider = ({ children }) => {
 
           if (event === "SIGNED_IN" && newSession?.user) {
             await ensureProfile(newSession.user);
-            // Optionally navigate somewhere after sign-in:
-            // navigate("/");
+            navigate("/home");
           }
 
           if (event === "SIGNED_OUT") {
-            // navigate to homepage or auth page if you want
-            // navigate("/");
+            navigate("/");
           }
         }
       );
 
       return () => {
-        mounted = false;
+        active = false;
         listener?.subscription?.unsubscribe();
       };
     })();
@@ -100,20 +86,13 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      // This opens the Google OAuth flow
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          // optional redirect
-          // redirectTo: window.location.origin + "/",
+          redirectTo: `${window.location.origin}/home`,
         },
       });
-
-      // For OAuth, the browser will redirect to Google's consent page.
-      if (error) {
-        console.error("OAuth error:", error);
-      }
-      // data contains the url for redirect in some flows; the actual redirect is handled by supabase-client
+      if (error) console.error("OAuth error:", error);
     } catch (err) {
       console.error("signInWithGoogle error:", err);
     } finally {
@@ -126,7 +105,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) console.error("Error signing out:", error);
-      // session changes will be reflected by onAuthStateChange
     } catch (err) {
       console.error("signOut error:", err);
     } finally {
@@ -134,18 +112,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signInWithGoogle,
-    signOut,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      signInWithGoogle,
+      signOut,
+    }),
+    [user, session, loading]
+  );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {loading ? (
+        <div className="flex justify-center items-center h-screen text-lg font-medium">
+          Loading...
+        </div>
+      ) : (
+        children
+      )}
+    </AuthContext.Provider>
+  );
 };
 
-// custom hook
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);
