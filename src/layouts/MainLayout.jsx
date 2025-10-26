@@ -57,6 +57,9 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     navigate(`/anime/${id}`);
   };
 
+  // ✅ Determine if this layout should use bigger cards
+  const isBiggerLayout = title === "Top Upcoming" || title === "Newly Added";
+
   return (
     <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate w-full max-w-full overflow-hidden">
       <div className="flex justify-between items-center mb-6">
@@ -88,17 +91,25 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         )}
       </div>
 
-      {/* ✅ Bigger Cards with spaceBetween=16 */}
       <Swiper
         modules={[Navigation]}
         navigation
         spaceBetween={16}
-        breakpoints={{
-          0: { slidesPerView: 1.8 },
-          600: { slidesPerView: 2.8 },
-          1024: { slidesPerView: 4 },
-          1320: { slidesPerView: 5 },
-        }}
+        breakpoints={
+          isBiggerLayout
+            ? {
+                0: { slidesPerView: 1.6 },
+                600: { slidesPerView: 2.5 },
+                1024: { slidesPerView: 3.5 },
+                1320: { slidesPerView: 4 },
+              }
+            : {
+                0: { slidesPerView: 2.4 },
+                600: { slidesPerView: 3.5 },
+                1024: { slidesPerView: 5 },
+                1320: { slidesPerView: 6 },
+              }
+        }
         className="overflow-visible relative z-0"
         style={{ maxWidth: "100%" }}
       >
@@ -121,17 +132,23 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 onMouseLeave={handleMouseLeave}
                 onClick={() => handleCardClick(anime.id)}
               >
-                {/* ✅ Slightly Bigger Card (Adjusted Aspect Ratio) */}
+                {/* ✅ Bigger cards only for "Newly Added" and "Top Upcoming" */}
                 <div
-                  className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.07] rounded-xl
-                  ${title === "Trending Now" ? "pb-[130%]" : "pb-[135%]"}`}
+                  className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05] rounded-xl
+                  ${
+                    isBiggerLayout
+                      ? "pb-[125%]" // bigger & taller for newly/upcoming
+                      : title === "Trending Now"
+                      ? "pb-[140%]"
+                      : "pb-[145%]"
+                  }`}
                 >
                   <img
                     src={anime.poster}
                     alt={anime.title}
                     loading="lazy"
                     className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
-                      isHovered ? "brightness-50 scale-[1.03]" : ""
+                      isHovered ? "brightness-50 scale-[1.02]" : ""
                     }`}
                   />
 
