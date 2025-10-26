@@ -14,23 +14,24 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
+  // Handle search input typing with debounce
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
   };
 
+  // Fetch search suggestions
   const { data, isLoading } = useApi(
     debouncedValue.length > 2 ? `/suggestion?keyword=${debouncedValue}` : null
   );
 
+  // Handle form submit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (value.trim().length > 0) {
@@ -39,34 +40,33 @@ const Header = () => {
     }
   };
 
+  // Navigate to anime details page
   const navigateToAnimePage = (id) => {
     navigate(`/anime/${id}`);
     resetSearch();
   };
 
+  // Reset search input
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
+  // Clear input manually
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
+          {/* Header Container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+            {/* Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -106,13 +106,13 @@ const Header = () => {
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data.length ? (
+                  ) : data && data?.data?.length ? (
                     <>
-                      {data?.data?.map((item) => (
+                      {data.data.map((item) => (
                         <div
+                          key={item.id}
                           onClick={() => navigateToAnimePage(item.id)}
                           className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
-                          key={item.id}
                         >
                           <div className="poster shrink-0 relative w-10 h-14">
                             <img
