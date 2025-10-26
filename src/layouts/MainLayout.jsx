@@ -88,15 +88,16 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         )}
       </div>
 
+      {/* ✅ Bigger Cards with spaceBetween=16 */}
       <Swiper
         modules={[Navigation]}
         navigation
         spaceBetween={16}
         breakpoints={{
-          0: { slidesPerView: 2.4 },
-          600: { slidesPerView: 3.5 },
-          1024: { slidesPerView: 5 },
-          1320: { slidesPerView: 6 },
+          0: { slidesPerView: 1.8 },
+          600: { slidesPerView: 2.8 },
+          1024: { slidesPerView: 4 },
+          1320: { slidesPerView: 5 },
         }}
         className="overflow-visible relative z-0"
         style={{ maxWidth: "100%" }}
@@ -120,17 +121,17 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 onMouseLeave={handleMouseLeave}
                 onClick={() => handleCardClick(anime.id)}
               >
-                {/* ✅ Fixed consistent card ratio (safe and minimal) */}
+                {/* ✅ Slightly Bigger Card (Adjusted Aspect Ratio) */}
                 <div
-                  className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05] rounded-xl
-                  ${title === "Trending Now" ? "pb-[140%]" : "pb-[145%]"}`}
+                  className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.07] rounded-xl
+                  ${title === "Trending Now" ? "pb-[130%]" : "pb-[135%]"}`}
                 >
                   <img
                     src={anime.poster}
                     alt={anime.title}
                     loading="lazy"
                     className={`absolute inset-0 w-full h-full object-cover rounded-xl transition-all duration-300 ${
-                      isHovered ? "brightness-50 scale-[1.02]" : ""
+                      isHovered ? "brightness-50 scale-[1.03]" : ""
                     }`}
                   />
 
