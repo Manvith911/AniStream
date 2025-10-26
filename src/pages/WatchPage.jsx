@@ -6,7 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
-import Recommended from "../layouts/Recommended"; // ✅ new import
+import Recommended from "../layouts/Recommended";
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -74,7 +74,7 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
+    <div className="bg-gradient-to-b from-[#0b0b0e] to-[#15161a] min-h-screen pt-20 text-white px-4 md:px-10 transition-colors duration-300">
       <Helmet>
         <title>
           Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
@@ -82,58 +82,66 @@ const WatchPage = () => {
       </Helmet>
 
       {/* Breadcrumbs */}
-      <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
-        <Link to="/home" className="hover:text-primary">
+      <div className="flex items-center flex-wrap gap-2 mb-6 text-sm text-gray-400">
+        <Link to="/home" className="hover:text-primary transition">
           Home
         </Link>
-        <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link
-          to={`/anime/${id}`}
-          className="hover:text-primary capitalize"
-        >
+        <span className="text-primary">›</span>
+        <Link to={`/anime/${id}`} className="hover:text-primary capitalize transition">
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
-        <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
+        <span className="text-primary">›</span>
+        <span className="text-gray-300">Episode {currentEp?.episodeNumber}</span>
       </div>
 
-      {/* Main Layout */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episodes List */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
-          <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
-          <ul
-            className={`grid gap-1 ${
-              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
-            }`}
-          >
-            {episodes.map((episode) => (
-              <Episodes
-                key={episode.id}
-                episode={episode}
+      {/* Main Section */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Player + Episodes */}
+        <div className="flex flex-col lg:flex-row gap-5 flex-1">
+          {/* Episodes Sidebar */}
+          <div className="bg-[#1c1d22]/80 backdrop-blur-md rounded-2xl p-4 overflow-y-auto w-full lg:w-[25%] max-h-[78vh] border border-[#2a2a33] shadow-xl">
+            <h3 className="text-white font-semibold mb-3 text-center text-sm tracking-wide">
+              Episodes
+            </h3>
+            <ul
+              className={`grid gap-2 ${
+                layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-2"
+              }`}
+            >
+              {episodes.map((episode) => (
+                <Episodes
+                  key={episode.id}
+                  episode={episode}
+                  currentEp={currentEp}
+                  layout={layout}
+                />
+              ))}
+            </ul>
+          </div>
+
+          {/* Video Player */}
+          <div className="flex-1 bg-[#0e0e11] rounded-2xl overflow-hidden shadow-2xl h-[78vh] relative border border-[#2a2a33]">
+            {ep && id && (
+              <Player
+                id={id}
+                episodeId={`${id}?ep=${ep}`}
                 currentEp={currentEp}
-                layout={layout}
+                changeEpisode={changeEpisode}
+                hasNextEp={hasNextEp}
+                hasPrevEp={hasPrevEp}
               />
-            ))}
-          </ul>
+            )}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3 text-sm text-gray-300 flex justify-between">
+              <span>
+                Episode {currentEp?.episodeNumber} — {animeDetails?.title}
+              </span>
+              <span className="hidden sm:block text-primary font-medium">AnimeRealm</span>
+            </div>
+          </div>
         </div>
 
-        {/* Center - Player */}
-        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
-          {ep && id && (
-            <Player
-              id={id}
-              episodeId={`${id}?ep=${ep}`}
-              currentEp={currentEp}
-              changeEpisode={changeEpisode}
-              hasNextEp={hasNextEp}
-              hasPrevEp={hasPrevEp}
-            />
-          )}
-        </div>
-
-        {/* Right - Anime Info */}
-        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
+        {/* Right Info Panel */}
+        <div className="bg-[#1c1d22]/80 backdrop-blur-md rounded-2xl p-5 lg:w-[25%] shadow-lg border border-[#2a2a33] h-[78vh] overflow-y-auto">
           {loadingDetails ? (
             <Loader className="h-40" />
           ) : animeDetails ? (
@@ -142,35 +150,36 @@ const WatchPage = () => {
                 <img
                   src={animeDetails.poster}
                   alt={animeDetails.title}
-                  className="rounded-md w-36 h-auto mb-3 shadow-md"
+                  className="rounded-lg w-40 h-auto mb-3 shadow-md border border-[#2a2a33]"
                 />
-                <h2 className="text-lg font-semibold text-center">
+                <h2 className="text-lg font-semibold text-center leading-snug">
                   {animeDetails.title}
                 </h2>
               </div>
-              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
-                <span className="bg-[#222] px-2 py-1 rounded">
+              <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-300 mb-4">
+                <span className="bg-[#2a2a33] px-2 py-1 rounded-md">
                   {animeDetails.rating}
                 </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
+                <span className="bg-[#2a2a33] px-2 py-1 rounded-md">
                   {animeDetails.type}
                 </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
+                <span className="bg-[#2a2a33] px-2 py-1 rounded-md">
                   {animeDetails.duration}
                 </span>
               </div>
               <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
                 {animeDetails.synopsis}
               </p>
-              <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong>{" "}
-                {animeDetails.genres?.join(", ")}
-              </div>
-              <div className="text-xs text-gray-400 mb-1">
-                <strong>Studio:</strong> {animeDetails.studios}
-              </div>
-              <div className="text-xs text-gray-400">
-                <strong>Status:</strong> {animeDetails.status}
+              <div className="space-y-1 text-xs text-gray-400">
+                <p>
+                  <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
+                </p>
+                <p>
+                  <strong>Studio:</strong> {animeDetails.studios}
+                </p>
+                <p>
+                  <strong>Status:</strong> {animeDetails.status}
+                </p>
               </div>
             </>
           ) : (
@@ -179,9 +188,11 @@ const WatchPage = () => {
         </div>
       </div>
 
-      {/* ✅ Recommended Section */}
+      {/* Recommended Section */}
       {animeDetails?.recommended && (
-        <Recommended data={animeDetails.recommended} />
+        <div className="mt-10">
+          <Recommended data={animeDetails.recommended} />
+        </div>
       )}
     </div>
   );
