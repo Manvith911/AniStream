@@ -6,37 +6,31 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { useAuth } from "../context/AuthContext"; // ✅ Import auth context
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState("");
-  const [dropdown, setDropdown] = useState(false);
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  // ✅ Get user, profile, and logout from Auth context
-  const { user, profile, logout } = useAuth();
-
-  // Handle input changes with debounce
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
   };
 
-  // Fetch suggestions using your custom API hook
   const { data, isLoading } = useApi(
     debouncedValue.length > 2 ? `/suggestion?keyword=${debouncedValue}` : null
   );
 
-  // Handle search submit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (value.trim().length > 0) {
@@ -45,17 +39,25 @@ const Header = () => {
     }
   };
 
-  // Navigate to anime page
   const navigateToAnimePage = (id) => {
     navigate(`/anime/${id}`);
     resetSearch();
   };
 
-  // Reset search state
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
+  const emptyInput = () => {
+    setValue("");
+    setDebouncedValue("");
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   return (
@@ -63,7 +65,7 @@ const Header = () => {
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
           {/* Header container */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -87,7 +89,7 @@ const Header = () => {
                 />
                 {value.length > 1 && (
                   <button
-                    onClick={resetSearch}
+                    onClick={emptyInput}
                     type="reset"
                     className="text-black"
                   >
@@ -152,63 +154,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            {/* Right Side: Auth/Profile Section */}
-            <div className="relative">
-              {!user ? (
-                // ✅ Show Login button if user not logged in
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="bg-primary text-black font-semibold px-4 py-1 rounded-md"
-                >
-                  Login
-                </button>
-              ) : (
-                // ✅ Show profile avatar if logged in
-                <div className="relative">
-                  <img
-                    src={
-                      profile?.avatar_url ||
-                      "https://i.ibb.co/6tZ7QvM/default-avatar.png"
-                    }
-                    alt="avatar"
-                    onClick={() => setDropdown(!dropdown)}
-                    className="w-9 h-9 rounded-full object-cover cursor-pointer border border-primary"
-                  />
-                  {dropdown && (
-                    <div className="absolute right-0 mt-2 w-44 bg-card rounded-md shadow-lg overflow-hidden border border-lightBg">
-                      <button
-                        onClick={() => {
-                          setDropdown(false);
-                          navigate("/profile");
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-lightBg"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDropdown(false);
-                          navigate("/watchlist");
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-lightBg"
-                      >
-                        Watchlist
-                      </button>
-                      <button
-                        onClick={() => {
-                          setDropdown(false);
-                          logout();
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-lightBg text-red-400"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -216,4 +161,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 
