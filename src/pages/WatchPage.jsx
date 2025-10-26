@@ -11,7 +11,7 @@ import Recommended from "../layouts/Recommended";
 const WatchPage = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [layout, setLayout] = useState("row"); // ✅ layout switch state
+  const [layout, setLayout] = useState("row"); // ✅ layout switcher state
   const [animeDetails, setAnimeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
   const ep = searchParams.get("ep");
@@ -74,7 +74,7 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
-  // ✅ Toggle between row and grid layout
+  // ✅ Layout toggle
   const toggleLayout = () => {
     setLayout((prev) => (prev === "row" ? "grid" : "row"));
   };
@@ -111,7 +111,6 @@ const WatchPage = () => {
             <h3 className="text-white font-semibold text-sm tracking-wide">
               Episodes
             </h3>
-            {/* ✅ Layout toggle button */}
             <button
               onClick={toggleLayout}
               className="text-xs text-gray-300 bg-[#222] px-2 py-1 rounded hover:bg-primary hover:text-white transition-colors"
@@ -136,20 +135,22 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Right - Big Player */}
-        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-24">
-          {ep && id && (
-            <div className="flex-1 relative">
-              <Player
-                id={id}
-                episodeId={`${id}?ep=${ep}`}
-                currentEp={currentEp}
-                changeEpisode={changeEpisode}
-                hasNextEp={hasNextEp}
-                hasPrevEp={hasPrevEp}
-              />
-            </div>
-          )}
+        {/* ✅ Right - Full-width Player (fills space perfectly) */}
+        <div className="flex-1 flex flex-col">
+          <div className="rounded-xl shadow-2xl h-[75vh] bg-[#101014] relative z-[5] mb-24 -mx-4 md:-mx-10">
+            {ep && id && (
+              <div className="flex-1 relative h-full">
+                <Player
+                  id={id}
+                  episodeId={`${id}?ep=${ep}`}
+                  currentEp={currentEp}
+                  changeEpisode={changeEpisode}
+                  hasNextEp={hasNextEp}
+                  hasPrevEp={hasPrevEp}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
