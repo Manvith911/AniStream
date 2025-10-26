@@ -30,48 +30,50 @@ const LatestEpisodesLayout = ({
       {/* Anime Grid */}
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {data &&
-          data.map((item) => (
-            <Link
-              to={`/anime/${item.id}`}
-              key={item.id}
-              className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
-            >
-              {/* Image Wrapper */}
-              <div className="relative w-full h-0 pb-[60%] overflow-hidden">
-                <img
-                  src={item.poster}
-                  alt={item.title}
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                />
+          data.map((item) => {
+            const latestEpisode = item.episodes?.sub || 1;
+            return (
+              <Link
+                key={item.id}
+                to={`/watch/${item.id}?episode=${latestEpisode}`}
+                className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
+              >
+                {/* Image Wrapper */}
+                <div className="relative w-full h-0 pb-[60%] overflow-hidden">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  />
 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-95 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-95 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                {/* Episode Tag */}
-                {item.episode && (
+                  {/* Episode Tag */}
                   <div className="absolute top-2 right-2 bg-sky-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    Episode {item.episode}
+                    Episode {latestEpisode}
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* Info Section */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 to-transparent">
-                <h3
-                  title={item.title}
-                  className="text-base sm:text-lg font-semibold text-gray-100 truncate group-hover:text-sky-400 transition-colors duration-300"
-                >
-                  {item.title}
-                </h3>
-                {item.genres && (
+                {/* Info Section */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 to-transparent">
+                  <h3
+                    title={item.title}
+                    className="text-base sm:text-lg font-semibold text-gray-100 truncate group-hover:text-sky-400 transition-colors duration-300"
+                  >
+                    {item.title}
+                  </h3>
                   <p className="text-xs sm:text-sm text-gray-400 mt-1 truncate">
-                    {item.genres.join(" • ")}
+                    {item.alternativeTitle || item.type}
                   </p>
-                )}
-              </div>
-            </Link>
-          ))}
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Type: {item.type} • Duration: {item.duration}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
       </div>
     </div>
   );
