@@ -6,7 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
-import Recommended from "../layouts/Recommended";
+import Recommended from "../layouts/Recommended"; // ✅ new import
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -74,7 +74,7 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="bg-gradient-to-b from-[#0b0b0e] to-[#141519] min-h-screen pt-20 text-white px-4 md:px-10">
+    <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
         <title>
           Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
@@ -82,28 +82,29 @@ const WatchPage = () => {
       </Helmet>
 
       {/* Breadcrumbs */}
-      <div className="flex items-center flex-wrap gap-2 mb-6 text-sm text-gray-400">
-        <Link to="/home" className="hover:text-primary transition">
+      <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
+        <Link to="/home" className="hover:text-primary">
           Home
         </Link>
-        <span className="text-primary">›</span>
-        <Link to={`/anime/${id}`} className="hover:text-primary capitalize transition">
+        <span className="h-1 w-1 rounded-full bg-primary"></span>
+        <Link
+          to={`/anime/${id}`}
+          className="hover:text-primary capitalize"
+        >
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
-        <span className="text-primary">›</span>
-        <span className="text-gray-300">Episode {currentEp?.episodeNumber}</span>
+        <span className="h-1 w-1 rounded-full bg-primary"></span>
+        <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* 🔹 Player + Episodes */}
-      <div className="flex flex-col lg:flex-row gap-6 mb-10">
-        {/* Episodes Sidebar */}
-        <div className="bg-[#1a1b20]/90 backdrop-blur-md rounded-2xl p-4 overflow-y-auto w-full lg:w-[25%] max-h-[78vh] border border-[#2a2a33] shadow-xl">
-          <h3 className="text-white font-semibold mb-3 text-center text-sm uppercase tracking-wide">
-            Episodes
-          </h3>
+      {/* Main Layout */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left - Episodes List */}
+        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
+          <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
           <ul
-            className={`grid gap-2 ${
-              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-2"
+            className={`grid gap-1 ${
+              layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
             }`}
           >
             {episodes.map((episode) => (
@@ -117,8 +118,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Big Video Player */}
-        <div className="flex-1 bg-[#0f0f13] rounded-2xl overflow-hidden shadow-2xl h-[80vh] relative border border-[#2a2a33]">
+        {/* Center - Player */}
+        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
             <Player
               id={id}
@@ -129,71 +130,58 @@ const WatchPage = () => {
               hasPrevEp={hasPrevEp}
             />
           )}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3 text-sm text-gray-300 flex justify-between items-center">
-            <span>
-              Episode {currentEp?.episodeNumber} — {animeDetails?.title}
-            </span>
-            <span className="hidden sm:block text-primary font-medium tracking-wide">
-              AnimeRealm
-            </span>
-          </div>
         </div>
-      </div>
 
-      {/* 🔹 Anime Info Below */}
-      <div className="bg-[#1a1b20]/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-[#2a2a33] mb-10">
-        {loadingDetails ? (
-          <Loader className="h-40" />
-        ) : animeDetails ? (
-          <>
-            <div className="flex flex-col md:flex-row gap-6 items-center">
-              <img
-                src={animeDetails.poster}
-                alt={animeDetails.title}
-                className="rounded-xl w-40 md:w-52 h-auto shadow-md border border-[#2a2a33]"
-              />
-              <div className="flex-1">
-                <h2 className="text-2xl font-semibold mb-2 text-white">
+        {/* Right - Anime Info */}
+        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
+          {loadingDetails ? (
+            <Loader className="h-40" />
+          ) : animeDetails ? (
+            <>
+              <div className="flex flex-col items-center mb-4">
+                <img
+                  src={animeDetails.poster}
+                  alt={animeDetails.title}
+                  className="rounded-md w-36 h-auto mb-3 shadow-md"
+                />
+                <h2 className="text-lg font-semibold text-center">
                   {animeDetails.title}
                 </h2>
-                <div className="flex flex-wrap gap-2 text-xs text-gray-300 mb-3">
-                  <span className="bg-[#2a2a33] px-3 py-1 rounded-md">
-                    {animeDetails.rating}
-                  </span>
-                  <span className="bg-[#2a2a33] px-3 py-1 rounded-md">
-                    {animeDetails.type}
-                  </span>
-                  <span className="bg-[#2a2a33] px-3 py-1 rounded-md">
-                    {animeDetails.duration}
-                  </span>
-                </div>
-                <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
-                  {animeDetails.synopsis}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 text-xs text-gray-400 gap-y-1">
-                  <p>
-                    <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
-                  </p>
-                  <p>
-                    <strong>Studio:</strong> {animeDetails.studios}
-                  </p>
-                  <p>
-                    <strong>Status:</strong> {animeDetails.status}
-                  </p>
-                </div>
               </div>
-            </div>
-          </>
-        ) : (
-          <p className="text-gray-400 text-sm">No details available.</p>
-        )}
+              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.rating}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.type}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.duration}
+                </span>
+              </div>
+              <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
+                {animeDetails.synopsis}
+              </p>
+              <div className="text-xs text-gray-400 mb-1">
+                <strong>Genres:</strong>{" "}
+                {animeDetails.genres?.join(", ")}
+              </div>
+              <div className="text-xs text-gray-400 mb-1">
+                <strong>Studio:</strong> {animeDetails.studios}
+              </div>
+              <div className="text-xs text-gray-400">
+                <strong>Status:</strong> {animeDetails.status}
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-400 text-sm">No details available.</p>
+          )}
+        </div>
       </div>
 
-      {/* 🔹 Recommended Section */}
+      {/* ✅ Recommended Section */}
       {animeDetails?.recommended && (
-        <div className="mt-10">
-          <Recommended data={animeDetails.recommended} />
-        </div>
+        <Recommended data={animeDetails.recommended} />
       )}
     </div>
   );
