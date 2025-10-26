@@ -1,4 +1,3 @@
-// src/pages/WatchlistPage.jsx
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
@@ -23,8 +22,6 @@ const WatchlistPage = () => {
     fetch();
   }, [user]);
 
-  if (!user) return <div className="p-8">Please login to see watchlist.</div>;
-
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Your Watchlist</h1>
@@ -33,8 +30,12 @@ const WatchlistPage = () => {
       ) : (
         <ul>
           {items.map((it) => (
-            <li key={it.id} className="mb-2">
-              <img src={it.image_url} alt={it.title} className="w-12 h-16 inline-block mr-2" />
+            <li key={it.id} className="mb-2 flex items-center">
+              <img
+                src={it.image_url}
+                alt={it.title}
+                className="w-12 h-16 rounded mr-3"
+              />
               {it.title}
             </li>
           ))}
