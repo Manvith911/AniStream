@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,6 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -14,26 +13,14 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  // Close profile dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setProfileDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -60,13 +47,17 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   return (
@@ -97,7 +88,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -155,72 +150,6 @@ const Header = () => {
                     <h1 className="text-center text-sm text-primary py-3">
                       Anime not found :(
                     </h1>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Right side - Auth */}
-            <div className="ml-auto flex items-center gap-3" ref={dropdownRef}>
-              {!user ? (
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="px-4 py-2 bg-primary rounded text-black text-sm font-medium"
-                >
-                  Login
-                </button>
-              ) : (
-                <div className="relative">
-                  <button
-                    onClick={() => setProfileDropdownOpen((s) => !s)}
-                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200"
-                    title={user.email}
-                  >
-                    <img
-                      src={
-                        user.user_metadata?.avatar_url ||
-                        user.user_metadata?.picture ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          user.user_metadata?.full_name || user.email
-                        )}&background=ddd&color=333`
-                      }
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-
-                  {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md overflow-hidden z-50">
-                      <button
-                        onClick={() => {
-                          navigate("/profile");
-                          setProfileDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                      >
-                        Profile
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigate("/watchlist");
-                          setProfileDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                      >
-                        Watchlist
-                      </button>
-                      <div className="border-t" />
-                      <button
-                        onClick={async () => {
-                          await signOut();
-                          setProfileDropdownOpen(false);
-                          navigate("/");
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-                      >
-                        Logout
-                      </button>
-                    </div>
                   )}
                 </div>
               )}
