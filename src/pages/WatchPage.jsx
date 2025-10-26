@@ -121,9 +121,9 @@ const WatchPage = () => {
         </div>
 
         {/* Right - Big Player */}
-        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-10 mb-14 md:mb-10">
+        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-20">
           {ep && id && (
-            <div className="flex-1 relative z-10">
+            <div className="flex-1 relative">
               <Player
                 id={id}
                 episodeId={`${id}?ep=${ep}`}
@@ -138,7 +138,7 @@ const WatchPage = () => {
       </div>
 
       {/* Anime Details Section */}
-      <div className="bg-[#18181f] mt-4 rounded-xl p-6 shadow-xl relative z-0">
+      <div className="bg-[#18181f] rounded-xl p-6 shadow-xl relative z-[1] pt-4">
         {loadingDetails ? (
           <Loader className="h-40" />
         ) : animeDetails ? (
