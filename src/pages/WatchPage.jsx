@@ -6,7 +6,7 @@ import Episodes from "../layouts/Episodes";
 import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
-import Recommended from "../layouts/Recommended"; // ✅ new import
+import Recommended from "../layouts/Recommended";
 
 const WatchPage = () => {
   const { id } = useParams();
@@ -27,7 +27,6 @@ const WatchPage = () => {
     });
   };
 
-  // Fetch anime details
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -43,7 +42,6 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
-  // Auto-select first episode
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -74,7 +72,7 @@ const WatchPage = () => {
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
   return (
-    <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
+    <div className="bg-[#0b0b10] min-h-screen pt-16 text-white px-4 md:px-10">
       <Helmet>
         <title>
           Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
@@ -82,14 +80,14 @@ const WatchPage = () => {
       </Helmet>
 
       {/* Breadcrumbs */}
-      <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
-        <Link to="/home" className="hover:text-primary">
+      <div className="flex items-center flex-wrap gap-2 mb-5 text-sm text-gray-300">
+        <Link to="/home" className="hover:text-primary transition-colors">
           Home
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <Link
           to={`/anime/${id}`}
-          className="hover:text-primary capitalize"
+          className="hover:text-primary capitalize transition-colors"
         >
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
@@ -97,11 +95,13 @@ const WatchPage = () => {
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* Main Layout */}
+      {/* Main layout */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left - Episodes List */}
-        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
-          <h3 className="text-white font-semibold mb-3 text-sm">Episodes</h3>
+        {/* Left - Episodes list */}
+        <div className="bg-[#18181f] rounded-xl p-4 overflow-y-auto lg:w-[22%] max-h-[75vh] shadow-lg">
+          <h3 className="text-white font-semibold mb-3 text-sm tracking-wide">
+            Episodes
+          </h3>
           <ul
             className={`grid gap-1 ${
               layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
@@ -118,8 +118,8 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Center - Player */}
-        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
+        {/* Right - Big Player */}
+        <div className="flex-1 bg-[#101014] rounded-xl overflow-hidden shadow-2xl h-[75vh]">
           {ep && id && (
             <Player
               id={id}
@@ -131,57 +131,62 @@ const WatchPage = () => {
             />
           )}
         </div>
-
-        {/* Right - Anime Info */}
-        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
-          {loadingDetails ? (
-            <Loader className="h-40" />
-          ) : animeDetails ? (
-            <>
-              <div className="flex flex-col items-center mb-4">
-                <img
-                  src={animeDetails.poster}
-                  alt={animeDetails.title}
-                  className="rounded-md w-36 h-auto mb-3 shadow-md"
-                />
-                <h2 className="text-lg font-semibold text-center">
-                  {animeDetails.title}
-                </h2>
-              </div>
-              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.rating}
-                </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.type}
-                </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.duration}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
-                {animeDetails.synopsis}
-              </p>
-              <div className="text-xs text-gray-400 mb-1">
-                <strong>Genres:</strong>{" "}
-                {animeDetails.genres?.join(", ")}
-              </div>
-              <div className="text-xs text-gray-400 mb-1">
-                <strong>Studio:</strong> {animeDetails.studios}
-              </div>
-              <div className="text-xs text-gray-400">
-                <strong>Status:</strong> {animeDetails.status}
-              </div>
-            </>
-          ) : (
-            <p className="text-gray-400 text-sm">No details available.</p>
-          )}
-        </div>
       </div>
 
-      {/* ✅ Recommended Section */}
+      {/* Anime details section */}
+      <div className="bg-[#18181f] mt-8 rounded-xl p-6 shadow-xl">
+        {loadingDetails ? (
+          <Loader className="h-40" />
+        ) : animeDetails ? (
+          <>
+            <div className="flex flex-col md:flex-row items-center gap-6 mb-4">
+              <img
+                src={animeDetails.poster}
+                alt={animeDetails.title}
+                className="rounded-lg w-40 h-auto shadow-md"
+              />
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold mb-3">
+                  {animeDetails.title}
+                </h2>
+                <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3">
+                  <span className="bg-[#222] px-2 py-1 rounded">
+                    {animeDetails.rating}
+                  </span>
+                  <span className="bg-[#222] px-2 py-1 rounded">
+                    {animeDetails.type}
+                  </span>
+                  <span className="bg-[#222] px-2 py-1 rounded">
+                    {animeDetails.duration}
+                  </span>
+                </div>
+                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                  {animeDetails.synopsis}
+                </p>
+                <div className="text-sm text-gray-400 space-y-1">
+                  <div>
+                    <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
+                  </div>
+                  <div>
+                    <strong>Studio:</strong> {animeDetails.studios}
+                  </div>
+                  <div>
+                    <strong>Status:</strong> {animeDetails.status}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-400 text-sm">No details available.</p>
+        )}
+      </div>
+
+      {/* Recommended section */}
       {animeDetails?.recommended && (
-        <Recommended data={animeDetails.recommended} />
+        <div className="mt-10">
+          <Recommended data={animeDetails.recommended} />
+        </div>
       )}
     </div>
   );
