@@ -36,7 +36,8 @@ const LatestEpisodesLayout = ({
             return (
               <Link
                 key={item.id}
-                to={`/anime/${item.id}`}  {/* ✅ Linked to Details Page */}
+                // ✅ Linked to Details Page
+                to={`/anime/${item.id}`}
                 className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
               >
                 {/* Image Wrapper */}
