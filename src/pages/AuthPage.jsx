@@ -1,110 +1,96 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate();
 
-  const handleAuth = async (e) => {
+  const handleEmailAuth = async (e) => {
     e.preventDefault();
-
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return toast.error(error.message);
-      toast.success("Logged in successfully!");
-      navigate("/home");
-    } else {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username },
-          emailRedirectTo: `${window.location.origin}/home`,
-        },
-      });
-
-      if (error) return toast.error(error.message);
-      toast.info("Confirmation mail sent! Please check your inbox.");
-
-      if (data.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          email: data.user.email,
-          username,
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
+        if (error) throw error;
+        toast.success("Logged in!");
+        navigate("/home");
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.info("Check your email for confirmation link!");
       }
+    } catch (err) {
+      toast.error(err.message);
     }
   };
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
     });
     if (error) toast.error(error.message);
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen bg-[#0b0b0b] text-white px-4">
-      <div className="bg-card p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-backGround text-white px-6">
+      <div className="bg-card p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h1 className="text-2xl font-bold mb-4 text-center">
           {isLogin ? "Login" : "Sign Up"}
-        </h2>
+        </h1>
 
-        <form onSubmit={handleAuth} className="flex flex-col gap-3">
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="px-3 py-2 bg-[#FBF8EF] rounded text-black"
-              required
-            />
-          )}
+        <form onSubmit={handleEmailAuth} className="flex flex-col gap-3">
           <input
             type="email"
             placeholder="Email"
+            className="bg-lightBg px-3 py-2 rounded-md text-black"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="px-3 py-2 bg-[#FBF8EF] rounded text-black"
             required
           />
           <input
             type="password"
             placeholder="Password"
+            className="bg-lightBg px-3 py-2 rounded-md text-black"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="px-3 py-2 bg-[#FBF8EF] rounded text-black"
             required
           />
-
-          <button type="submit" className="bg-primary text-black py-2 rounded font-semibold">
+          <button
+            type="submit"
+            className="bg-primary text-black py-2 rounded-md font-semibold hover:opacity-80"
+          >
             {isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
 
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-primary hover:underline"
+          >
+            {isLogin
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Login"}
+          </button>
+        </div>
+
+        <hr className="my-4 border-gray-500" />
+
         <button
           onClick={handleGoogleLogin}
-          className="bg-white text-black py-2 rounded mt-3 w-full"
+          className="bg-white text-black w-full py-2 rounded-md font-semibold hover:opacity-90"
         >
           Continue with Google
         </button>
-
-        <p className="text-sm text-center mt-3">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-primary cursor-pointer font-semibold"
-          >
-            {isLogin ? "Sign Up" : "Login"}
-          </span>
-        </p>
       </div>
     </div>
   );
