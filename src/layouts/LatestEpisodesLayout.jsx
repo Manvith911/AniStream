@@ -36,7 +36,6 @@ const LatestEpisodesLayout = ({
             return (
               <Link
                 key={item.id}
-                // ✅ Linked to Details Page
                 to={`/anime/${item.id}`}
                 className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
               >
@@ -60,17 +59,14 @@ const LatestEpisodesLayout = ({
 
                 {/* Info Section */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 to-transparent">
-                  <h3
+                  <p
                     title={item.title}
-                    className="text-base sm:text-lg font-semibold text-gray-100 truncate group-hover:text-sky-400 transition-colors duration-300"
+                    className="text-sm sm:text-base font-medium text-gray-100 truncate group-hover:text-sky-400 transition-colors duration-300"
                   >
-                    {item.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-400 mt-1 truncate">
-                    {item.alternativeTitle || item.type}
+                    {item.title || item.alternativeTitle}
                   </p>
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    Type: {item.type} • Duration: {item.duration}
+                  <p className="text-xs text-gray-400 mt-1 truncate">
+                    {item.type} • {item.duration}
                   </p>
                 </div>
               </Link>
