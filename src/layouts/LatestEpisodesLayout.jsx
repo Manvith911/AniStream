@@ -31,15 +31,23 @@ const LatestEpisodesLayout = ({
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {data &&
           data.map((item) => {
-            // ✅ Determine latest available episode (prefer sub > dub)
-            const latestEpisode =
-              item.episodes?.sub || item.episodes?.dub || 1;
+            // ✅ Determine latest available episode number and id
+            const latestEpNum =
+              item.episodes?.sub > 0 ? item.episodes.sub : item.episodes?.dub || 1;
+
+            // ✅ Build link to proper episode (same as your WatchPage expects)
+            const latestEpId = item.episodeId || item.latestEpId || item.id; // fallback if your API gives it
+            const link = `/watch/${item.id}?ep=${latestEpId || latestEpNum}`;
+
+            // ✅ Avoid duplicate title line if same as alternative
+            const showAltTitle =
+              item.alternativeTitle &&
+              item.alternativeTitle !== item.title;
 
             return (
               <Link
                 key={item.id}
-                // ✅ send the correct query param: `ep`
-                to={`/watch/${item.id}?ep=${latestEpisode}`}
+                to={link}
                 className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
               >
                 {/* Image */}
@@ -56,7 +64,7 @@ const LatestEpisodesLayout = ({
 
                   {/* Episode Tag */}
                   <div className="absolute top-2 right-2 bg-sky-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    Episode {latestEpisode}
+                    Episode {latestEpNum}
                   </div>
                 </div>
 
@@ -68,12 +76,12 @@ const LatestEpisodesLayout = ({
                   >
                     {item.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-400 mt-1 truncate">
-                    {item.alternativeTitle || item.type}
-                  </p>
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    Type: {item.type} • Duration: {item.duration}
-                  </p>
+
+                  {showAltTitle && (
+                    <p className="text-xs sm:text-sm text-gray-400 mt-1 truncate">
+                      {item.alternativeTitle}
+                    </p>
+                  )}
                 </div>
               </Link>
             );
