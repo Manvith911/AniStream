@@ -57,8 +57,8 @@ const MainLayout = ({ title, data, label, endpoint }) => {
     navigate(`/anime/${id}`);
   };
 
-  // ✅ Determine if this layout should use bigger cards
-  const isBiggerLayout = title === "Top Upcoming" || title === "Newly Added";
+  // ✅ Slightly larger cards only for "Top Upcoming" & "Newly Added"
+  const isSlightlyBigger = title === "Top Upcoming" || title === "Newly Added";
 
   return (
     <div className="main-layout mt-10 px-2 md:px-4 relative z-0 isolate w-full max-w-full overflow-hidden">
@@ -96,12 +96,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
         navigation
         spaceBetween={16}
         breakpoints={
-          isBiggerLayout
+          isSlightlyBigger
             ? {
-                0: { slidesPerView: 1.6 },
-                600: { slidesPerView: 2.5 },
-                1024: { slidesPerView: 3.5 },
-                1320: { slidesPerView: 4 },
+                0: { slidesPerView: 1.9 },
+                600: { slidesPerView: 3 },
+                1024: { slidesPerView: 4.2 },
+                1320: { slidesPerView: 5 },
               }
             : {
                 0: { slidesPerView: 2.4 },
@@ -132,12 +132,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                 onMouseLeave={handleMouseLeave}
                 onClick={() => handleCardClick(anime.id)}
               >
-                {/* ✅ Bigger cards only for "Newly Added" and "Top Upcoming" */}
+                {/* ✅ Card height adjusts depending on section */}
                 <div
                   className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05] rounded-xl
                   ${
-                    isBiggerLayout
-                      ? "pb-[125%]" // bigger & taller for newly/upcoming
+                    isSlightlyBigger
+                      ? "pb-[132%]" // a little taller, not too big
                       : title === "Trending Now"
                       ? "pb-[140%]"
                       : "pb-[145%]"
