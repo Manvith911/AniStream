@@ -7,18 +7,20 @@ import { useApi } from "../services/useApi";
 import PageNotFound from "./PageNotFound";
 import { Helmet } from "react-helmet";
 import Recommended from "../layouts/Recommended";
+import { FaThLarge, FaList } from "react-icons/fa"; // ✅ icons for layout toggle
 
 const WatchPage = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [layout, setLayout] = useState("row"); // ✅ layout switch state
+  const [layout, setLayout] = useState("row"); // "row" or "grid"
   const [animeDetails, setAnimeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
-  const ep = searchParams.get("ep");
 
+  const ep = searchParams.get("ep");
   const { data, isError } = useApi(`/episodes/${id}`);
   const episodes = data?.data;
 
+  // update URL params
   const updateParams = (newParam) => {
     setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
@@ -27,7 +29,7 @@ const WatchPage = () => {
     });
   };
 
-  // ✅ Fetch anime details
+  // Fetch anime details
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -43,7 +45,7 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
-  // ✅ Auto-select first episode if none selected
+  // Auto-select first episode if none selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -61,7 +63,6 @@ const WatchPage = () => {
 
   if (!currentEp) return <Loader className="h-screen" />;
 
-  // ✅ Episode navigation logic
   const changeEpisode = (action) => {
     const index = currentEp.episodeNumber - 1;
     if (action === "next" && episodes[index + 1]) {
@@ -74,54 +75,51 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
-  // ✅ Toggle between row and grid layout
-  const toggleLayout = () => {
-    setLayout((prev) => (prev === "row" ? "grid" : "row"));
-  };
-
   return (
-    <div className="bg-[#0b0b10] min-h-screen pt-16 text-white px-4 md:px-10">
+    <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
         <title>
           Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
         </title>
       </Helmet>
 
-      {/* ✅ Breadcrumbs */}
-      <div className="flex items-center flex-wrap gap-2 mb-5 text-sm text-gray-300">
-        <Link to="/home" className="hover:text-primary transition-colors">
-          Home
-        </Link>
+      {/* Breadcrumbs */}
+      <div className="flex items-center flex-wrap gap-2 mb-4 text-sm text-gray-300">
+        <Link to="/home" className="hover:text-primary">Home</Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
-        <Link
-          to={`/anime/${id}`}
-          className="hover:text-primary capitalize transition-colors"
-        >
+        <Link to={`/anime/${id}`} className="hover:text-primary capitalize">
           {animeDetails?.title || id.split("-").slice(0, 2).join(" ")}
         </Link>
         <span className="h-1 w-1 rounded-full bg-primary"></span>
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* ✅ Main Layout */}
+      {/* Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left - Episodes List */}
-        <div className="bg-[#18181f] rounded-xl p-4 overflow-y-auto lg:w-[22%] max-h-[75vh] shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white font-semibold text-sm tracking-wide">
-              Episodes
-            </h3>
-            {/* ✅ Layout toggle button */}
-            <button
-              onClick={toggleLayout}
-              className="text-xs text-gray-300 bg-[#222] px-2 py-1 rounded hover:bg-primary hover:text-white transition-colors"
-            >
-              {layout === "row" ? "Grid View" : "List View"}
-            </button>
+        <div className="bg-[#1a1a1f] rounded-xl p-4 overflow-y-auto lg:w-[20%] max-h-[70vh] shadow-lg">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-white font-semibold text-sm">Episodes</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLayout("row")}
+                className={`p-1 rounded ${layout === "row" ? "bg-primary text-white" : "bg-[#222]"}`}
+                title="List View"
+              >
+                <FaList size={14} />
+              </button>
+              <button
+                onClick={() => setLayout("grid")}
+                className={`p-1 rounded ${layout === "grid" ? "bg-primary text-white" : "bg-[#222]"}`}
+                title="Grid View"
+              >
+                <FaThLarge size={14} />
+              </button>
+            </div>
           </div>
 
           <ul
-            className={`grid gap-1 transition-all duration-300 ${
+            className={`grid gap-1 ${
               layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
             }`}
           >
@@ -136,75 +134,67 @@ const WatchPage = () => {
           </ul>
         </div>
 
-        {/* Right - Big Player */}
-        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-24">
+        {/* Center - Player */}
+        <div className="flex-1 lg:w-[55%] bg-[#111] rounded-xl overflow-hidden shadow-2xl h-[70vh]">
           {ep && id && (
-            <div className="flex-1 relative">
-              <Player
-                id={id}
-                episodeId={`${id}?ep=${ep}`}
-                currentEp={currentEp}
-                changeEpisode={changeEpisode}
-                hasNextEp={hasNextEp}
-                hasPrevEp={hasPrevEp}
-              />
-            </div>
+            <Player
+              id={id}
+              episodeId={`${id}?ep=${ep}`}
+              currentEp={currentEp}
+              changeEpisode={changeEpisode}
+              hasNextEp={hasNextEp}
+              hasPrevEp={hasPrevEp}
+            />
+          )}
+        </div>
+
+        {/* Right - Anime Info */}
+        <div className="bg-[#1a1a1f] rounded-xl p-5 lg:w-[25%] shadow-lg h-[70vh] overflow-y-auto">
+          {loadingDetails ? (
+            <Loader className="h-40" />
+          ) : animeDetails ? (
+            <>
+              <div className="flex flex-col items-center mb-4">
+                <img
+                  src={animeDetails.poster}
+                  alt={animeDetails.title}
+                  className="rounded-md w-36 h-auto mb-3 shadow-md"
+                />
+                <h2 className="text-lg font-semibold text-center">
+                  {animeDetails.title}
+                </h2>
+              </div>
+
+              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3 justify-center">
+                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.rating}</span>
+                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.type}</span>
+                <span className="bg-[#222] px-2 py-1 rounded">{animeDetails.duration}</span>
+              </div>
+
+              <p className="text-gray-300 text-sm mb-3 leading-relaxed text-justify">
+                {animeDetails.synopsis}
+              </p>
+
+              <div className="text-xs text-gray-400 mb-1">
+                <strong>Genres:</strong>{" "}
+                {animeDetails.genres?.join(", ")}
+              </div>
+              <div className="text-xs text-gray-400 mb-1">
+                <strong>Studio:</strong> {animeDetails.studios}
+              </div>
+              <div className="text-xs text-gray-400">
+                <strong>Status:</strong> {animeDetails.status}
+              </div>
+            </>
+          ) : (
+            <p className="text-gray-400 text-sm">No details available.</p>
           )}
         </div>
       </div>
 
-      {/* ✅ Anime Details Section */}
-      <div className="bg-[#18181f] rounded-xl p-6 shadow-xl relative z-[1] mt-8 mb-8">
-        {loadingDetails ? (
-          <Loader className="h-40" />
-        ) : animeDetails ? (
-          <div className="flex flex-col md:flex-row items-center gap-6 mb-4">
-            <img
-              src={animeDetails.poster}
-              alt={animeDetails.title}
-              className="rounded-lg w-44 h-auto shadow-md"
-            />
-            <div className="flex-1">
-              <h2 className="text-2xl font-semibold mb-3">
-                {animeDetails.title}
-              </h2>
-              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3">
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.rating}
-                </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.type}
-                </span>
-                <span className="bg-[#222] px-2 py-1 rounded">
-                  {animeDetails.duration}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm leading-relaxed mb-3 text-justify">
-                {animeDetails.synopsis}
-              </p>
-              <div className="text-sm text-gray-400 space-y-1">
-                <div>
-                  <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
-                </div>
-                <div>
-                  <strong>Studio:</strong> {animeDetails.studios}
-                </div>
-                <div>
-                  <strong>Status:</strong> {animeDetails.status}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <p className="text-gray-400 text-sm">No details available.</p>
-        )}
-      </div>
-
       {/* ✅ Recommended Section */}
       {animeDetails?.recommended && (
-        <div className="mt-10">
-          <Recommended data={animeDetails.recommended} />
-        </div>
+        <Recommended data={animeDetails.recommended} />
       )}
     </div>
   );
