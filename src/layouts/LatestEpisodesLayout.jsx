@@ -31,14 +31,18 @@ const LatestEpisodesLayout = ({
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {data &&
           data.map((item) => {
-            const latestEpisode = item.episodes?.sub || 1;
+            // ✅ Determine latest available episode (prefer sub > dub)
+            const latestEpisode =
+              item.episodes?.sub || item.episodes?.dub || 1;
+
             return (
               <Link
                 key={item.id}
-                to={`/watch/${item.id}?episode=${latestEpisode}`}
+                // ✅ send the correct query param: `ep`
+                to={`/watch/${item.id}?ep=${latestEpisode}`}
                 className="group relative rounded-xl overflow-hidden bg-[#111] hover:bg-[#181818] transition-all duration-300 shadow-md hover:shadow-xl"
               >
-                {/* Image Wrapper */}
+                {/* Image */}
                 <div className="relative w-full h-0 pb-[60%] overflow-hidden">
                   <img
                     src={item.poster}
@@ -47,7 +51,7 @@ const LatestEpisodesLayout = ({
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
 
-                  {/* Overlay gradient */}
+                  {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent opacity-95 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                   {/* Episode Tag */}
@@ -56,7 +60,7 @@ const LatestEpisodesLayout = ({
                   </div>
                 </div>
 
-                {/* Info Section */}
+                {/* Info */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-gradient-to-t from-black/70 to-transparent">
                   <h3
                     title={item.title}
