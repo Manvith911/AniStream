@@ -121,7 +121,7 @@ const WatchPage = () => {
         </div>
 
         {/* Right - Big Player */}
-        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-20">
+        <div className="flex-1 rounded-xl shadow-2xl h-[75vh] flex flex-col bg-[#101014] relative z-[5] mb-24">
           {ep && id && (
             <div className="flex-1 relative">
               <Player
@@ -138,7 +138,7 @@ const WatchPage = () => {
       </div>
 
       {/* Anime Details Section */}
-      <div className="bg-[#18181f] rounded-xl p-6 shadow-xl relative z-[1] pt-4">
+      <div className="bg-[#18181f] rounded-xl p-6 shadow-xl relative z-[1] mt-8 mb-8">
         {loadingDetails ? (
           <Loader className="h-40" />
         ) : animeDetails ? (
@@ -164,7 +164,7 @@ const WatchPage = () => {
                     {animeDetails.duration}
                   </span>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                <p className="text-gray-300 text-sm leading-relaxed mb-3 text-justify">
                   {animeDetails.synopsis}
                 </p>
                 <div className="text-sm text-gray-400 space-y-1">
