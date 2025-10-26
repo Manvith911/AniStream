@@ -1,5 +1,4 @@
-// src/pages/AuthPage.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -7,11 +6,8 @@ const AuthPage = () => {
   const { signInWithGoogle, loading, user } = useAuth();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    if (user) {
-      // if already signed in, redirect to home
-      navigate("/");
-    }
+  useEffect(() => {
+    if (user) navigate("/home");
   }, [user, navigate]);
 
   return (
@@ -39,8 +35,8 @@ const AuthPage = () => {
         </button>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          You will be redirected to Google to sign in. If you already have a Google
-          account linked, it will sign you in.
+          You will be redirected to Google to sign in. If you already have an account,
+          it will sign you in automatically.
         </p>
       </div>
     </div>
