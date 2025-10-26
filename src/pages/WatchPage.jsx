@@ -11,7 +11,7 @@ import Recommended from "../layouts/Recommended";
 const WatchPage = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [layout, setLayout] = useState("row");
+  const [layout, setLayout] = useState("row"); // ✅ layout switch state
   const [animeDetails, setAnimeDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(true);
   const ep = searchParams.get("ep");
@@ -27,7 +27,7 @@ const WatchPage = () => {
     });
   };
 
-  // Fetch anime details
+  // ✅ Fetch anime details
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -43,7 +43,7 @@ const WatchPage = () => {
     fetchDetails();
   }, [id]);
 
-  // Auto-select first episode
+  // ✅ Auto-select first episode if none selected
   useEffect(() => {
     if (!ep && Array.isArray(episodes) && episodes.length > 0) {
       const firstEp = episodes[0].id.split("ep=").pop();
@@ -61,6 +61,7 @@ const WatchPage = () => {
 
   if (!currentEp) return <Loader className="h-screen" />;
 
+  // ✅ Episode navigation logic
   const changeEpisode = (action) => {
     const index = currentEp.episodeNumber - 1;
     if (action === "next" && episodes[index + 1]) {
@@ -73,6 +74,11 @@ const WatchPage = () => {
   const hasNextEp = Boolean(episodes[currentEp.episodeNumber]);
   const hasPrevEp = Boolean(episodes[currentEp.episodeNumber - 2]);
 
+  // ✅ Toggle between row and grid layout
+  const toggleLayout = () => {
+    setLayout((prev) => (prev === "row" ? "grid" : "row"));
+  };
+
   return (
     <div className="bg-[#0b0b10] min-h-screen pt-16 text-white px-4 md:px-10">
       <Helmet>
@@ -81,7 +87,7 @@ const WatchPage = () => {
         </title>
       </Helmet>
 
-      {/* Breadcrumbs */}
+      {/* ✅ Breadcrumbs */}
       <div className="flex items-center flex-wrap gap-2 mb-5 text-sm text-gray-300">
         <Link to="/home" className="hover:text-primary transition-colors">
           Home
@@ -97,15 +103,25 @@ const WatchPage = () => {
         <h4 className="gray">Episode {currentEp?.episodeNumber}</h4>
       </div>
 
-      {/* Main Layout */}
+      {/* ✅ Main Layout */}
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left - Episodes List */}
         <div className="bg-[#18181f] rounded-xl p-4 overflow-y-auto lg:w-[22%] max-h-[75vh] shadow-lg">
-          <h3 className="text-white font-semibold mb-3 text-sm tracking-wide">
-            Episodes
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-white font-semibold text-sm tracking-wide">
+              Episodes
+            </h3>
+            {/* ✅ Layout toggle button */}
+            <button
+              onClick={toggleLayout}
+              className="text-xs text-gray-300 bg-[#222] px-2 py-1 rounded hover:bg-primary hover:text-white transition-colors"
+            >
+              {layout === "row" ? "Grid View" : "List View"}
+            </button>
+          </div>
+
           <ul
-            className={`grid gap-1 ${
+            className={`grid gap-1 transition-all duration-300 ${
               layout === "row" ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3"
             }`}
           >
@@ -137,56 +153,54 @@ const WatchPage = () => {
         </div>
       </div>
 
-      {/* Anime Details Section */}
+      {/* ✅ Anime Details Section */}
       <div className="bg-[#18181f] rounded-xl p-6 shadow-xl relative z-[1] mt-8 mb-8">
         {loadingDetails ? (
           <Loader className="h-40" />
         ) : animeDetails ? (
-          <>
-            <div className="flex flex-col md:flex-row items-center gap-6 mb-4">
-              <img
-                src={animeDetails.poster}
-                alt={animeDetails.title}
-                className="rounded-lg w-44 h-auto shadow-md"
-              />
-              <div className="flex-1">
-                <h2 className="text-2xl font-semibold mb-3">
-                  {animeDetails.title}
-                </h2>
-                <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3">
-                  <span className="bg-[#222] px-2 py-1 rounded">
-                    {animeDetails.rating}
-                  </span>
-                  <span className="bg-[#222] px-2 py-1 rounded">
-                    {animeDetails.type}
-                  </span>
-                  <span className="bg-[#222] px-2 py-1 rounded">
-                    {animeDetails.duration}
-                  </span>
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-4">
+            <img
+              src={animeDetails.poster}
+              alt={animeDetails.title}
+              className="rounded-lg w-44 h-auto shadow-md"
+            />
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold mb-3">
+                {animeDetails.title}
+              </h2>
+              <div className="flex flex-wrap text-xs text-gray-400 gap-2 mb-3">
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.rating}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.type}
+                </span>
+                <span className="bg-[#222] px-2 py-1 rounded">
+                  {animeDetails.duration}
+                </span>
+              </div>
+              <p className="text-gray-300 text-sm leading-relaxed mb-3 text-justify">
+                {animeDetails.synopsis}
+              </p>
+              <div className="text-sm text-gray-400 space-y-1">
+                <div>
+                  <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-3 text-justify">
-                  {animeDetails.synopsis}
-                </p>
-                <div className="text-sm text-gray-400 space-y-1">
-                  <div>
-                    <strong>Genres:</strong> {animeDetails.genres?.join(", ")}
-                  </div>
-                  <div>
-                    <strong>Studio:</strong> {animeDetails.studios}
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {animeDetails.status}
-                  </div>
+                <div>
+                  <strong>Studio:</strong> {animeDetails.studios}
+                </div>
+                <div>
+                  <strong>Status:</strong> {animeDetails.status}
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ) : (
           <p className="text-gray-400 text-sm">No details available.</p>
         )}
       </div>
 
-      {/* Recommended Section */}
+      {/* ✅ Recommended Section */}
       {animeDetails?.recommended && (
         <div className="mt-10">
           <Recommended data={animeDetails.recommended} />
