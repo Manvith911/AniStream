@@ -13,29 +13,33 @@ import PageNotFound from "./pages/PageNotFound";
 import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
-
-// ✅ Import from Vercel
+import ProfilePage from "./pages/ProfilePage";
+import AuthPage from "./pages/AuthPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
-  const togglesidebar = useSidebarStore((state) => state.toggleSidebar);
+  const toggleSidebar = useSidebarStore((state) => state.toggleSidebar);
   const location = useLocation();
-  const path = location.pathname === "/";
+  const isRootPath = location.pathname === "/";
 
   return (
     <>
-      {!path && <Sidebar />}
-
+      {!isRootPath && <Sidebar />}
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
         <div
-          onClick={togglesidebar}
+          onClick={toggleSidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
-        {!path && <Header />}
+
+        {!isRootPath && <Header />}
         <ScrollToTop />
+
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Root />} />
+          <Route path="/auth" element={<AuthPage />} /> {/* ✅ Auth Route */}
           <Route path="/home" element={<Home />} />
           <Route path="/anime/:id" element={<DetailPage />} />
           <Route path="/animes/:category/:query?" element={<ListPage />} />
@@ -44,39 +48,24 @@ const App = () => {
           <Route path="/characters/:id" element={<CharactersPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 404 Page */}
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
-
-      {/* ✅ Add Analytics component at root */}
       <Analytics />
     </>
   );
 };
-
-// pages
-// /
-// /home
-// /:id
-// top-rated
-// most-popular
-// most-favotite
-// completed
-// recently-added
-// recently-updated
-// top-upcoming
-// subbed-anime
-// dubbed-anime
-// movie
-// tv
-// ova
-// ona
-// special
-// events
-// /genre/:genre
-//  /watch/:id?ep=${number}
-//  /character/:id
-//  /people/:id
-// filter
 
 export default App;
