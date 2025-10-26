@@ -38,7 +38,6 @@ const ProfilePage = () => {
     fetchProfile();
   }, [user]);
 
-  // Generate a random main character avatar from AniList
   const generateAvatar = async () => {
     try {
       const query = `
@@ -59,11 +58,15 @@ const ProfilePage = () => {
         body: JSON.stringify({ query, variables }),
       });
       const json = await res.json();
-      const characters = json.data.Page.characters.nodes;
+      const characters = json.data.Page.characters.nodes.filter(
+        (c) => c.image?.large
+      );
+      if (!characters.length) return alert("No character images found.");
       const randomChar = characters[Math.floor(Math.random() * characters.length)];
       setPreviewAvatar(randomChar.image.large);
     } catch (err) {
       console.error("Avatar generation error:", err);
+      alert("Failed to generate avatar.");
     }
   };
 
@@ -76,17 +79,20 @@ const ProfilePage = () => {
           username,
           gender,
           bio,
-          generated_avatar: previewAvatar, // save selected/generated avatar
+          generated_avatar: previewAvatar,
         })
         .eq("id", user.id);
 
-      if (error) console.error("Update error:", error);
-      else {
+      if (error) {
+        console.error("Update error:", error);
+        alert("Failed to update profile.");
+      } else {
         setGeneratedAvatar(previewAvatar);
         alert("Profile updated successfully!");
       }
     } catch (err) {
       console.error("Update error:", err);
+      alert("Failed to update profile.");
     } finally {
       setUpdating(false);
     }
@@ -113,7 +119,7 @@ const ProfilePage = () => {
           className="w-28 h-28 rounded-full object-cover border-2 border-gray-300"
         />
 
-        {/* Live Preview of Generated Avatar */}
+        {/* Live Preview */}
         {previewAvatar && (
           <img
             src={previewAvatar}
@@ -129,7 +135,6 @@ const ProfilePage = () => {
           >
             Generate Character Avatar
           </button>
-
           <button
             onClick={() => setPreviewAvatar(generatedAvatar)}
             disabled={!generatedAvatar}
