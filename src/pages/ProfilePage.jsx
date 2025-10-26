@@ -16,6 +16,7 @@ const ProfilePage = () => {
   const [generatedAvatar, setGeneratedAvatar] = useState("");
   const [previewAvatar, setPreviewAvatar] = useState("");
 
+  // Fetch profile
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
@@ -38,38 +39,42 @@ const ProfilePage = () => {
     fetchProfile();
   }, [user]);
 
+  // Simpler AniList avatar generation
   const generateAvatar = async () => {
     try {
       const query = `
-        query ($perPage: Int) {
-          Page(perPage: $perPage) {
-            characters(sort: FAVOURITES_DESC, perPage: $perPage) {
+        query {
+          Page(perPage: 50, sort: FAVOURITES_DESC) {
+            characters {
               nodes {
                 name { full }
                 image { large }
               }
             }
           }
-        }`;
-      const variables = { perPage: 50 };
+        }
+      `;
       const res = await fetch(ANILIST_API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, variables }),
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ query }),
       });
+
       const json = await res.json();
-      const characters = json.data.Page.characters.nodes.filter(
-        (c) => c.image?.large
-      );
-      if (!characters.length) return alert("No character images found.");
+
+      const characters = json.data.Page.characters.nodes.filter(c => c.image?.large);
+      if (!characters.length) return alert("No characters with images found");
+
       const randomChar = characters[Math.floor(Math.random() * characters.length)];
       setPreviewAvatar(randomChar.image.large);
+
     } catch (err) {
       console.error("Avatar generation error:", err);
       alert("Failed to generate avatar.");
     }
   };
 
+  // Update profile in Supabase
   const handleUpdate = async () => {
     setUpdating(true);
     try {
@@ -119,11 +124,11 @@ const ProfilePage = () => {
           className="w-28 h-28 rounded-full object-cover border-2 border-gray-300"
         />
 
-        {/* Live Preview */}
+        {/* Generated Avatar */}
         {previewAvatar && (
           <img
             src={previewAvatar}
-            alt="Generated Avatar Preview"
+            alt="Generated Avatar"
             className="w-28 h-28 rounded-full object-cover border-2 border-emerald-500"
           />
         )}
