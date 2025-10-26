@@ -1,4 +1,3 @@
-// src/App.jsx
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Root from "./pages/Root";
@@ -17,36 +16,29 @@ import CharactersPage from "./pages/CharactersPage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
 import WatchlistPage from "./pages/WatchlistPage";
-
-// ✅ Import from Vercel
+import ProtectedRoute from "./components/ProtectedRoute";
 import { Analytics } from "@vercel/analytics/react";
 
 const App = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
   const toggleSidebar = useSidebarStore((state) => state.toggleSidebar);
   const location = useLocation();
-
-  // Hide header/sidebar on Root page (/)
   const isRootPath = location.pathname === "/";
 
   return (
     <>
-      {/* Sidebar */}
       {!isRootPath && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
-        {/* Overlay when sidebar is open */}
         <div
           onClick={toggleSidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
 
-        {/* Header */}
         {!isRootPath && <Header />}
 
         <ScrollToTop />
 
-        {/* Routes */}
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
@@ -58,17 +50,28 @@ const App = () => {
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
 
-          {/* ✅ Auth-related routes */}
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/watchlist" element={<WatchlistPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/watchlist"
+            element={
+              <ProtectedRoute>
+                <WatchlistPage />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* 404 */}
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
 
-      {/* ✅ Vercel Analytics */}
       <Analytics />
     </>
   );
