@@ -1,4 +1,3 @@
-// src/pages/ProfilePage.jsx
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "../context/AuthContext";
@@ -6,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const ProfilePage = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
+
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
@@ -22,8 +22,6 @@ const ProfilePage = () => {
     };
     fetchProfile();
   }, [user]);
-
-  if (!user) return <div className="p-8">Please login to see profile.</div>;
 
   return (
     <div className="p-8">
