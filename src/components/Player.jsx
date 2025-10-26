@@ -4,25 +4,21 @@ import { TbPlayerTrackPrevFilled, TbPlayerTrackNextFilled } from "react-icons/tb
 
 const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) => {
   const [category, setCategory] = useState("sub");
-  const [server, setServer] = useState("megaPlay"); // 🔹 Default to megaplay
-  const [resumeTime, setResumeTime] = useState(0);
+  const [server, setServer] = useState("megaPlay"); // Default to MegaPlay
 
-  // Load saved position for this episode
+  // Load last watched episode on mount
   useEffect(() => {
-    const savedProgress = JSON.parse(localStorage.getItem("playerProgress")) || {};
-    if (savedProgress[episodeId]) {
-      setResumeTime(savedProgress[episodeId]);
-    } else {
-      setResumeTime(0);
+    const lastEpisodeId = localStorage.getItem("lastEpisode");
+    if (lastEpisodeId && lastEpisodeId !== episodeId) {
+      // Trigger your parent episode change function
+      changeEpisode("goTo", lastEpisodeId); 
     }
-  }, [episodeId]);
+  }, [episodeId, changeEpisode]);
 
-  // Save current timestamp periodically
-  const saveProgress = (time) => {
-    const savedProgress = JSON.parse(localStorage.getItem("playerProgress")) || {};
-    savedProgress[episodeId] = time;
-    localStorage.setItem("playerProgress", JSON.stringify(savedProgress));
-  };
+  // Save last watched episode whenever episodeId changes
+  useEffect(() => {
+    localStorage.setItem("lastEpisode", episodeId);
+  }, [episodeId]);
 
   const changeCategory = (newType) => {
     if (newType !== category) setCategory(newType);
@@ -32,12 +28,10 @@ const Player = ({ episodeId, currentEp, changeEpisode, hasNextEp, hasPrevEp }) =
     if (newServer !== server) setServer(newServer);
   };
 
-  // Optional: simulate "resuming" by adding a `t=` query param (if supported by your player)
   const getIframeSrc = () => {
-    const baseUrl =
-      server === "vidWish" ? "https://vidwish.live" : "https://megaplay.buzz";
+    const baseUrl = server === "vidWish" ? "https://vidwish.live" : "https://megaplay.buzz";
     const epNum = episodeId.split("ep=").pop();
-    return `${baseUrl}/stream/s-2/${epNum}/${category}${resumeTime ? `?t=${resumeTime}` : ""}`;
+    return `${baseUrl}/stream/s-2/${epNum}/${category}`;
   };
 
   return (
