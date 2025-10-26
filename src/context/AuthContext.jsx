@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import { toast } from "react-toastify";
 
 const AuthContext = createContext();
 
@@ -9,57 +8,57 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load session
+  // Check initial session
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) fetchProfile(session.user.id);
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user ?? null);
       setLoading(false);
     };
     getSession();
 
     // Listen to auth changes
-    const { data: subscription } = supabase.auth.onAuthStateChange(
+    const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        setUser(session?.user || null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
+        setUser(session?.user ?? null);
+        if (session?.user) await fetchProfile(session.user.id);
+        else setProfile(null);
       }
     );
 
-    return () => subscription?.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchProfile = async (id) => {
+  // Fetch profile info
+  const fetchProfile = async (userId) => {
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", id)
+      .eq("id", userId)
       .single();
 
-    if (error) {
-      console.error("Profile fetch error:", error.message);
+    if (error && error.code === "PGRST116") {
+      // No profile found → create a blank one
+      await supabase.from("profiles").insert({
+        id: userId,
+        email: user.email,
+      });
     } else {
       setProfile(data);
     }
   };
 
-  const logout = async () => {
+  const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
-    toast.success("Logged out successfully");
   };
 
-  return (
-    <AuthContext.Provider value={{ user, profile, setProfile, loading, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = { user, profile, loading, signOut };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);
