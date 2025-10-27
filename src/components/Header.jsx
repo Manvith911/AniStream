@@ -1,4 +1,3 @@
-// src/components/Header.jsx
 import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
@@ -15,16 +14,12 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-
-  // ✅ Updated AuthContext usage
-  const { user, profile, logout } = useAuth();
+  const { user, profile, signOut, signInWithGoogle } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
@@ -53,21 +48,14 @@ const Header = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
-  const emptyInput = () => {
-    setValue("");
-    setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  };
-
   const [openDropdown, setOpenDropdown] = useState(false);
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          {/* Header container */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
-            {/* Left: Sidebar Icon + Logo */}
+            {/* Left: Sidebar + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
                 <FaBars size={25} />
@@ -75,7 +63,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Search Bar */}
+            {/* Search */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -89,7 +77,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={() => setValue("")}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -98,9 +90,8 @@ const Header = () => {
                 </button>
               </form>
 
-              {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
+                <div className="absolute top-full mt-1 left-0 w-full bg-card rounded-md shadow-lg overflow-hidden z-50">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data?.length ? (
@@ -108,30 +99,21 @@ const Header = () => {
                       {data?.data?.map((item) => (
                         <div
                           onClick={() => navigateToAnimePage(item.id)}
-                          className="flex w-full justify-start items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
                           key={item.id}
+                          className="flex w-full items-start bg-backGround hover:bg-lightBg px-3 py-4 gap-4 cursor-pointer"
                         >
-                          <div className="poster shrink-0 relative w-10 h-14">
-                            <img
-                              className="h-full w-full object-cover object-center rounded-sm"
-                              src={item.poster}
-                              alt={item.title}
-                            />
-                          </div>
+                          <img
+                            src={item.poster}
+                            alt={item.title}
+                            className="w-10 h-14 object-cover rounded-sm"
+                          />
                           <div className="info">
-                            <h4 className="title text-sm font-semibold line-clamp-2">
+                            <h4 className="text-sm font-semibold line-clamp-2">
                               {item.title}
                             </h4>
-                            <h6 className="gray text-xs line-clamp-1">
+                            <h6 className="text-xs gray line-clamp-1">
                               {item.alternativeTitle}
                             </h6>
-                            <div className="flex items-center gap-2 text-xs gray">
-                              <h6>{item.aired}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
-                              <h6>{item.type}</h6>
-                              <span className="h-1 w-1 rounded-full bg-primary" />
-                              <h6>{item.duration}</h6>
-                            </div>
                           </div>
                         </div>
                       ))}
@@ -145,19 +127,22 @@ const Header = () => {
                     </>
                   ) : (
                     <h1 className="text-center text-sm text-primary py-3">
-                      Anime not found :(
+                      No results found
                     </h1>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Right: Auth Controls */}
+            {/* Right: User section */}
             <div className="ml-auto flex items-center gap-3">
               {!user ? (
-                <Link to="/auth" className="py-1 px-3 bg-primary rounded-md text-black">
-                  Login
-                </Link>
+                <button
+                  onClick={signInWithGoogle}
+                  className="py-1 px-3 bg-primary rounded-md text-black"
+                >
+                  Login with Google
+                </button>
               ) : (
                 <div className="relative">
                   <button
@@ -168,7 +153,7 @@ const Header = () => {
                     <img
                       src={
                         profile?.avatar_url ||
-                        user.user_metadata?.avatar_url ||
+                        user?.user_metadata?.avatar_url ||
                         "/default-avatar.png"
                       }
                       alt="avatar"
@@ -195,9 +180,9 @@ const Header = () => {
                       <button
                         onClick={() => {
                           setOpenDropdown(false);
-                          logout(); // ✅ use logout from AuthContext
+                          signOut();
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-backGround text-red-400"
+                        className="w-full text-left px-4 py-2 hover:bg-backGround"
                       >
                         Logout
                       </button>
