@@ -9,7 +9,7 @@ const Logo = () => {
         alt="AnimeRealm Logo"
         className="w-6 h-6 object-contain"
       />
-      <h1 className="gradient-text text-xl">AnimeRealm</h1>
+      <h1 className="gradient-text text-xl">𝓐𝓷𝓲𝓶𝓮𝓡𝓮𝓪𝓵𝓶</h1>
     </Link>
   );
 };
