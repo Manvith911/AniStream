@@ -1,17 +1,14 @@
-// src/pages/Profile.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify";
 
 const ProfilePage = () => {
   const { user, profile, updateProfile, refreshProfile } = useAuth();
-  const [username, setUsername] = useState("");
-  const [gender, setGender] = useState("");
-  const [bio, setBio] = useState("");
+  const [username, setUsername] = useState(profile?.username || "");
+  const [gender, setGender] = useState(profile?.gender || "");
+  const [bio, setBio] = useState(profile?.bio || "");
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
 
-  // Sync state with profile data from context
   useEffect(() => {
     setUsername(profile?.username || "");
     setGender(profile?.gender || "");
@@ -19,7 +16,6 @@ const ProfilePage = () => {
   }, [profile]);
 
   const saveProfile = async () => {
-    if (!user) return;
     setSaving(true);
     const { error } = await updateProfile({
       username: username || null,
@@ -28,32 +24,25 @@ const ProfilePage = () => {
     });
     setSaving(false);
     if (error) {
-      console.error(error);
-      toast.error("Failed to save profile.");
+      alert("Failed to save profile");
     } else {
-      toast.success("Profile saved successfully!");
-      await refreshProfile(); // ✅ ensures new data is reflected in UI
+      alert("Profile saved!");
+      await refreshProfile();
     }
   };
 
-  // Fetch random character image from AniList API
   const generateRandomImage = async () => {
     setGenerating(true);
     try {
-      const fetchCharacterById = async (id) => {
-        const query = `
-          query ($id: Int) {
-            Character(id: $id) {
-              id
-              name {
-                full
-              }
-              image {
-                large
-              }
-            }
+      const query = `
+        query ($id: Int) {
+          Character(id: $id) {
+            name { full }
+            image { large }
           }
-        `;
+        }
+      `;
+      const fetchCharacter = async (id) => {
         const res = await fetch("https://graphql.anilist.co", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,12 +51,11 @@ const ProfilePage = () => {
         return res.json();
       };
 
-      // Try up to 6 random character IDs
       let found = null;
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 5; i++) {
         const randomId = Math.floor(Math.random() * 200000) + 1;
         // eslint-disable-next-line no-await-in-loop
-        const result = await fetchCharacterById(randomId);
+        const result = await fetchCharacter(randomId);
         const char = result?.data?.Character;
         if (char?.image?.large) {
           found = char;
@@ -76,22 +64,17 @@ const ProfilePage = () => {
       }
 
       if (!found) {
-        toast.error("Couldn't fetch a random character image. Try again.");
+        alert("Failed to fetch random avatar.");
         return;
       }
 
-      const avatarUrl = found.image.large;
-      const { error } = await updateProfile({ avatar_url: avatarUrl });
-      if (error) {
-        console.error(error);
-        toast.error("Failed to update avatar.");
-      } else {
-        toast.success(`Generated new avatar: ${found.name.full}`);
-        await refreshProfile(); // ✅ Refresh immediately
-      }
+      const { error } = await updateProfile({ avatar_url: found.image.large });
+      if (error) alert("Failed to update avatar");
+      else alert(`New avatar: ${found.name.full}`);
+
+      await refreshProfile();
     } catch (err) {
-      console.error("generateRandomImage error:", err);
-      toast.error("Error generating image.");
+      console.error("Avatar generation error:", err);
     } finally {
       setGenerating(false);
     }
@@ -99,8 +82,8 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="p-6 text-center text-gray-400">
-        <p>Please login to view your profile.</p>
+      <div className="p-6 text-center">
+        <p>Please log in to view your profile.</p>
       </div>
     );
   }
@@ -109,7 +92,7 @@ const ProfilePage = () => {
     <div className="max-w-3xl mx-auto p-6">
       <div className="bg-card rounded-md p-6 shadow-md">
         <div className="flex flex-col sm:flex-row gap-6 items-center">
-          {/* Avatar Section */}
+          {/* Avatar */}
           <div className="flex flex-col items-center gap-4">
             <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-primary">
               <img
@@ -120,35 +103,31 @@ const ProfilePage = () => {
             </div>
             <button
               onClick={generateRandomImage}
-              className="py-2 px-4 bg-primary rounded-md text-black font-medium"
+              className="py-2 px-4 bg-primary rounded-md text-black"
               disabled={generating}
             >
-              {generating ? "Generating..." : "Generate Image"}
+              {generating ? "Generating..." : "Generate Avatar"}
             </button>
           </div>
 
-          {/* Profile Info Section */}
-          <div className="flex-1 w-full">
+          {/* Profile Fields */}
+          <div className="flex-1">
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-primary">
-                Username
-              </label>
+              <label className="block text-sm font-medium mb-1">Username</label>
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 rounded-md bg-backGround border border-primary/30 focus:border-primary focus:outline-none"
-                placeholder="Enter your username"
+                className="w-full px-3 py-2 rounded-md bg-backGround border"
+                placeholder="Your username"
               />
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-primary">
-                Gender
-              </label>
+              <label className="block text-sm font-medium mb-1">Gender</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full px-3 py-2 rounded-md bg-backGround border border-primary/30 focus:border-primary focus:outline-none"
+                className="w-full px-3 py-2 rounded-md bg-backGround border"
               >
                 <option value="">Select gender</option>
                 <option value="male">Male</option>
@@ -160,35 +139,29 @@ const ProfilePage = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-primary">
-                Bio
-              </label>
+              <label className="block text-sm font-medium mb-1">Bio</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 rounded-md bg-backGround border border-primary/30 focus:border-primary focus:outline-none"
-                placeholder="Tell the world about yourself..."
+                className="w-full px-3 py-2 rounded-md bg-backGround border"
+                placeholder="Write something about yourself..."
               />
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={saveProfile}
-                disabled={saving}
-                className="py-2 px-4 bg-primary text-black rounded-md font-medium"
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              className="py-2 px-4 bg-primary text-black rounded-md"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
           </div>
         </div>
 
-        <div className="mt-6 text-sm text-gray-400">
-          <p>
-            Email: <strong>{profile?.email || user?.email}</strong>
-          </p>
-          <p>Profile ID: {user?.id}</p>
+        <div className="mt-6 text-sm text-muted">
+          <p>Email: <strong>{profile?.email || user?.email}</strong></p>
+          <p>User ID: {user?.id}</p>
         </div>
       </div>
     </div>
