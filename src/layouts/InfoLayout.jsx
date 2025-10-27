@@ -51,15 +51,15 @@ const InfoLayout = ({ data, showBigPoster }) => {
         <img
           src={data.poster}
           alt={data.title}
-          className="w-full h-full object-cover opacity-20 blur-sm scale-105"
+          className="w-full h-full object-cover opacity-40 blur-[2px] scale-105"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70"></div>
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 max-w-[1150px] mx-auto px-4 md:px-8 pt-6 md:pt-10 pb-12 md:pb-16 flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
-
+      <div className="relative z-10 max-w-[1150px] mx-auto px-4 md:px-8 pt-3 md:pt-6 pb-12 md:pb-14 flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+        
         {/* Poster */}
         <div className="flex justify-center md:w-[30%]">
           <div
@@ -92,7 +92,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
 
           {/* Titles */}
           <div>
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
               {data.title}
             </h1>
             {data.alternativeTitle && (
@@ -129,11 +129,11 @@ const InfoLayout = ({ data, showBigPoster }) => {
           )}
 
           {/* Genres */}
-          {data.genres && <div className="flex flex-wrap gap-2 mt-4">{renderTags(data.genres)}</div>}
+          {data.genres && <div className="flex flex-wrap gap-2 mt-3">{renderTags(data.genres)}</div>}
 
           {/* Synopsis */}
           {data.synopsis && (
-            <div className="mt-4">
+            <div className="mt-3">
               <p
                 className={`text-gray-300 leading-relaxed text-sm md:text-base ${
                   showFull ? "" : "line-clamp-3"
@@ -143,7 +143,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
               </p>
               <button
                 onClick={toggleSynopsis}
-                className="mt-2 text-primary font-bold hover:underline"
+                className="mt-1 text-primary font-bold hover:underline"
               >
                 {showFull ? "Show Less" : "Read More"}
               </button>
@@ -151,7 +151,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
           )}
 
           {/* Status & Aired */}
-          <div className="mt-4 flex flex-wrap gap-6 text-gray-400 text-sm">
+          <div className="mt-3 flex flex-wrap gap-6 text-gray-400 text-sm">
             <div>
               Status: <span className="text-white font-medium">{data.status}</span>
             </div>
@@ -169,7 +169,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
 
           {/* Studios */}
           {data.studios && (
-            <div className="mt-3">
+            <div className="mt-2">
               <span className="text-gray-400">Studio:</span>{" "}
               <Link
                 to={`/producer/${data.studios.toLowerCase().replace(" ", "-")}`}
@@ -182,7 +182,7 @@ const InfoLayout = ({ data, showBigPoster }) => {
 
           {/* Producers */}
           {data.producers?.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-3">
               <h4 className="font-bold mb-2 text-gray-200">Producers</h4>
               <div className="flex flex-wrap gap-2">{renderProducers(data.producers)}</div>
             </div>
