@@ -15,15 +15,15 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+
+  // ✅ Updated AuthContext usage
+  const { user, profile, logout } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
@@ -50,17 +50,13 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   };
 
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -107,7 +103,7 @@ const Header = () => {
                 <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
-                  ) : data && data?.data.length ? (
+                  ) : data && data?.data?.length ? (
                     <>
                       {data?.data?.map((item) => (
                         <div
@@ -170,7 +166,11 @@ const Header = () => {
                     title={profile?.username || user?.email}
                   >
                     <img
-                      src={profile?.avatar_url || user.user_metadata?.avatar_url || "/default-avatar.png"}
+                      src={
+                        profile?.avatar_url ||
+                        user.user_metadata?.avatar_url ||
+                        "/default-avatar.png"
+                      }
                       alt="avatar"
                       className="w-full h-full object-cover"
                     />
@@ -195,9 +195,9 @@ const Header = () => {
                       <button
                         onClick={() => {
                           setOpenDropdown(false);
-                          signOut();
+                          logout(); // ✅ use logout from AuthContext
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-backGround"
+                        className="w-full text-left px-4 py-2 hover:bg-backGround text-red-400"
                       >
                         Logout
                       </button>
