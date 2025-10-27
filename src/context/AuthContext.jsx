@@ -1,66 +1,142 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../services/supabaseClient";
+// src/context/AuthContext.jsx
+import React, { useContext, useState, useEffect, createContext } from "react";
+import { supabase } from "../supabaseClient";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load user session on mount
   useEffect(() => {
-    const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) console.error("Session error:", error);
+    const loadSession = async () => {
+      const { data } = await supabase.auth.getSession();
       const currentUser = data?.session?.user || null;
       setUser(currentUser);
-      if (currentUser) fetchProfile(currentUser.id);
+
+      if (currentUser) {
+        await fetchProfile(currentUser.id);
+      } else {
+        setProfile(null);
+      }
+
       setLoading(false);
     };
 
-    getSession();
+    loadSession();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth state changes (sign in / sign out)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user || null;
       setUser(currentUser);
-      if (currentUser) fetchProfile(currentUser.id);
-      else setProfile(null);
+      if (currentUser) {
+        await fetchProfile(currentUser.id);
+      } else {
+        setProfile(null);
+      }
     });
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
+  // Fetch user profile from Supabase
   const fetchProfile = async (id) => {
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", id).single();
-    if (error) {
-      console.error("Error fetching profile:", error.message);
-      return;
+    if (!id) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error loading profile:", error);
+    } else {
+      setProfile(data);
     }
-    setProfile(data);
   };
 
-  const loginWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
+  // Refresh profile after update or avatar change
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
+  };
+
+  // Update profile data
+  const updateProfile = async (updates) => {
+    if (!user) return { error: new Error("No user logged in") };
+    const { error } = await supabase
+      .from("profiles")
+      .update({ ...updates, updated_at: new Date() })
+      .eq("id", user.id);
+    if (!error) await refreshProfile();
+    return { error };
+  };
+
+  // Sign in
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
-    if (error) console.error("Google login error:", error.message);
+    if (!error && data?.user) {
+      setUser(data.user);
+      await fetchProfile(data.user.id);
+    }
+    return { data, error };
   };
 
-  const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error("Logout error:", error.message);
+  // Sign up
+  const signUp = async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (!error && data?.user) {
+      await supabase.from("profiles").insert([
+        {
+          id: data.user.id,
+          email,
+          username: "",
+          gender: "",
+          bio: "",
+          avatar_url: null,
+        },
+      ]);
+      await fetchProfile(data.user.id);
+    }
+    return { data, error };
+  };
+
+  // Sign out
+  const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
   };
 
+  const value = {
+    user,
+    profile,
+    signIn,
+    signUp,
+    signOut,
+    updateProfile,
+    refreshProfile,
+    loading,
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, setProfile, loginWithGoogle, logout, loading }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => useContext(AuthContext);
+}
