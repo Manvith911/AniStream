@@ -1,142 +1,171 @@
 // src/context/AuthContext.jsx
-import React, { useContext, useState, useEffect, createContext } from "react";
-import { supabase } from "../supabaseClient";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../services/supabaseClient";
 
 const AuthContext = createContext();
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null); // auth user
+  const [profile, setProfile] = useState(null); // profiles table row
   const [loading, setLoading] = useState(true);
 
-  // Load user session on mount
-  useEffect(() => {
-    const loadSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      const currentUser = data?.session?.user || null;
-      setUser(currentUser);
+  // Insert/upsert profile row when a new user signs in
+  const upsertProfile = async (user) => {
+    if (!user) return;
 
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
-      } else {
-        setProfile(null);
-      }
+    const { id, email, user_metadata } = user;
 
-      setLoading(false);
+    // pick avatar from provider metadata if exists
+    const avatar = user_metadata?.avatar_url || user_metadata?.picture || null;
+
+    const payload = {
+      id,
+      email: email ?? null,
+      avatar_url: avatar,
+      username: null,
+      gender: null,
+      bio: null,
     };
 
-    loadSession();
-
-    // Listen for auth state changes (sign in / sign out)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const currentUser = session?.user || null;
-      setUser(currentUser);
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
-      } else {
-        setProfile(null);
-      }
+    // use upsert to create if not exist
+    const { error } = await supabase.from("profiles").upsert(payload, {
+      onConflict: "id",
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    if (error) {
+      console.error("Error upserting profile:", error);
+    } else {
+      await fetchProfile(id);
+    }
+  };
 
-  // Fetch user profile from Supabase
-  const fetchProfile = async (id) => {
-    if (!id) return;
+  const fetchProfile = async (uid) => {
+    if (!uid) return;
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", id)
+      .eq("id", uid)
       .single();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error loading profile:", error);
+    if (error) {
+      console.warn("No profile found:", error);
+      setProfile(null);
     } else {
       setProfile(data);
     }
   };
 
-  // Refresh profile after update or avatar change
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      setLoading(true);
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      setSession(currentSession ?? null);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        await upsertProfile(currentSession.user);
+      }
+
+      setLoading(false);
+    };
+
+    init();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        setSession(currentSession ?? null);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          await upsertProfile(currentSession.user);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      listener?.subscription?.unsubscribe?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Only fetch profile when user changes
+  useEffect(() => {
+    if (user) {
+      fetchProfile(user.id);
+    }
+  }, [user]);
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          // redirectTo: window.location.origin + "/",
+        },
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("signInWithGoogle:", err);
+      throw err;
+    }
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error("signOut error", error);
+    setUser(null);
+    setProfile(null);
+    setSession(null);
+  };
+
   const refreshProfile = async () => {
-    if (user?.id) {
+    if (user) {
       await fetchProfile(user.id);
     }
   };
 
-  // Update profile data
-  const updateProfile = async (updates) => {
-    if (!user) return { error: new Error("No user logged in") };
+  const updateProfile = async (patch) => {
+    // patch is an object with fields to update in profiles table
+    if (!user) return { error: "Not authenticated" };
     const { error } = await supabase
       .from("profiles")
-      .update({ ...updates, updated_at: new Date() })
+      .update({ ...patch, updated_at: new Date().toISOString() })
       .eq("id", user.id);
-    if (!error) await refreshProfile();
-    return { error };
-  };
 
-  // Sign in
-  const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (!error && data?.user) {
-      setUser(data.user);
-      await fetchProfile(data.user.id);
+    if (error) {
+      console.error("updateProfile error", error);
+      return { error };
     }
-    return { data, error };
-  };
-
-  // Sign up
-  const signUp = async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (!error && data?.user) {
-      await supabase.from("profiles").insert([
-        {
-          id: data.user.id,
-          email,
-          username: "",
-          gender: "",
-          bio: "",
-          avatar_url: null,
-        },
-      ]);
-      await fetchProfile(data.user.id);
-    }
-    return { data, error };
-  };
-
-  // Sign out
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-  };
-
-  const value = {
-    user,
-    profile,
-    signIn,
-    signUp,
-    signOut,
-    updateProfile,
-    refreshProfile,
-    loading,
+    await refreshProfile();
+    return { error: null };
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider
+      value={{
+        session,
+        user,
+        profile,
+        loading,
+        signInWithGoogle,
+        signOut,
+        updateProfile,
+        refreshProfile,
+      }}
+    >
+      {children}
     </AuthContext.Provider>
   );
-}
+};
+
+export const useAuth = () => useContext(AuthContext);
