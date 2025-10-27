@@ -52,7 +52,6 @@ const App = () => {
           {/* ✅ New routes */}
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/watchlist" element={<WatchlistPage />} />
 
           <Route path="*" element={<PageNotFound />} />
         </Routes>
