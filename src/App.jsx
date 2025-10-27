@@ -15,7 +15,6 @@ import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 import AuthPage from "./pages/Auth";         // ✅ Add this
 import ProfilePage from "./pages/Profile";   // ✅ Add this
-import WatchlistPage from "./pages/Watchlist"; // optional future
 
 // ✅ Vercel analytics
 import { Analytics } from "@vercel/analytics/react";
