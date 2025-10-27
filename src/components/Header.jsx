@@ -1,13 +1,11 @@
-// src/components/Header.jsx
 import { useRef, useState } from "react";
 import { FaArrowCircleRight, FaBars, FaSearch } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
@@ -15,7 +13,6 @@ const Header = () => {
   const [debouncedValue, setDebouncedValue] = useState("");
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
 
   const changeInput = (e) => {
     const newValue = e.target.value;
@@ -35,7 +32,7 @@ const Header = () => {
   );
 
   const handleSubmit = (e) => {
-    e?.preventDefault();
+    e.preventDefault();
     if (value.trim().length > 0) {
       navigate(`/search?keyword=${value}`);
       resetSearch();
@@ -62,8 +59,6 @@ const Header = () => {
       clearTimeout(timeoutRef.current);
     }
   };
-
-  const [openDropdown, setOpenDropdown] = useState(false);
 
   return (
     <div className="relative z-[100]">
@@ -93,7 +88,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -155,57 +154,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            {/* Right: Auth Controls */}
-            <div className="ml-auto flex items-center gap-3">
-              {!user ? (
-                <Link to="/auth" className="py-1 px-3 bg-primary rounded-md text-black">
-                  Login
-                </Link>
-              ) : (
-                <div className="relative">
-                  <button
-                    onClick={() => setOpenDropdown((s) => !s)}
-                    className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary"
-                    title={profile?.username || user?.email}
-                  >
-                    <img
-                      src={profile?.avatar_url || user.user_metadata?.avatar_url || "/default-avatar.png"}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-
-                  {openDropdown && (
-                    <div className="absolute right-0 mt-2 w-44 bg-card rounded-md shadow-lg overflow-hidden z-50">
-                      <Link
-                        to="/profile"
-                        onClick={() => setOpenDropdown(false)}
-                        className="block px-4 py-2 hover:bg-backGround"
-                      >
-                        Profile
-                      </Link>
-                      <Link
-                        to="/watchlist"
-                        onClick={() => setOpenDropdown(false)}
-                        className="block px-4 py-2 hover:bg-backGround"
-                      >
-                        Watchlist
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setOpenDropdown(false);
-                          signOut();
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-backGround"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -213,4 +161,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 
