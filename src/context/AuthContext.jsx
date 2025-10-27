@@ -1,168 +1,53 @@
-// src/context/AuthContext.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = useState(null);
-  const [user, setUser] = useState(null); // auth user
-  const [profile, setProfile] = useState(null); // profiles table row
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Insert/upsert profile row when a new user signs in
-  const upsertProfile = async (user) => {
-    if (!user) return;
-
-    const { id, email, user_metadata } = user;
-
-    // pick avatar from provider metadata if exists
-    const avatar = user_metadata?.avatar_url || user_metadata?.picture || null;
-
-    const payload = {
-      id,
-      email: email ?? null,
-      avatar_url: avatar,
-      username: null,
-      gender: null,
-      bio: null,
-    };
-
-    // use upsert to create if not exist
-    const { error } = await supabase.from("profiles").upsert(payload, {
-      onConflict: "id",
-    });
-
-    if (error) {
-      console.error("Error upserting profile:", error);
-    } else {
-      await fetchProfile(id);
-    }
-  };
-
-  const fetchProfile = async (uid) => {
-    if (!uid) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", uid)
-      .single();
-
-    if (error) {
-      console.warn("No profile found:", error);
-      setProfile(null);
-    } else {
-      setProfile(data);
-    }
-  };
-
+  // ✅ Listen to Supabase auth state
   useEffect(() => {
-    let mounted = true;
-    const init = async () => {
-      setLoading(true);
-      const {
-        data: { session: currentSession },
-      } = await supabase.auth.getSession();
-
-      if (!mounted) return;
-
-      setSession(currentSession ?? null);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        await upsertProfile(currentSession.user);
-      }
-
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) console.error("Error getting session:", error);
+      setUser(data?.session?.user || null);
       setLoading(false);
     };
 
-    init();
+    getSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        setSession(currentSession ?? null);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          await upsertProfile(currentSession.user);
-        } else {
-          setProfile(null);
-        }
+      async (_event, session) => {
+        setUser(session?.user || null);
       }
     );
 
     return () => {
-      mounted = false;
-      listener?.subscription?.unsubscribe?.();
+      listener.subscription.unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Only fetch profile when user changes
-  useEffect(() => {
-    if (user) {
-      fetchProfile(user.id);
-    }
-  }, [user]);
-
-  const signInWithGoogle = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          // redirectTo: window.location.origin + "/",
-        },
-      });
-      if (error) throw error;
-    } catch (err) {
-      console.error("signInWithGoogle:", err);
-      throw err;
-    }
+  // ✅ Login with Google
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/home` },
+    });
+    if (error) console.error("Google sign-in error:", error.message);
   };
 
-  const signOut = async () => {
+  // ✅ Logout
+  const logout = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) console.error("signOut error", error);
-    setUser(null);
-    setProfile(null);
-    setSession(null);
+    if (error) console.error("Logout error:", error.message);
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
-    }
-  };
-
-  const updateProfile = async (patch) => {
-    // patch is an object with fields to update in profiles table
-    if (!user) return { error: "Not authenticated" };
-    const { error } = await supabase
-      .from("profiles")
-      .update({ ...patch, updated_at: new Date().toISOString() })
-      .eq("id", user.id);
-
-    if (error) {
-      console.error("updateProfile error", error);
-      return { error };
-    }
-    await refreshProfile();
-    return { error: null };
-  };
-
+  // ✅ Don’t block the app UI
+  const value = { user, loginWithGoogle, logout, loading };
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        profile,
-        loading,
-        signInWithGoogle,
-        signOut,
-        updateProfile,
-        refreshProfile,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
