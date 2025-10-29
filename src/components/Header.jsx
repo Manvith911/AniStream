@@ -7,8 +7,6 @@ import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
 import { useAuth } from "../services/useAuth"; // 👈 NEW IMPORT
-import { motion, AnimatePresence } from "framer-motion"; // For dropdown animation (optional)
-
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
