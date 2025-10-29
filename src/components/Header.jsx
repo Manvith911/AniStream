@@ -6,7 +6,7 @@ import { useApi } from "../services/useApi";
 import Logo from "./Logo";
 import useSidebarStore from "../store/sidebarStore";
 import Loader from "./Loader";
-import { useAuth } from "../services/useAuth"; // 👈 NEW IMPORT
+
 const Header = () => {
   const sidebarHandler = useSidebarStore((state) => state.toggleSidebar);
   const [value, setValue] = useState("");
@@ -14,14 +14,14 @@ const Header = () => {
   const timeoutRef = useRef(null);
   const navigate = useNavigate();
 
-  // 🧩 Auth Hook
-  const { user, signInWithGoogle, signOut } = useAuth();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const changeInput = (e) => {
     const newValue = e.target.value;
     setValue(newValue);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     timeoutRef.current = setTimeout(() => {
       setDebouncedValue(newValue);
     }, 500);
@@ -47,20 +47,25 @@ const Header = () => {
   const resetSearch = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   const emptyInput = () => {
     setValue("");
     setDebouncedValue("");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
 
   return (
     <div className="relative z-[100]">
       <div className="fixed bg-card w-full py-2 shadow-md">
         <div className="flex flex-col px-4 sm:px-6 md:px-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          {/* Header container */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
             {/* Left: Sidebar Icon + Logo */}
             <div className="flex items-center gap-3">
               <div className="cursor-pointer" onClick={sidebarHandler}>
@@ -69,7 +74,7 @@ const Header = () => {
               <Logo />
             </div>
 
-            {/* Center: Search Bar */}
+            {/* Search Bar */}
             <div className="relative w-full sm:ml-6 sm:max-w-[400px]">
               <form
                 onSubmit={handleSubmit}
@@ -83,7 +88,11 @@ const Header = () => {
                   className="bg-transparent flex-1 text-black text-sm focus:outline-none"
                 />
                 {value.length > 1 && (
-                  <button onClick={emptyInput} type="reset" className="text-black">
+                  <button
+                    onClick={emptyInput}
+                    type="reset"
+                    className="text-black"
+                  >
                     <FaXmark />
                   </button>
                 )}
@@ -94,7 +103,7 @@ const Header = () => {
 
               {/* Suggestions Dropdown */}
               {debouncedValue.length > 2 && (
-                <div className="absolute top-full mt-1 left-0 w-full bg-card rounded-md shadow-lg z-50">
+                <div className="absolute top-full mt-1 left-0 w-full max-w-full bg-card z-50 rounded-md overflow-hidden shadow-lg">
                   {isLoading ? (
                     <Loader />
                   ) : data && data?.data.length ? (
@@ -107,7 +116,7 @@ const Header = () => {
                         >
                           <div className="poster shrink-0 relative w-10 h-14">
                             <img
-                              className="h-full w-full object-cover rounded-sm"
+                              className="h-full w-full object-cover object-center rounded-sm"
                               src={item.poster}
                               alt={item.title}
                             />
@@ -145,66 +154,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            {/* Right: Auth / Profile */}
-            <div className="relative flex items-center justify-end">
-              {!user ? (
-                <button
-                  onClick={signInWithGoogle}
-                  className="bg-primary text-black px-4 py-1 rounded-md font-semibold hover:bg-opacity-80 transition"
-                >
-                  Login
-                </button>
-              ) : (
-                <div className="relative">
-                  <img
-                    src={user.user_metadata?.avatar_url}
-                    alt="profile"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-primary"
-                  />
-
-                  <AnimatePresence>
-                    {dropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="absolute right-0 mt-2 w-40 bg-card shadow-lg rounded-md overflow-hidden z-50"
-                      >
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/profile");
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-lightBg"
-                        >
-                          Profile
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            navigate("/watchlist");
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-lightBg"
-                        >
-                          Watchlist
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            signOut();
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-lightBg text-red-500"
-                        >
-                          Logout
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -212,4 +161,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 
