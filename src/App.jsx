@@ -14,6 +14,11 @@ import PeopleInfoPage from "./pages/PeopleInfoPage";
 import CharacterInfoPage from "./pages/CharacterInfoPage";
 import CharactersPage from "./pages/CharactersPage";
 
+// ✅ Supabase Auth and new pages
+import AuthCallback from "./pages/AuthCallback";
+import ProfilePage from "./pages/ProfilePage";
+import WatchlistPage from "./pages/WatchlistPage";
+
 // ✅ Import from Vercel
 import { Analytics } from "@vercel/analytics/react";
 
@@ -25,15 +30,22 @@ const App = () => {
 
   return (
     <>
+      {/* Sidebar (hidden on root page) */}
       {!path && <Sidebar />}
 
       <main className={`${isSidebarOpen ? "bg-active" : ""} opacityWrapper`}>
+        {/* Background overlay when sidebar is open */}
         <div
           onClick={togglesidebar}
           className={`${isSidebarOpen ? "active" : ""} opacityBg`}
         ></div>
+
+        {/* Header (hidden on root page) */}
         {!path && <Header />}
+
         <ScrollToTop />
+
+        {/* ✅ Routes */}
         <Routes>
           <Route path="/" element={<Root />} />
           <Route path="/home" element={<Home />} />
@@ -44,39 +56,23 @@ const App = () => {
           <Route path="/characters/:id" element={<CharactersPage />} />
           <Route path="/people/:id" element={<PeopleInfoPage />} />
           <Route path="/character/:id" element={<CharacterInfoPage />} />
+
+          {/* ✅ Supabase Auth Callback */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
+
+          {/* ✅ User Pages */}
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/watchlist" element={<WatchlistPage />} />
+
+          {/* 404 Fallback */}
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
 
-      {/* ✅ Add Analytics component at root */}
+      {/* ✅ Add Vercel Analytics at root */}
       <Analytics />
     </>
   );
 };
 
-// pages
-// /
-// /home
-// /:id
-// top-rated
-// most-popular
-// most-favotite
-// completed
-// recently-added
-// recently-updated
-// top-upcoming
-// subbed-anime
-// dubbed-anime
-// movie
-// tv
-// ova
-// ona
-// special
-// events
-// /genre/:genre
-//  /watch/:id?ep=${number}
-//  /character/:id
-//  /people/:id
-// filter
-
-export default App; 
+export default App;
