@@ -35,7 +35,7 @@ const Top10Layout = () => {
       </div>
 
       {/* Box containing Top 10 list */}
-      <div className="box bg-lightbg px-2 sm:px-4 py-3 rounded-md overflow-y-auto max-h-[600px]">
+      <div className="box bg-lightbg px-2 sm:px-4 py-3 rounded-md">
         {topTen[selectedTab]?.length ? (
           topTen[selectedTab].map((item) => (
             <div
