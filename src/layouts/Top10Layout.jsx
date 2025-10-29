@@ -9,42 +9,56 @@ const Top10Layout = () => {
   const topTen = useTopTenStore((state) => state.topTen);
 
   const handleTabChange = (name) => {
-    selectedTab !== name ? setSelectedTab(name) : null;
+    if (selectedTab !== name) setSelectedTab(name);
   };
 
   return (
-    <div className="mx-2 mt-14">
-      <div className="infor flex mb-2 justify-between">
+    <div className="mx-2 mt-14 overflow-x-hidden">
+      {/* Header with Tabs */}
+      <div className="infor flex mb-2 justify-between items-center flex-wrap gap-2">
         <Heading className="ml-0">Top 10</Heading>
-        <div className="buttons flex bg-lightbg rounded-md">
+        <div className="buttons flex bg-lightbg rounded-md overflow-hidden">
           {tabs.map((tab) => (
             <button
               key={tab.name}
               onClick={() => handleTabChange(tab.name)}
               className={`${
                 selectedTab === tab.name
-                  ? "bg-primary  text-black"
+                  ? "bg-primary text-black"
                   : "hover:text-primary"
-              } px-4 py-1.5 rounded-md `}
+              } px-4 py-1.5 rounded-md capitalize transition-colors duration-200`}
             >
               {tab.name}
             </button>
           ))}
         </div>
       </div>
-      <div className="box bg-lightbg px-2 sm:px-4 py-2">
-        {topTen[selectedTab]?.map((item) => (
-          <div key={item.id} className="flex items-center gap-2 sm:gap-5">
-            <h1
-              className={`rank text-base sm:text-2xl font-extrabold ${
-                item.rank <= 3 ? " border-primary border-b-2" : ""
-              }`}
+
+      {/* Box containing Top 10 list */}
+      <div className="box bg-lightbg px-2 sm:px-4 py-3 rounded-md overflow-y-auto max-h-[600px]">
+        {topTen[selectedTab]?.length ? (
+          topTen[selectedTab].map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-3 sm:gap-5 py-2 flex-wrap sm:flex-nowrap w-full border-b border-gray-700/40 last:border-none"
             >
-              {item.rank < 10 ? `0${item.rank}` : item.rank}
-            </h1>
-            <MiniPoster item={item} />
-          </div>
-        ))}
+              <h1
+                className={`rank text-base sm:text-2xl font-extrabold shrink-0 ${
+                  item.rank <= 3 ? "border-primary border-b-2" : ""
+                }`}
+              >
+                {item.rank < 10 ? `0${item.rank}` : item.rank}
+              </h1>
+              <div className="flex-grow min-w-0">
+                <MiniPoster item={item} />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400 text-sm sm:text-base py-4 text-center">
+            No items available.
+          </p>
+        )}
       </div>
     </div>
   );
