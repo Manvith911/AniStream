@@ -77,9 +77,11 @@ const Home = () => {
         <Loader className="h-[100dvh]" />
       ) : (
         <>
+          {/* Hero Section */}
           <HeroBanner slides={homeData?.spotlight} />
 
           <div className="xl:mx-10 mt-6">
+            {/* Trending Section */}
             <MainLayout
               title="Trending Now"
               data={homeData?.trending}
@@ -87,6 +89,7 @@ const Home = () => {
               label="Trending"
             />
 
+            {/* Dynamic Sections */}
             <div className="grid grid-cols-12 gap-6 mx-2 my-10">
               <DynamicLayout
                 title="Top Airing"
@@ -110,7 +113,9 @@ const Home = () => {
               />
             </div>
 
-            <div className="grid grid-cols-12 gap-8 my-16 px-2">
+            {/* Latest Episodes + Sidebar */}
+            <div className="grid grid-cols-12 gap-8 my-16 px-2 items-start">
+              {/* Left Column */}
               <div className="col-span-12 xl:col-span-9 space-y-10 overflow-hidden">
                 {isLatestLoading ? (
                   <Loader className="h-40" />
@@ -125,15 +130,14 @@ const Home = () => {
                       title="Latest Episodes"
                       viewMoreUrl="/animes/recently-updated"
                       data={
-                        (latestEpisodes?.data?.response || homeData?.latestEpisode)?.slice(
-                          0,
-                          12
-                        )
+                        (latestEpisodes?.data?.response ||
+                          homeData?.latestEpisode)?.slice(0, 12)
                       }
                     />
                   </div>
                 )}
 
+                {/* Newly Added */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Newly Added"
@@ -143,6 +147,7 @@ const Home = () => {
                   />
                 </div>
 
+                {/* Top Upcoming */}
                 <div className="w-full overflow-hidden">
                   <MainLayout
                     title="Top Upcoming"
@@ -153,6 +158,7 @@ const Home = () => {
                 </div>
               </div>
 
+              {/* Right Sidebar */}
               <aside className="col-span-12 xl:col-span-3 space-y-6 z-[40]">
                 <GenresLayout />
                 <Top10Layout />
