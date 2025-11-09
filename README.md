@@ -72,4 +72,11 @@ Once deployed, you'll get your live site URL (for example):
 
 ---
 
+⚠️ Important Configuration
+Don't forget to update the following files with your API endpoints and settings:
+
+config file — Update API base URL
+MainLayout file — Update const res = await fetch(`<YOURHOSTED.vercel.app/api/anime/${id}`); in the 28th line of the file
+WatchPage file — Update const res = await fetch(`<YOURHOSTED.vercel.app/api/anime/${id}`); in the 36th line of the WatchPage file
+
 ⭐ **If you like this project, please give it a star on GitHub!**
