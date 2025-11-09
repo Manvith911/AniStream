@@ -50,25 +50,26 @@ npm install
 
 # 4. Start the development server
 npm run dev
+```
 
-Once the server starts, open your browser and go to:
-👉 http://localhost:5173
+Once the server starts, open your browser and go to:  
+👉 **http://localhost:5173**  
+*(or the port shown in your terminal)*
 
-(or the port shown in your terminal)
+---
 
-🌐 Deployment (Vercel)
+## 🌐 Deployment (Vercel)
 
-Easily deploy AniStream to Vercel
-:
+Easily deploy AniStream to Vercel:
 
-Go to https://vercel.com
- and sign in with your GitHub account.
+1. Go to [https://vercel.com](https://vercel.com) and sign in with your GitHub account.
+2. Click **"New Project"** → **"Import Git Repository."**
+3. Select your **AniStream** repository.
+4. Click **Deploy** — Vercel automatically detects your React + Vite setup.
 
-Click “New Project” → “Import Git Repository.”
+Once deployed, you'll get your live site URL (for example):  
+👉 **https://anistream.vercel.app**
 
-Select your AniStream repository.
+---
 
-Click Deploy — Vercel automatically detects your React + Vite setup.
-
-Once deployed, you’ll get your live site URL (for example):
-👉 https://anistream.vercel.app
+⭐ **If you like this project, please give it a star on GitHub!**
