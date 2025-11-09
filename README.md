@@ -18,7 +18,7 @@
 
 ## Demo
 
-Check out a live demo here: [Watanuki Live Demo](https://watanuki.vercel.app) (Add the link to your deployed app)
+Check out a live demo here: [AniStream Live Demo]() (Add the link to your deployed app)
 
 ---
 
@@ -27,7 +27,7 @@ Check out a live demo here: [Watanuki Live Demo](https://watanuki.vercel.app) (A
 - **Frontend**: React
 - **Styling**: Tailwind CSS
 - **State Management**: React Context API / Redux (mention whichever you're using)
-- **API**: Integration with [Anime APIs](https://github.com/yahyaMomin/hianime-API) or other anime databases (if applicable)
+- **API**: Integration with [Anime APIs]((https://github.com/Manvith911/AniStream-Backend)) or other anime databases (if applicable)
 
 ---
 
@@ -35,4 +35,4 @@ Check out a live demo here: [Watanuki Live Demo](https://watanuki.vercel.app) (A
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yahyamomin/watanuki.git
+   git clone https://github.com/Manvith911/AniStream.git
