@@ -33,7 +33,7 @@ const WatchPage = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const res = await fetch(`https://www.animerealm.in/api/anime/${id}`);
+        const res = await fetch(`https://www.AniStream.in/api/anime/${id}`);
         const json = await res.json();
         if (json.success) setAnimeDetails(json.data);
       } catch (err) {
@@ -79,7 +79,7 @@ const WatchPage = () => {
     <div className="bg-[#0f0f13] min-h-screen pt-16 text-white px-3 md:px-8">
       <Helmet>
         <title>
-          Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AnimeRealm
+          Watch {animeDetails?.title || id.split("-").slice(0, 2).join(" ")} Online - AniStream
         </title>
       </Helmet>
 
