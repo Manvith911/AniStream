@@ -6,6 +6,7 @@ import "swiper/css/navigation";
 import { Link, useNavigate } from "react-router-dom";
 import Heading from "../components/Heading";
 import Loader from "../components/Loader";
+import config from "../config/config.js"; // ✅ Import config
 
 const MainLayout = ({ title, data, label, endpoint }) => {
   const [hoveredId, setHoveredId] = useState(null);
@@ -21,11 +22,12 @@ const MainLayout = ({ title, data, label, endpoint }) => {
       ? data.slice(0, 10)
       : data;
 
+  // ✅ Fetch anime details using config base URL
   const fetchAnimeDetails = async (id) => {
     if (hoverDetails[id]) return;
     try {
       setLoadingId(id);
-      const res = await fetch(`https://animerealm1.vecel.app/api/anime/${id}`);
+      const res = await fetch(`${config.baseUrl}/anime/${id}`);
       const json = await res.json();
       if (json.success && json.data) {
         setHoverDetails((prev) => ({ ...prev, [id]: json.data }));
@@ -137,7 +139,7 @@ const MainLayout = ({ title, data, label, endpoint }) => {
                   className={`relative w-full h-0 overflow-hidden shadow-lg transition-transform duration-300 ease-in-out group-hover:scale-[1.05] rounded-xl
                   ${
                     isSlightlyBigger
-                      ? "pb-[132%]" // a little taller, not too big
+                      ? "pb-[132%]" // slightly taller for top upcoming/newly added
                       : title === "Trending Now"
                       ? "pb-[140%]"
                       : "pb-[145%]"
