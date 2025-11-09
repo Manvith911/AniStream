@@ -6,10 +6,10 @@ const Logo = () => {
     <Link to="/home" className="flex items-center space-x-2 select-none">
       <img
         src={favicon}
-        alt="AnimeRealm Logo"
+        alt="AniStream Logo"
         className="w-6 h-6 object-contain"
       />
-      <h1 className="gradient-text text-xl">𝐀𝐧!𝐦𝐞𝐑𝐞𝐚𝐥𝐦</h1>
+      <h1 className="gradient-text text-xl">AniStream</h1>
     </Link>
   );
 };
