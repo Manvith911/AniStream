@@ -21,7 +21,7 @@ const Footer = () => {
       {/* Disclaimer */}
       <div className="text-center text-gray-500 text-xs mb-3 max-w-2xl mx-auto px-2 leading-relaxed">
         <p>
-          AnimeRealm does not host or store any files on its server.  
+          AniStream does not host or store any files on its server.  
           All media is provided by third-party services.
         </p>
       </div>
@@ -39,7 +39,7 @@ const Footer = () => {
         >
           <FaDiscord />
         </a>
-        <span className="text-xs text-gray-500">© 2025 AnimeRealm</span>
+        <span className="text-xs text-gray-500">© 2025 AniStream</span>
       </div>
     </footer>
   );
