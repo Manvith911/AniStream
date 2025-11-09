@@ -53,7 +53,7 @@ npm run dev
 ```
 
 Once the server starts, open your browser and go to:  
-👉 **http://localhost:5173**  
+👉 **http://localhost:3030**  
 *(or the port shown in your terminal)*
 
 ---
