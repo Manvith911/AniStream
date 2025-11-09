@@ -72,7 +72,7 @@ Once deployed, you'll get your live site URL (for example):
 
 ---
 
-##⚠️ Important Configuration
+⚠️ Important Configuration
 Don't forget to update the following files with your API endpoints and settings:
 
 1. Config file — Update API base URL
