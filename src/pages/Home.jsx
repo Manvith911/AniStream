@@ -64,13 +64,13 @@ const Home = () => {
     <div className="relative min-h-screen bg-gradient-to-b from-[#0a0a0f] via-[#0a0a13] to-[#0a0a0f] text-white">
       <Helmet>
         <title>
-          Watch Anime Online, Free Anime Streaming Online on AnimeRealm Anime Website
+          Watch Anime Online, Free Anime Streaming Online on AniStream Anime Website
         </title>
         <meta
           name="description"
-          content="AnimeRealm is a free no-ads anime site to watch free anime. Online anime streaming at AnimeRealm with DUB, SUB in HD."
+          content="AniStream is a free no-ads anime site to watch free anime. Online anime streaming at AniStream with DUB, SUB in HD."
         />
-        <meta property="og:title" content="Home - AnimeRealm" />
+        <meta property="og:title" content="Home - AniStream" />
       </Helmet>
 
       {isLoading ? (
