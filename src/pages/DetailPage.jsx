@@ -57,8 +57,8 @@ const DetailPage = () => {
 
       {/* Meta Tags */}
       <Helmet>
-        <title>{titleId} | AnimeRealm</title>
-        <meta property="og:title" content={`${titleId} - AnimeRealm`} />
+        <title>{titleId} | AniStream</title>
+        <meta property="og:title" content={`${titleId} - AniStream`} />
       </Helmet>
 
       {/* Loader */}
