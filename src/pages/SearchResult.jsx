@@ -31,7 +31,7 @@ const SearchResult = () => {
     <div className="list-page pt-20">
       <Helmet>
         <title>Search result of {keyword}</title>
-        <meta property="og:title" content="search - AnimeRealm" />
+        <meta property="og:title" content="search - AniStream" />
       </Helmet>
 
       {pages && !isLoading ? (
